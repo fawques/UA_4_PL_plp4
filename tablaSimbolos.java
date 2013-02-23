@@ -16,7 +16,7 @@ public class tablaSimbolos {
     public tablaSimbolos(){
         lista = new ArrayList<Simbolo>();
         anterior = null;
-        posicion_max = 0;
+        posicion_max = 1;
     }
     
     public tablaSimbolos(tablaSimbolos _anterior){

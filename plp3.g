@@ -407,7 +407,7 @@ clase returns [String trad]
 	:	CLASS SINGLE LLAVEI {$trad=".class 'Single' extends [mscorlib]System.Object \n{\n";} metodo {$trad+=$metodo.trad + "\n}";} LLAVED;
 
 metodo returns [String trad]
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque{$trad = ".method static public void main () cil managed \n{\n.locals()\n.entrypoint\n.maxstack 1000\n"+$bloque.trad+"\n ret\n}";};
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
 
 tipoSimple returns [String trad]
 	:	INT {$trad = "int32";}
@@ -449,7 +449,8 @@ instr returns [String trad]
 			// TODO: mostrar bien según el tipo de lo que muestras
 			$trad = $expr.trad;
 			String aux = $expr.tipo;
-			
+			/*if(aux.equals("bool"))
+				aux = "int32";*/
 			$trad += "call void [mscorlib]System.Console::WriteLine(" + aux + ")\n";
 		};
 
@@ -475,13 +476,13 @@ erel returns [String trad, String tipo]
 			}else if($RELOP.text.equals("!=")){
 			    $trad += "ceq\n" + "ldc.i4 1\n" + "xor\n";
 			}else if($RELOP.text.equals("<")){
-			    $trad += "sub\n" + "ldc.i4 0\n" + "cgt\n";
-			}else if($RELOP.text.equals(">")){
 			    $trad += "sub\n" + "ldc.i4 0\n" + "clt\n";
+			}else if($RELOP.text.equals(">")){
+			    $trad += "sub\n" + "ldc.i4 0\n" + "cgt\n";
 			}else if($RELOP.text.equals("<=")){
-			    $trad += "sub\n" + "ldc.i4 0\n" + "cge\n";
+			    $trad += "sub\n" + "dup\n" + "stloc 0\n" + "ldc.i4 0\n" + "clt\n" + "ldloc 0\n" + "ldc.i4 0\n" + "ceq\n" + "or\n";
 			}else if($RELOP.text.equals(">=")){
-			    $trad += "sub\n" + "ldc.i4 0\n" + "cle\n";
+			    $trad += "sub\n" + "dup\n" + "stloc 0\n" + "ldc.i4 0\n" + "cgt\n" + "ldloc 0\n" + "ldc.i4 0\n" + "ceq\n" + "or\n";
 			}
 			
 			
