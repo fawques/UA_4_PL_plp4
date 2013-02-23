@@ -400,6 +400,9 @@ factor [String prefijo] returns [String trad, String tipo]
 	|	PARI expr[$prefijo] PARD {$trad = "(" + $expr.trad + ")"; $tipo = $expr.tipo;};
 */
 
+sAux returns[String resultado]
+	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + "PruebaVariables.fnt" + "' {}\n" + $clase.trad;};
+
 s[String archivo] returns [String resultado]
 	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + $archivo + "' {}\n" + $clase.trad;};
 
@@ -420,15 +423,15 @@ decl returns [String trad]
 
 		$trad = ".locals(" + $primervarid.resultado;
 	}(COMA nuevovarid = varid[$tipoSimple.trad]
-	{$trad+=", " + $tipoSimple.trad+ " '" + $nuevovarid.trad + "'";tS.add($nuevovarid.trad,$nuevovarid.resultado);})* PYC {$trad += ")";};
+	{$trad+=", " + $tipoSimple.trad;tS.add($nuevovarid.trad,$nuevovarid.resultado);})* PYC {$trad += ")\n";};
 	
 varid[String tipo] returns [String trad, Tipo resultado]
 	:	ID {$trad = $ID.text;$resultado = new Tipo($tipo,0,null);} (CORI {$resultado = new Tipo("array",0,$resultado);}(COMA{$resultado = new Tipo("array",0,$resultado);})* CORD)?;
 
 declins returns [String trad]
-	:	{$trad = "";}(instr {$trad += $instr.trad + "\n";}| decl{$trad += $decl.trad+ "\n";
+	:	{$trad = "";}(instr {$trad += $instr.trad;}| decl{$trad += $decl.trad;
 	// ==========================================================	
-		System.out.println("tS = "+tS.getAll());
+		//System.out.println("tS = "+tS.getAll());
 	// ==========================================================		
 		})*;
 
@@ -443,7 +446,7 @@ instr returns [String trad]
 	|	FOR PARI INT ID ASIG expr TO expr STEP (ADDOP)? ENTERO PARD instr{$trad = "instr";}
 	|	BREAK PYC{$trad = "instr";}
 	|	CONTINUE PYC{$trad = "instr";}
-	|	ref cambio{$trad = "instr";}
+	|	ref cambio[$ref.variable]{$trad = $cambio.trad;}
 	|	ID ASIG NEW tipoSimple CORI dims CORD PYC{$trad = "instr";}
 	|	WRITELINE PARI expr PARD PYC{
 			$trad = $expr.trad;
@@ -456,9 +459,11 @@ instr returns [String trad]
 dims returns [String trad]
 	:	ENTERO (COMA ENTERO)*;
 
-cambio returns [String trad]
-	:	ASIG expr PYC
-	|	PUNTO READLINE PYC;
+cambio[int variable] returns [String trad]
+	:	ASIG expr PYC{$trad = $expr.trad + "stloc " + $variable + "\n";}
+	|	PUNTO READLINEI PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n"+ "stloc " + $variable +  "\n";}
+	|	PUNTO READLINED PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n"+ "stloc " + $variable +  "\n";}
+	|	PUNTO READLINEB PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";};
 
 expr returns [String trad, String tipo]
 	:	primero = eand {$trad = $primero.trad; $tipo = $primero.tipo;}(OR siguiente = eand{$trad += $siguiente.trad;$tipo = "bool";
@@ -532,7 +537,7 @@ factor returns [String trad, String tipo]
 
 base returns [String trad, String tipo]
 	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = "int32";}
-	|	REAL{$trad = $REAL.text; $tipo = "float64";}
+	|	REAL{$trad ="ldc.r8 " +  $REAL.text + "\n"; $tipo = "float64";}
 	|	BOOLEANO{if($BOOLEANO.text.equals("True")){
 				$trad = "ldc.i4 1\n";
 			}else{
@@ -540,10 +545,10 @@ base returns [String trad, String tipo]
 			} 
 			$tipo = "bool";}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
-	|	ref {$trad = "ref"; $tipo = "ref";};
+	|	ref {$trad = $trad = "ldloc " + $ref.variable + "\n"; $tipo = $ref.tipo;};
 
-ref returns [String trad]
-	:	ID (CORI indices CORD)?;
+ref returns [int variable, String tipo]
+	:	ID {Simbolo referencia = tS.getSimbolo($ID.text); $variable= referencia.posicion_locals; $tipo = referencia.tipo.toString();/* faltan try-catch */} (CORI indices CORD{/*$variable += "========== Aún no implementado =========="*/;})?;
 
 indices returns [String trad]
 	:	expr (COMA expr)*;
@@ -573,7 +578,9 @@ BREAK	:	'break';
 CONTINUE	:	'continue';
 NEW	: 	'new';
 WRITELINE	:	'System.Console.WriteLine';
-READLINE	: 	('int'|'double'|'bool')'.Parse(System.Console.ReadLine())';
+READLINEI	: 	'int.Parse(System.Console.ReadLine())';
+READLINED	: 	'double.Parse(System.Console.ReadLine())';
+READLINEB	: 	'bool.Parse(System.Console.ReadLine())';
 
 
 LLAVEI	:	'{';
