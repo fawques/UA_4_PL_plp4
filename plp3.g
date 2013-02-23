@@ -446,7 +446,6 @@ instr returns [String trad]
 	|	ref cambio{$trad = "instr";}
 	|	ID ASIG NEW tipoSimple CORI dims CORD PYC{$trad = "instr";}
 	|	WRITELINE PARI expr PARD PYC{
-			// TODO: mostrar bien según el tipo de lo que muestras
 			$trad = $expr.trad;
 			String aux = $expr.tipo;
 			/*if(aux.equals("bool"))
@@ -494,7 +493,7 @@ esum returns [String trad, String tipo]
 			if($ADDOP.text.equals("+")){
 			    $trad += "add\n";
 			}else{
-			    $trad += "sub\n"; // IGUAL ESTO PETA, PONE QUE SUB = VALOR2 - VALOR1
+			    $trad += "sub\n";
 			}
 		})*;
 
@@ -509,13 +508,37 @@ term returns [String trad, String tipo]
 
 factor returns [String trad, String tipo]
 	:	base{$trad = $base.trad; $tipo = $base.tipo;}
-	|	NOT factor
-	|	PARI ADDOP factor PARD;
+	|	NOT otro = factor{if($otro.tipo.equals("bool")){
+				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
+				$tipo = "bool";
+			}else{
+				//throw exception error 4
+			}}
+	|	PARI ADDOP otro = factor PARD{if($ADDOP.text.equals("-")){
+				if($otro.tipo.equals("bool")){
+					//throw error 3
+				}else{
+					$trad = $otro.trad + "not\n" + "ldc.i4 1\n" + "add\n";
+				}
+			          }else{
+				if($otro.tipo.equals("bool")){
+					//throw error 3
+				}else{
+					$trad = $otro.trad;
+				}	
+			          }
+			          $tipo = $otro.tipo;
+			};
 
 base returns [String trad, String tipo]
 	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = "int32";}
 	|	REAL{$trad = $REAL.text; $tipo = "float64";}
-	|	BOOLEANO{$trad = $BOOLEANO.text; $tipo = "int32"/*"bool"*/;}
+	|	BOOLEANO{if($BOOLEANO.text.equals("True")){
+				$trad = "ldc.i4 1\n";
+			}else{
+				$trad = "ldc.i4 0\n";
+			} 
+			$tipo = "bool";}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
 	|	ref {$trad = "ref"; $tipo = "ref";};
 
