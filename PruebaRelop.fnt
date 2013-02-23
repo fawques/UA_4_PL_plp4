@@ -1,0 +1,15 @@
+class Single{
+public static void Main()
+{
+  System.Console.WriteLine(3 + 2 < 5);//False
+  System.Console.WriteLine(3 + 2 <= 5);//True
+  System.Console.WriteLine(3 + 2 <= 4);//False
+  System.Console.WriteLine(3 + 2 > 5);//False
+  System.Console.WriteLine(3 + 2 >= 5);//True
+  System.Console.WriteLine(3 + 2 >= 6);//False
+  System.Console.WriteLine(3 + 2 == 6);//False
+  System.Console.WriteLine(3 + 2 == 5);//True
+  System.Console.WriteLine(3 + 2 != 5);//False
+  System.Console.WriteLine(3 + 2 != 6);//True
+}
+}

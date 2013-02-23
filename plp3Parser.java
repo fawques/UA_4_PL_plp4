@@ -1,4 +1,4 @@
-// $ANTLR 3.4 plp3.g 2013-02-23 13:29:40
+// $ANTLR 3.4 plp3.g 2013-02-23 14:02:48
 
 	import java.lang.String;
 
@@ -1023,7 +1023,9 @@ public class plp3Parser extends Parser {
 
                     			// TODO: mostrar bien según el tipo de lo que muestras
                     			trad = (expr10!=null?expr10.trad:null);
-                    			trad += "call void [mscorlib]System.Console::WriteLine(" + (expr10!=null?expr10.tipo:null) + ")\n";
+                    			String aux = (expr10!=null?expr10.tipo:null);
+                    			
+                    			trad += "call void [mscorlib]System.Console::WriteLine(" + aux + ")\n";
                     		
 
                     }
@@ -1051,18 +1053,18 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "dims"
-    // plp3.g:454:1: dims returns [String trad] : ENTERO ( COMA ENTERO )* ;
+    // plp3.g:456:1: dims returns [String trad] : ENTERO ( COMA ENTERO )* ;
     public final String dims() throws RecognitionException {
         String trad = null;
 
 
         try {
-            // plp3.g:455:2: ( ENTERO ( COMA ENTERO )* )
-            // plp3.g:455:4: ENTERO ( COMA ENTERO )*
+            // plp3.g:457:2: ( ENTERO ( COMA ENTERO )* )
+            // plp3.g:457:4: ENTERO ( COMA ENTERO )*
             {
             match(input,ENTERO,FOLLOW_ENTERO_in_dims436); 
 
-            // plp3.g:455:11: ( COMA ENTERO )*
+            // plp3.g:457:11: ( COMA ENTERO )*
             loop9:
             do {
                 int alt9=2;
@@ -1075,7 +1077,7 @@ public class plp3Parser extends Parser {
 
                 switch (alt9) {
             	case 1 :
-            	    // plp3.g:455:12: COMA ENTERO
+            	    // plp3.g:457:12: COMA ENTERO
             	    {
             	    match(input,COMA,FOLLOW_COMA_in_dims439); 
 
@@ -1113,13 +1115,13 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "cambio"
-    // plp3.g:457:1: cambio returns [String trad] : ( ASIG expr PYC | PUNTO READLINE PYC );
+    // plp3.g:459:1: cambio returns [String trad] : ( ASIG expr PYC | PUNTO READLINE PYC );
     public final String cambio() throws RecognitionException {
         String trad = null;
 
 
         try {
-            // plp3.g:458:2: ( ASIG expr PYC | PUNTO READLINE PYC )
+            // plp3.g:460:2: ( ASIG expr PYC | PUNTO READLINE PYC )
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -1138,7 +1140,7 @@ public class plp3Parser extends Parser {
             }
             switch (alt10) {
                 case 1 :
-                    // plp3.g:458:4: ASIG expr PYC
+                    // plp3.g:460:4: ASIG expr PYC
                     {
                     match(input,ASIG,FOLLOW_ASIG_in_cambio456); 
 
@@ -1153,7 +1155,7 @@ public class plp3Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // plp3.g:459:4: PUNTO READLINE PYC
+                    // plp3.g:461:4: PUNTO READLINE PYC
                     {
                     match(input,PUNTO,FOLLOW_PUNTO_in_cambio465); 
 
@@ -1191,7 +1193,7 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "expr"
-    // plp3.g:461:1: expr returns [String trad, String tipo] : primero= eand ( OR siguiente= eand )* ;
+    // plp3.g:463:1: expr returns [String trad, String tipo] : primero= eand ( OR siguiente= eand )* ;
     public final plp3Parser.expr_return expr() throws RecognitionException {
         plp3Parser.expr_return retval = new plp3Parser.expr_return();
         retval.start = input.LT(1);
@@ -1203,8 +1205,8 @@ public class plp3Parser extends Parser {
 
 
         try {
-            // plp3.g:462:2: (primero= eand ( OR siguiente= eand )* )
-            // plp3.g:462:4: primero= eand ( OR siguiente= eand )*
+            // plp3.g:464:2: (primero= eand ( OR siguiente= eand )* )
+            // plp3.g:464:4: primero= eand ( OR siguiente= eand )*
             {
             pushFollow(FOLLOW_eand_in_expr486);
             primero=eand();
@@ -1214,7 +1216,7 @@ public class plp3Parser extends Parser {
 
             retval.trad = (primero!=null?primero.trad:null); retval.tipo = (primero!=null?primero.tipo:null);
 
-            // plp3.g:462:66: ( OR siguiente= eand )*
+            // plp3.g:464:66: ( OR siguiente= eand )*
             loop11:
             do {
                 int alt11=2;
@@ -1227,7 +1229,7 @@ public class plp3Parser extends Parser {
 
                 switch (alt11) {
             	case 1 :
-            	    // plp3.g:462:67: OR siguiente= eand
+            	    // plp3.g:464:67: OR siguiente= eand
             	    {
             	    match(input,OR,FOLLOW_OR_in_expr490); 
 
@@ -1237,8 +1239,8 @@ public class plp3Parser extends Parser {
             	    state._fsp--;
 
 
-            	    retval.trad += (siguiente!=null?siguiente.trad:null);retval.tipo = /*"bool"*/"int32";
-            	    			retval.trad += "add\n" + "ldc.i4 0\n" + "ceq\n"+ "not\n";
+            	    retval.trad += (siguiente!=null?siguiente.trad:null);retval.tipo = "bool";
+            	    			retval.trad += "add\n" + "ldc.i4 0\n" + "ceq\n" + "ldc.i4 1\n" + "xor\n";
 
             	    }
             	    break;
@@ -1280,7 +1282,7 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "eand"
-    // plp3.g:465:1: eand returns [String trad, String tipo] : primero= erel ( AND siguiente= erel )* ;
+    // plp3.g:467:1: eand returns [String trad, String tipo] : primero= erel ( AND siguiente= erel )* ;
     public final plp3Parser.eand_return eand() throws RecognitionException {
         plp3Parser.eand_return retval = new plp3Parser.eand_return();
         retval.start = input.LT(1);
@@ -1292,8 +1294,8 @@ public class plp3Parser extends Parser {
 
 
         try {
-            // plp3.g:466:2: (primero= erel ( AND siguiente= erel )* )
-            // plp3.g:466:4: primero= erel ( AND siguiente= erel )*
+            // plp3.g:468:2: (primero= erel ( AND siguiente= erel )* )
+            // plp3.g:468:4: primero= erel ( AND siguiente= erel )*
             {
             pushFollow(FOLLOW_erel_in_eand516);
             primero=erel();
@@ -1303,7 +1305,7 @@ public class plp3Parser extends Parser {
 
             retval.trad = (primero!=null?primero.trad:null); retval.tipo = (primero!=null?primero.tipo:null);
 
-            // plp3.g:466:66: ( AND siguiente= erel )*
+            // plp3.g:468:66: ( AND siguiente= erel )*
             loop12:
             do {
                 int alt12=2;
@@ -1316,7 +1318,7 @@ public class plp3Parser extends Parser {
 
                 switch (alt12) {
             	case 1 :
-            	    // plp3.g:466:67: AND siguiente= erel
+            	    // plp3.g:468:67: AND siguiente= erel
             	    {
             	    match(input,AND,FOLLOW_AND_in_eand520); 
 
@@ -1326,8 +1328,8 @@ public class plp3Parser extends Parser {
             	    state._fsp--;
 
 
-            	    retval.trad += (siguiente!=null?siguiente.trad:null);retval.tipo = /*"bool"*/"int32";
-            	    			retval.trad += "mul\n" + "ldc.i4 0\n" + "ceq\n"+ "not\n";
+            	    retval.trad += (siguiente!=null?siguiente.trad:null);retval.tipo = "bool";
+            	    			retval.trad += "mul\n" + "ldc.i4 0\n" + "ceq\n" + "ldc.i4 1\n" + "xor\n";
 
             	    }
             	    break;
@@ -1369,7 +1371,7 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "erel"
-    // plp3.g:469:1: erel returns [String trad, String tipo] : primero= esum ( RELOP siguiente= esum )* ;
+    // plp3.g:471:1: erel returns [String trad, String tipo] : primero= esum ( RELOP siguiente= esum )* ;
     public final plp3Parser.erel_return erel() throws RecognitionException {
         plp3Parser.erel_return retval = new plp3Parser.erel_return();
         retval.start = input.LT(1);
@@ -1382,8 +1384,8 @@ public class plp3Parser extends Parser {
 
 
         try {
-            // plp3.g:470:2: (primero= esum ( RELOP siguiente= esum )* )
-            // plp3.g:470:4: primero= esum ( RELOP siguiente= esum )*
+            // plp3.g:472:2: (primero= esum ( RELOP siguiente= esum )* )
+            // plp3.g:472:4: primero= esum ( RELOP siguiente= esum )*
             {
             pushFollow(FOLLOW_esum_in_erel546);
             primero=esum();
@@ -1393,7 +1395,7 @@ public class plp3Parser extends Parser {
 
             retval.trad = (primero!=null?primero.trad:null); retval.tipo = (primero!=null?primero.tipo:null);
 
-            // plp3.g:470:66: ( RELOP siguiente= esum )*
+            // plp3.g:472:66: ( RELOP siguiente= esum )*
             loop13:
             do {
                 int alt13=2;
@@ -1406,7 +1408,7 @@ public class plp3Parser extends Parser {
 
                 switch (alt13) {
             	case 1 :
-            	    // plp3.g:470:67: RELOP siguiente= esum
+            	    // plp3.g:472:67: RELOP siguiente= esum
             	    {
             	    RELOP11=(Token)match(input,RELOP,FOLLOW_RELOP_in_erel550); 
 
@@ -1416,11 +1418,11 @@ public class plp3Parser extends Parser {
             	    state._fsp--;
 
 
-            	    retval.trad += (siguiente!=null?siguiente.trad:null);retval.tipo = /*"bool"*/"int32";
+            	    retval.trad += (siguiente!=null?siguiente.trad:null);retval.tipo = "bool";
             	    			if((RELOP11!=null?RELOP11.getText():null).equals("==")){
             	    			    retval.trad += "ceq\n";
             	    			}else if((RELOP11!=null?RELOP11.getText():null).equals("!=")){
-            	    			    retval.trad += "ceq\n" + "not\n";
+            	    			    retval.trad += "ceq\n" + "ldc.i4 1\n" + "xor\n";
             	    			}else if((RELOP11!=null?RELOP11.getText():null).equals("<")){
             	    			    retval.trad += "sub\n" + "ldc.i4 0\n" + "cgt\n";
             	    			}else if((RELOP11!=null?RELOP11.getText():null).equals(">")){
@@ -1474,7 +1476,7 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "esum"
-    // plp3.g:489:1: esum returns [String trad, String tipo] : primero= term ( ADDOP siguiente= term )* ;
+    // plp3.g:491:1: esum returns [String trad, String tipo] : primero= term ( ADDOP siguiente= term )* ;
     public final plp3Parser.esum_return esum() throws RecognitionException {
         plp3Parser.esum_return retval = new plp3Parser.esum_return();
         retval.start = input.LT(1);
@@ -1487,8 +1489,8 @@ public class plp3Parser extends Parser {
 
 
         try {
-            // plp3.g:490:2: (primero= term ( ADDOP siguiente= term )* )
-            // plp3.g:490:4: primero= term ( ADDOP siguiente= term )*
+            // plp3.g:492:2: (primero= term ( ADDOP siguiente= term )* )
+            // plp3.g:492:4: primero= term ( ADDOP siguiente= term )*
             {
             pushFollow(FOLLOW_term_in_esum577);
             primero=term();
@@ -1498,7 +1500,7 @@ public class plp3Parser extends Parser {
 
             retval.trad = (primero!=null?primero.trad:null); retval.tipo = (primero!=null?primero.tipo:null);
 
-            // plp3.g:490:66: ( ADDOP siguiente= term )*
+            // plp3.g:492:66: ( ADDOP siguiente= term )*
             loop14:
             do {
                 int alt14=2;
@@ -1511,7 +1513,7 @@ public class plp3Parser extends Parser {
 
                 switch (alt14) {
             	case 1 :
-            	    // plp3.g:490:67: ADDOP siguiente= term
+            	    // plp3.g:492:67: ADDOP siguiente= term
             	    {
             	    ADDOP12=(Token)match(input,ADDOP,FOLLOW_ADDOP_in_esum581); 
 
@@ -1569,7 +1571,7 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "term"
-    // plp3.g:498:1: term returns [String trad, String tipo] : primero= factor ( MULOP siguiente= factor )* ;
+    // plp3.g:500:1: term returns [String trad, String tipo] : primero= factor ( MULOP siguiente= factor )* ;
     public final plp3Parser.term_return term() throws RecognitionException {
         plp3Parser.term_return retval = new plp3Parser.term_return();
         retval.start = input.LT(1);
@@ -1582,8 +1584,8 @@ public class plp3Parser extends Parser {
 
 
         try {
-            // plp3.g:499:2: (primero= factor ( MULOP siguiente= factor )* )
-            // plp3.g:499:4: primero= factor ( MULOP siguiente= factor )*
+            // plp3.g:501:2: (primero= factor ( MULOP siguiente= factor )* )
+            // plp3.g:501:4: primero= factor ( MULOP siguiente= factor )*
             {
             pushFollow(FOLLOW_factor_in_term607);
             primero=factor();
@@ -1593,7 +1595,7 @@ public class plp3Parser extends Parser {
 
             retval.trad = (primero!=null?primero.trad:null); retval.tipo = (primero!=null?primero.tipo:null);
 
-            // plp3.g:499:68: ( MULOP siguiente= factor )*
+            // plp3.g:501:68: ( MULOP siguiente= factor )*
             loop15:
             do {
                 int alt15=2;
@@ -1606,7 +1608,7 @@ public class plp3Parser extends Parser {
 
                 switch (alt15) {
             	case 1 :
-            	    // plp3.g:499:69: MULOP siguiente= factor
+            	    // plp3.g:501:69: MULOP siguiente= factor
             	    {
             	    MULOP13=(Token)match(input,MULOP,FOLLOW_MULOP_in_term611); 
 
@@ -1664,7 +1666,7 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "factor"
-    // plp3.g:507:1: factor returns [String trad, String tipo] : ( base | NOT factor | PARI ADDOP factor PARD );
+    // plp3.g:509:1: factor returns [String trad, String tipo] : ( base | NOT factor | PARI ADDOP factor PARD );
     public final plp3Parser.factor_return factor() throws RecognitionException {
         plp3Parser.factor_return retval = new plp3Parser.factor_return();
         retval.start = input.LT(1);
@@ -1674,7 +1676,7 @@ public class plp3Parser extends Parser {
 
 
         try {
-            // plp3.g:508:2: ( base | NOT factor | PARI ADDOP factor PARD )
+            // plp3.g:510:2: ( base | NOT factor | PARI ADDOP factor PARD )
             int alt16=3;
             switch ( input.LA(1) ) {
             case BOOLEANO:
@@ -1719,7 +1721,7 @@ public class plp3Parser extends Parser {
 
             switch (alt16) {
                 case 1 :
-                    // plp3.g:508:4: base
+                    // plp3.g:510:4: base
                     {
                     pushFollow(FOLLOW_base_in_factor633);
                     base14=base();
@@ -1732,7 +1734,7 @@ public class plp3Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // plp3.g:509:4: NOT factor
+                    // plp3.g:511:4: NOT factor
                     {
                     match(input,NOT,FOLLOW_NOT_in_factor639); 
 
@@ -1745,7 +1747,7 @@ public class plp3Parser extends Parser {
                     }
                     break;
                 case 3 :
-                    // plp3.g:510:4: PARI ADDOP factor PARD
+                    // plp3.g:512:4: PARI ADDOP factor PARD
                     {
                     match(input,PARI,FOLLOW_PARI_in_factor646); 
 
@@ -1792,7 +1794,7 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "base"
-    // plp3.g:512:1: base returns [String trad, String tipo] : ( ENTERO | REAL | BOOLEANO | PARI expr PARD | ref );
+    // plp3.g:514:1: base returns [String trad, String tipo] : ( ENTERO | REAL | BOOLEANO | PARI expr PARD | ref );
     public final plp3Parser.base_return base() throws RecognitionException {
         plp3Parser.base_return retval = new plp3Parser.base_return();
         retval.start = input.LT(1);
@@ -1805,7 +1807,7 @@ public class plp3Parser extends Parser {
 
 
         try {
-            // plp3.g:513:2: ( ENTERO | REAL | BOOLEANO | PARI expr PARD | ref )
+            // plp3.g:515:2: ( ENTERO | REAL | BOOLEANO | PARI expr PARD | ref )
             int alt17=5;
             switch ( input.LA(1) ) {
             case ENTERO:
@@ -1843,7 +1845,7 @@ public class plp3Parser extends Parser {
 
             switch (alt17) {
                 case 1 :
-                    // plp3.g:513:4: ENTERO
+                    // plp3.g:515:4: ENTERO
                     {
                     ENTERO15=(Token)match(input,ENTERO,FOLLOW_ENTERO_in_base665); 
 
@@ -1852,7 +1854,7 @@ public class plp3Parser extends Parser {
                     }
                     break;
                 case 2 :
-                    // plp3.g:514:4: REAL
+                    // plp3.g:516:4: REAL
                     {
                     REAL16=(Token)match(input,REAL,FOLLOW_REAL_in_base671); 
 
@@ -1861,7 +1863,7 @@ public class plp3Parser extends Parser {
                     }
                     break;
                 case 3 :
-                    // plp3.g:515:4: BOOLEANO
+                    // plp3.g:517:4: BOOLEANO
                     {
                     BOOLEANO17=(Token)match(input,BOOLEANO,FOLLOW_BOOLEANO_in_base677); 
 
@@ -1870,7 +1872,7 @@ public class plp3Parser extends Parser {
                     }
                     break;
                 case 4 :
-                    // plp3.g:516:4: PARI expr PARD
+                    // plp3.g:518:4: PARI expr PARD
                     {
                     match(input,PARI,FOLLOW_PARI_in_base683); 
 
@@ -1887,7 +1889,7 @@ public class plp3Parser extends Parser {
                     }
                     break;
                 case 5 :
-                    // plp3.g:517:4: ref
+                    // plp3.g:519:4: ref
                     {
                     pushFollow(FOLLOW_ref_in_base693);
                     ref();
@@ -1925,18 +1927,18 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "ref"
-    // plp3.g:519:1: ref returns [String trad] : ID ( CORI indices CORD )? ;
+    // plp3.g:521:1: ref returns [String trad] : ID ( CORI indices CORD )? ;
     public final String ref() throws RecognitionException {
         String trad = null;
 
 
         try {
-            // plp3.g:520:2: ( ID ( CORI indices CORD )? )
-            // plp3.g:520:4: ID ( CORI indices CORD )?
+            // plp3.g:522:2: ( ID ( CORI indices CORD )? )
+            // plp3.g:522:4: ID ( CORI indices CORD )?
             {
             match(input,ID,FOLLOW_ID_in_ref708); 
 
-            // plp3.g:520:7: ( CORI indices CORD )?
+            // plp3.g:522:7: ( CORI indices CORD )?
             int alt18=2;
             int LA18_0 = input.LA(1);
 
@@ -1945,7 +1947,7 @@ public class plp3Parser extends Parser {
             }
             switch (alt18) {
                 case 1 :
-                    // plp3.g:520:8: CORI indices CORD
+                    // plp3.g:522:8: CORI indices CORD
                     {
                     match(input,CORI,FOLLOW_CORI_in_ref711); 
 
@@ -1986,14 +1988,14 @@ public class plp3Parser extends Parser {
 
 
     // $ANTLR start "indices"
-    // plp3.g:522:1: indices returns [String trad] : expr ( COMA expr )* ;
+    // plp3.g:524:1: indices returns [String trad] : expr ( COMA expr )* ;
     public final String indices() throws RecognitionException {
         String trad = null;
 
 
         try {
-            // plp3.g:523:2: ( expr ( COMA expr )* )
-            // plp3.g:523:4: expr ( COMA expr )*
+            // plp3.g:525:2: ( expr ( COMA expr )* )
+            // plp3.g:525:4: expr ( COMA expr )*
             {
             pushFollow(FOLLOW_expr_in_indices730);
             expr();
@@ -2001,7 +2003,7 @@ public class plp3Parser extends Parser {
             state._fsp--;
 
 
-            // plp3.g:523:9: ( COMA expr )*
+            // plp3.g:525:9: ( COMA expr )*
             loop19:
             do {
                 int alt19=2;
@@ -2014,7 +2016,7 @@ public class plp3Parser extends Parser {
 
                 switch (alt19) {
             	case 1 :
-            	    // plp3.g:523:10: COMA expr
+            	    // plp3.g:525:10: COMA expr
             	    {
             	    match(input,COMA,FOLLOW_COMA_in_indices733); 
 

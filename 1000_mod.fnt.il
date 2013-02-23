@@ -11,8 +11,10 @@ ldc.i4 3
 ldc.i4 2
 add
 ldc.i4 5
-ceq
-call void [mscorlib]System.Console::WriteLine(int32)
+sub
+ldc.i4 0
+cgt
+call void [mscorlib]System.Console::WriteLine(bool)
 
 ldc.i4 3
 ldc.i4 2
@@ -21,8 +23,9 @@ ldc.i4 5
 add
 ldc.i4 6
 ceq
-not
-call void [mscorlib]System.Console::WriteLine(int32)
+ldc.i4 1
+xor
+call void [mscorlib]System.Console::WriteLine(bool)
 
 ldc.i4 3
 ldc.i4 2
@@ -34,7 +37,7 @@ add
 ldc.i4 3
 sub
 ldc.i4 0
-clt
+cgt
 ldc.i4 3
 ldc.i4 2
 add
@@ -45,8 +48,9 @@ cgt
 add
 ldc.i4 0
 ceq
-not
-call void [mscorlib]System.Console::WriteLine(int32)
+ldc.i4 1
+xor
+call void [mscorlib]System.Console::WriteLine(bool)
 
 
  ret

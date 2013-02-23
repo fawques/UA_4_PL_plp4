@@ -448,7 +448,9 @@ instr returns [String trad]
 	|	WRITELINE PARI expr PARD PYC{
 			// TODO: mostrar bien según el tipo de lo que muestras
 			$trad = $expr.trad;
-			$trad += "call void [mscorlib]System.Console::WriteLine(" + $expr.tipo + ")\n";
+			String aux = $expr.tipo;
+			
+			$trad += "call void [mscorlib]System.Console::WriteLine(" + aux + ")\n";
 		};
 
 dims returns [String trad]
@@ -459,19 +461,19 @@ cambio returns [String trad]
 	|	PUNTO READLINE PYC;
 
 expr returns [String trad, String tipo]
-	:	primero = eand {$trad = $primero.trad; $tipo = $primero.tipo;}(OR siguiente = eand{$trad += $siguiente.trad;$tipo = /*"bool"*/"int32";
-			$trad += "add\n" + "ldc.i4 0\n" + "ceq\n"+ "not\n";})*;
+	:	primero = eand {$trad = $primero.trad; $tipo = $primero.tipo;}(OR siguiente = eand{$trad += $siguiente.trad;$tipo = "bool";
+			$trad += "add\n" + "ldc.i4 0\n" + "ceq\n" + "ldc.i4 1\n" + "xor\n";})*;
 
 eand returns [String trad, String tipo]
-	:	primero = erel {$trad = $primero.trad; $tipo = $primero.tipo;}(AND siguiente = erel{$trad += $siguiente.trad;$tipo = /*"bool"*/"int32";
-			$trad += "mul\n" + "ldc.i4 0\n" + "ceq\n"+ "not\n";})*;
+	:	primero = erel {$trad = $primero.trad; $tipo = $primero.tipo;}(AND siguiente = erel{$trad += $siguiente.trad;$tipo = "bool";
+			$trad += "mul\n" + "ldc.i4 0\n" + "ceq\n" + "ldc.i4 1\n" + "xor\n";})*;
 
 erel returns [String trad, String tipo]
-	:	primero = esum {$trad = $primero.trad; $tipo = $primero.tipo;}(RELOP siguiente = esum{$trad += $siguiente.trad;$tipo = /*"bool"*/"int32";
+	:	primero = esum {$trad = $primero.trad; $tipo = $primero.tipo;}(RELOP siguiente = esum{$trad += $siguiente.trad;$tipo = "bool";
 			if($RELOP.text.equals("==")){
 			    $trad += "ceq\n";
 			}else if($RELOP.text.equals("!=")){
-			    $trad += "ceq\n" + "not\n";
+			    $trad += "ceq\n" + "ldc.i4 1\n" + "xor\n";
 			}else if($RELOP.text.equals("<")){
 			    $trad += "sub\n" + "ldc.i4 0\n" + "cgt\n";
 			}else if($RELOP.text.equals(">")){

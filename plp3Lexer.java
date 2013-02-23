@@ -1,4 +1,4 @@
-// $ANTLR 3.4 plp3.g 2013-02-23 13:29:41
+// $ANTLR 3.4 plp3.g 2013-02-23 14:02:48
 
 import org.antlr.runtime.*;
 import java.util.Stack;
@@ -85,8 +85,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = CLASS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:528:7: ( 'class' )
-            // plp3.g:528:9: 'class'
+            // plp3.g:530:7: ( 'class' )
+            // plp3.g:530:9: 'class'
             {
             match("class"); 
 
@@ -108,8 +108,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = SINGLE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:529:8: ( 'Single' )
-            // plp3.g:529:10: 'Single'
+            // plp3.g:531:8: ( 'Single' )
+            // plp3.g:531:10: 'Single'
             {
             match("Single"); 
 
@@ -131,8 +131,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = VOID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:530:6: ( 'void' )
-            // plp3.g:530:8: 'void'
+            // plp3.g:532:6: ( 'void' )
+            // plp3.g:532:8: 'void'
             {
             match("void"); 
 
@@ -154,8 +154,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = MAIN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:531:6: ( 'Main' )
-            // plp3.g:531:8: 'Main'
+            // plp3.g:533:6: ( 'Main' )
+            // plp3.g:533:8: 'Main'
             {
             match("Main"); 
 
@@ -177,8 +177,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:532:5: ( 'int' )
-            // plp3.g:532:7: 'int'
+            // plp3.g:534:5: ( 'int' )
+            // plp3.g:534:7: 'int'
             {
             match("int"); 
 
@@ -200,8 +200,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = DOUBLE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:533:8: ( 'double' )
-            // plp3.g:533:10: 'double'
+            // plp3.g:535:8: ( 'double' )
+            // plp3.g:535:10: 'double'
             {
             match("double"); 
 
@@ -223,8 +223,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = BOOL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:534:6: ( 'bool' )
-            // plp3.g:534:8: 'bool'
+            // plp3.g:536:6: ( 'bool' )
+            // plp3.g:536:8: 'bool'
             {
             match("bool"); 
 
@@ -246,8 +246,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = PUBLIC;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:535:8: ( 'public' )
-            // plp3.g:535:10: 'public'
+            // plp3.g:537:8: ( 'public' )
+            // plp3.g:537:10: 'public'
             {
             match("public"); 
 
@@ -269,8 +269,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = STATIC;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:536:8: ( 'static' )
-            // plp3.g:536:10: 'static'
+            // plp3.g:538:8: ( 'static' )
+            // plp3.g:538:10: 'static'
             {
             match("static"); 
 
@@ -292,8 +292,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = IF;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:537:4: ( 'if' )
-            // plp3.g:537:7: 'if'
+            // plp3.g:539:4: ( 'if' )
+            // plp3.g:539:7: 'if'
             {
             match("if"); 
 
@@ -315,8 +315,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = ELSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:538:6: ( 'else' )
-            // plp3.g:538:9: 'else'
+            // plp3.g:540:6: ( 'else' )
+            // plp3.g:540:9: 'else'
             {
             match("else"); 
 
@@ -338,8 +338,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = FOREACH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:539:9: ( 'foreach' )
-            // plp3.g:539:11: 'foreach'
+            // plp3.g:541:9: ( 'foreach' )
+            // plp3.g:541:11: 'foreach'
             {
             match("foreach"); 
 
@@ -361,8 +361,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = VAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:540:5: ( 'var' )
-            // plp3.g:540:8: 'var'
+            // plp3.g:542:5: ( 'var' )
+            // plp3.g:542:8: 'var'
             {
             match("var"); 
 
@@ -384,8 +384,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = IN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:541:4: ( 'in' )
-            // plp3.g:541:7: 'in'
+            // plp3.g:543:4: ( 'in' )
+            // plp3.g:543:7: 'in'
             {
             match("in"); 
 
@@ -407,8 +407,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = FOR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:542:5: ( 'for' )
-            // plp3.g:542:8: 'for'
+            // plp3.g:544:5: ( 'for' )
+            // plp3.g:544:8: 'for'
             {
             match("for"); 
 
@@ -430,8 +430,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = TO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:543:4: ( 'to' )
-            // plp3.g:543:7: 'to'
+            // plp3.g:545:4: ( 'to' )
+            // plp3.g:545:7: 'to'
             {
             match("to"); 
 
@@ -453,8 +453,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = STEP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:544:6: ( 'step' )
-            // plp3.g:544:9: 'step'
+            // plp3.g:546:6: ( 'step' )
+            // plp3.g:546:9: 'step'
             {
             match("step"); 
 
@@ -476,8 +476,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = WHILE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:545:7: ( 'while' )
-            // plp3.g:545:9: 'while'
+            // plp3.g:547:7: ( 'while' )
+            // plp3.g:547:9: 'while'
             {
             match("while"); 
 
@@ -499,8 +499,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = BREAK;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:546:7: ( 'break' )
-            // plp3.g:546:9: 'break'
+            // plp3.g:548:7: ( 'break' )
+            // plp3.g:548:9: 'break'
             {
             match("break"); 
 
@@ -522,8 +522,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = CONTINUE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:547:10: ( 'continue' )
-            // plp3.g:547:12: 'continue'
+            // plp3.g:549:10: ( 'continue' )
+            // plp3.g:549:12: 'continue'
             {
             match("continue"); 
 
@@ -545,8 +545,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = NEW;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:548:5: ( 'new' )
-            // plp3.g:548:8: 'new'
+            // plp3.g:550:5: ( 'new' )
+            // plp3.g:550:8: 'new'
             {
             match("new"); 
 
@@ -568,8 +568,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = WRITELINE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:549:11: ( 'System.Console.WriteLine' )
-            // plp3.g:549:13: 'System.Console.WriteLine'
+            // plp3.g:551:11: ( 'System.Console.WriteLine' )
+            // plp3.g:551:13: 'System.Console.WriteLine'
             {
             match("System.Console.WriteLine"); 
 
@@ -591,10 +591,10 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = READLINE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:550:10: ( ( 'int' | 'double' | 'bool' ) '.Parse(System.Console.ReadLine())' )
-            // plp3.g:550:13: ( 'int' | 'double' | 'bool' ) '.Parse(System.Console.ReadLine())'
+            // plp3.g:552:10: ( ( 'int' | 'double' | 'bool' ) '.Parse(System.Console.ReadLine())' )
+            // plp3.g:552:13: ( 'int' | 'double' | 'bool' ) '.Parse(System.Console.ReadLine())'
             {
-            // plp3.g:550:13: ( 'int' | 'double' | 'bool' )
+            // plp3.g:552:13: ( 'int' | 'double' | 'bool' )
             int alt1=3;
             switch ( input.LA(1) ) {
             case 'i':
@@ -622,7 +622,7 @@ public class plp3Lexer extends Lexer {
 
             switch (alt1) {
                 case 1 :
-                    // plp3.g:550:14: 'int'
+                    // plp3.g:552:14: 'int'
                     {
                     match("int"); 
 
@@ -631,7 +631,7 @@ public class plp3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // plp3.g:550:20: 'double'
+                    // plp3.g:552:20: 'double'
                     {
                     match("double"); 
 
@@ -640,7 +640,7 @@ public class plp3Lexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // plp3.g:550:29: 'bool'
+                    // plp3.g:552:29: 'bool'
                     {
                     match("bool"); 
 
@@ -672,8 +672,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = LLAVEI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:553:8: ( '{' )
-            // plp3.g:553:10: '{'
+            // plp3.g:555:8: ( '{' )
+            // plp3.g:555:10: '{'
             {
             match('{'); 
 
@@ -693,8 +693,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = LLAVED;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:554:8: ( '}' )
-            // plp3.g:554:10: '}'
+            // plp3.g:556:8: ( '}' )
+            // plp3.g:556:10: '}'
             {
             match('}'); 
 
@@ -714,8 +714,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = PARI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:555:6: ( '(' )
-            // plp3.g:555:8: '('
+            // plp3.g:557:6: ( '(' )
+            // plp3.g:557:8: '('
             {
             match('('); 
 
@@ -735,8 +735,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = PARD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:556:6: ( ')' )
-            // plp3.g:556:8: ')'
+            // plp3.g:558:6: ( ')' )
+            // plp3.g:558:8: ')'
             {
             match(')'); 
 
@@ -756,8 +756,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = CORI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:557:6: ( '[' )
-            // plp3.g:557:8: '['
+            // plp3.g:559:6: ( '[' )
+            // plp3.g:559:8: '['
             {
             match('['); 
 
@@ -777,8 +777,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = CORD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:558:6: ( ']' )
-            // plp3.g:558:8: ']'
+            // plp3.g:560:6: ( ']' )
+            // plp3.g:560:8: ']'
             {
             match(']'); 
 
@@ -798,8 +798,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = COMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:559:6: ( ',' )
-            // plp3.g:559:8: ','
+            // plp3.g:561:6: ( ',' )
+            // plp3.g:561:8: ','
             {
             match(','); 
 
@@ -819,8 +819,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = PYC;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:560:5: ( ';' )
-            // plp3.g:560:7: ';'
+            // plp3.g:562:5: ( ';' )
+            // plp3.g:562:7: ';'
             {
             match(';'); 
 
@@ -840,8 +840,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = ASIG;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:561:6: ( '=' )
-            // plp3.g:561:8: '='
+            // plp3.g:563:6: ( '=' )
+            // plp3.g:563:8: '='
             {
             match('='); 
 
@@ -861,8 +861,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:562:4: ( '|' )
-            // plp3.g:562:6: '|'
+            // plp3.g:564:4: ( '|' )
+            // plp3.g:564:6: '|'
             {
             match('|'); 
 
@@ -882,8 +882,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:563:5: ( '&' )
-            // plp3.g:563:7: '&'
+            // plp3.g:565:5: ( '&' )
+            // plp3.g:565:7: '&'
             {
             match('&'); 
 
@@ -903,7 +903,7 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = RELOP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:564:7: ( '==' | '!=' | '<' | '>' | '<=' | '>=' )
+            // plp3.g:566:7: ( '==' | '!=' | '<' | '>' | '<=' | '>=' )
             int alt2=6;
             switch ( input.LA(1) ) {
             case '=':
@@ -950,7 +950,7 @@ public class plp3Lexer extends Lexer {
 
             switch (alt2) {
                 case 1 :
-                    // plp3.g:564:9: '=='
+                    // plp3.g:566:9: '=='
                     {
                     match("=="); 
 
@@ -959,7 +959,7 @@ public class plp3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // plp3.g:564:16: '!='
+                    // plp3.g:566:16: '!='
                     {
                     match("!="); 
 
@@ -968,21 +968,21 @@ public class plp3Lexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // plp3.g:564:21: '<'
+                    // plp3.g:566:21: '<'
                     {
                     match('<'); 
 
                     }
                     break;
                 case 4 :
-                    // plp3.g:564:27: '>'
+                    // plp3.g:566:27: '>'
                     {
                     match('>'); 
 
                     }
                     break;
                 case 5 :
-                    // plp3.g:564:33: '<='
+                    // plp3.g:566:33: '<='
                     {
                     match("<="); 
 
@@ -991,7 +991,7 @@ public class plp3Lexer extends Lexer {
                     }
                     break;
                 case 6 :
-                    // plp3.g:564:40: '>='
+                    // plp3.g:566:40: '>='
                     {
                     match(">="); 
 
@@ -1015,7 +1015,7 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = ADDOP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:565:7: ( '+' | '-' )
+            // plp3.g:567:7: ( '+' | '-' )
             // plp3.g:
             {
             if ( input.LA(1)=='+'||input.LA(1)=='-' ) {
@@ -1044,7 +1044,7 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = MULOP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:566:7: ( '*' | '/' )
+            // plp3.g:568:7: ( '*' | '/' )
             // plp3.g:
             {
             if ( input.LA(1)=='*'||input.LA(1)=='/' ) {
@@ -1073,8 +1073,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:567:5: ( '!' )
-            // plp3.g:567:7: '!'
+            // plp3.g:569:5: ( '!' )
+            // plp3.g:569:7: '!'
             {
             match('!'); 
 
@@ -1094,8 +1094,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = PUNTO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:568:7: ( '.' )
-            // plp3.g:568:9: '.'
+            // plp3.g:570:7: ( '.' )
+            // plp3.g:570:9: '.'
             {
             match('.'); 
 
@@ -1115,10 +1115,10 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = ENTERO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:569:8: ( ( '0' .. '9' )+ )
-            // plp3.g:569:10: ( '0' .. '9' )+
+            // plp3.g:571:8: ( ( '0' .. '9' )+ )
+            // plp3.g:571:10: ( '0' .. '9' )+
             {
-            // plp3.g:569:10: ( '0' .. '9' )+
+            // plp3.g:571:10: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -1173,10 +1173,10 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = REAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:570:6: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )+ )
-            // plp3.g:570:8: ( '0' .. '9' )+ '.' ( '0' .. '9' )+
+            // plp3.g:572:6: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )+ )
+            // plp3.g:572:8: ( '0' .. '9' )+ '.' ( '0' .. '9' )+
             {
-            // plp3.g:570:8: ( '0' .. '9' )+
+            // plp3.g:572:8: ( '0' .. '9' )+
             int cnt4=0;
             loop4:
             do {
@@ -1217,7 +1217,7 @@ public class plp3Lexer extends Lexer {
 
             match('.'); 
 
-            // plp3.g:570:22: ( '0' .. '9' )+
+            // plp3.g:572:22: ( '0' .. '9' )+
             int cnt5=0;
             loop5:
             do {
@@ -1272,7 +1272,7 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = BOOLEANO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:571:10: ( 'True' | 'False' )
+            // plp3.g:573:10: ( 'True' | 'False' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -1291,7 +1291,7 @@ public class plp3Lexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // plp3.g:571:12: 'True'
+                    // plp3.g:573:12: 'True'
                     {
                     match("True"); 
 
@@ -1300,7 +1300,7 @@ public class plp3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // plp3.g:571:19: 'False'
+                    // plp3.g:573:19: 'False'
                     {
                     match("False"); 
 
@@ -1324,8 +1324,8 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:572:6: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )* )
-            // plp3.g:572:8: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
+            // plp3.g:574:6: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )* )
+            // plp3.g:574:8: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
             {
             if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
                 input.consume();
@@ -1337,7 +1337,7 @@ public class plp3Lexer extends Lexer {
             }
 
 
-            // plp3.g:572:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
+            // plp3.g:574:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
             loop7:
             do {
                 int alt7=2;
@@ -1387,10 +1387,10 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = BLANCOS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:576:9: ( ( '\\t' | '\\n' | '\\r' | ' ' )+ )
-            // plp3.g:576:11: ( '\\t' | '\\n' | '\\r' | ' ' )+
+            // plp3.g:578:9: ( ( '\\t' | '\\n' | '\\r' | ' ' )+ )
+            // plp3.g:578:11: ( '\\t' | '\\n' | '\\r' | ' ' )+
             {
-            // plp3.g:576:11: ( '\\t' | '\\n' | '\\r' | ' ' )+
+            // plp3.g:578:11: ( '\\t' | '\\n' | '\\r' | ' ' )+
             int cnt8=0;
             loop8:
             do {
@@ -1447,7 +1447,7 @@ public class plp3Lexer extends Lexer {
         try {
             int _type = COMENTARIO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // plp3.g:578:12: ( '/*' ( options {greedy=false; } : . )* '*/' | '//' ( options {greedy=false; } : . )* '\\n' )
+            // plp3.g:580:12: ( '/*' ( options {greedy=false; } : . )* '*/' | '//' ( options {greedy=false; } : . )* '\\n' )
             int alt11=2;
             int LA11_0 = input.LA(1);
 
@@ -1477,13 +1477,13 @@ public class plp3Lexer extends Lexer {
             }
             switch (alt11) {
                 case 1 :
-                    // plp3.g:578:14: '/*' ( options {greedy=false; } : . )* '*/'
+                    // plp3.g:580:14: '/*' ( options {greedy=false; } : . )* '*/'
                     {
                     match("/*"); 
 
 
 
-                    // plp3.g:578:19: ( options {greedy=false; } : . )*
+                    // plp3.g:580:19: ( options {greedy=false; } : . )*
                     loop9:
                     do {
                         int alt9=2;
@@ -1508,7 +1508,7 @@ public class plp3Lexer extends Lexer {
 
                         switch (alt9) {
                     	case 1 :
-                    	    // plp3.g:578:49: .
+                    	    // plp3.g:580:49: .
                     	    {
                     	    matchAny(); 
 
@@ -1530,13 +1530,13 @@ public class plp3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // plp3.g:579:5: '//' ( options {greedy=false; } : . )* '\\n'
+                    // plp3.g:581:5: '//' ( options {greedy=false; } : . )* '\\n'
                     {
                     match("//"); 
 
 
 
-                    // plp3.g:579:10: ( options {greedy=false; } : . )*
+                    // plp3.g:581:10: ( options {greedy=false; } : . )*
                     loop10:
                     do {
                         int alt10=2;
@@ -1552,7 +1552,7 @@ public class plp3Lexer extends Lexer {
 
                         switch (alt10) {
                     	case 1 :
-                    	    // plp3.g:579:40: .
+                    	    // plp3.g:581:40: .
                     	    {
                     	    matchAny(); 
 
