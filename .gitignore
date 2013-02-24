@@ -5,3 +5,4 @@ plp3Parser.java
 *.exe*
 *~
 output/*
+*.tokens
