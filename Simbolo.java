@@ -17,6 +17,7 @@ public class Simbolo {
         tipo = _tipo;
     }
     
+    @Override
     public String toString(){
 		return nombre + ":" + tipo + "@" + posicion_locals;
 	}

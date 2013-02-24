@@ -418,15 +418,40 @@ tipoSimple returns [String trad]
 	|	BOOL {$trad="bool";};
 	
 decl returns [String trad]
-	:	tipoSimple primervarid = varid[$tipoSimple.trad] {
-		tS.add($primervarid.trad,$primervarid.resultado);
-
-		$trad = ".locals(" + $primervarid.resultado;
-	}(COMA nuevovarid = varid[$tipoSimple.trad]
-	{$trad+=", " + $tipoSimple.trad;tS.add($nuevovarid.trad,$nuevovarid.resultado);})* PYC {$trad += ")\n";};
+	:	tipoSimple primervarid = varid[$tipoSimple.trad] 
+		{
+			$trad = ".locals(" + $primervarid.resultado.toString();
+		}
+		(COMA nuevovarid = varid[$tipoSimple.trad]
+		{
+			$trad+=", " + $nuevovarid.resultado.toString();
+		}
+		)* PYC 
+		{
+			$trad += ")\n";
+		};
 	
-varid[String tipo] returns [String trad, Tipo resultado]
-	:	ID {$trad = $ID.text;$resultado = new Tipo($tipo,0,null);} (CORI {$resultado = new Tipo("array",0,$resultado);}(COMA{$resultado = new Tipo("array",0,$resultado);})* CORD)?;
+varid[String tipo] returns [Tipo resultado]
+	:	ID {
+			$resultado = new Tipo($tipo,0,null);
+		       } 
+		       (CORI 
+		       {
+		       	$resultado = new Tipo("array",0,$resultado);
+		       }
+		       (COMA
+		       {
+		       	$resultado = new Tipo("array",0,$resultado);
+		       }
+		       )* CORD)?
+		       {
+		       	try{
+			           tS.add($ID.text,$resultado);
+			}catch(Sem_LexYaExiste ex){
+			           ex.setFilaColumna($ID.line,$ID.pos);
+			           throw ex;
+			}
+		       };
 
 declins returns [String trad]
 	:	{$trad = "";}(instr {$trad += $instr.trad;}| decl{$trad += $decl.trad;
@@ -545,10 +570,21 @@ base returns [String trad, String tipo]
 			} 
 			$tipo = "bool";}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
-	|	ref {$trad = $trad = "ldloc " + $ref.variable + "\n"; $tipo = $ref.tipo;};
+	|	ref {$trad = "ldloc " + $ref.variable + "\n"; $tipo = $ref.tipo;};
 
 ref returns [int variable, String tipo]
-	:	ID {Simbolo referencia = tS.getSimbolo($ID.text); $variable= referencia.posicion_locals; $tipo = referencia.tipo.toString();/* faltan try-catch */} (CORI indices CORD{/*$variable += "========== Aún no implementado =========="*/;})?;
+	:	ID 
+		{
+			try{
+			    Simbolo referencia = tS.getSimbolo($ID.text);
+			    $variable= referencia.posicion_locals; 
+			    $tipo = referencia.tipo.toString();
+			}catch(Sem_LexNoDefinido e){
+			    e.setFilaColumna($ID.line,$ID.pos);
+			    throw e;
+			}
+		} 
+		(CORI indices CORD{System.err.println("========== Aún no implementado ==========");})?;
 
 indices returns [String trad]
 	:	expr (COMA expr)*;

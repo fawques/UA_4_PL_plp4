@@ -43,6 +43,7 @@ public class Tipo {
 		return tipobase;
 	}
 	
+	@Override
 	public String toString(){
 		if (tipobase != null){
 			return tipobase.toStringSoloTipo() + "[]";
@@ -54,7 +55,7 @@ public class Tipo {
 	}
 	
 	private String toStringSoloTipo(){
-		if (tipo.equals("array")){
+		if (tipobase != null){
 			return tipobase.toStringSoloTipo();
 		}else{
 			return tipo;
