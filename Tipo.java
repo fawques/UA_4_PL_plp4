@@ -13,6 +13,12 @@ public class Tipo {
     int dimension;
     Tipo tipobase;
     
+    public Tipo(String _tipo){
+        tipo = _tipo;
+        dimension = 0;
+        tipobase = null;
+    }
+    
     public Tipo(String _tipo, int _dim, Tipo _tipobase){
         tipo = _tipo;
         dimension = _dim;
@@ -38,9 +44,9 @@ public class Tipo {
 	}
 	
 	public String toString(){
-		if (tipo.equals("array")){
-			//return tipobase.toStringSoloTipo() + "[]";   <--- forma buena de mostrarlo
-			return "[] -> " + tipobase.toString();
+		if (tipobase != null){
+			return tipobase.toStringSoloTipo() + "[]";
+			//return "[] -> " + tipobase.toString();
 		}else{
 			return tipo;
 		}
