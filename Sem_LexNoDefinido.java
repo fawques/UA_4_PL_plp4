@@ -5,8 +5,8 @@
  */
 public class Sem_LexNoDefinido extends Exception{
     
-    String coderror = "Error 6 (";
-    String mensaje1 = "' no ha sido declarado  ===== HAY QUE REVISARLO =====";
+    String coderror = "Error 2 (";
+    String mensaje1 = "' no ha sido declarado";
     String lexema;
     int fila,columna;
     
@@ -15,6 +15,11 @@ public class Sem_LexNoDefinido extends Exception{
         fila = _fila;
         columna = _columna;
     }
+    
+    public void setFilaColumna(int _fila, int _columna){
+		fila = _fila;
+		columna = _columna;
+	}
     
     @Override
     public String toString(){

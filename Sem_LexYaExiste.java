@@ -5,8 +5,8 @@
  */
 public class Sem_LexYaExiste extends Exception{
     
-    String coderror = "Error 5 (";
-    String mensaje1 = "' ya existe en este ambito ===== HAY QUE REVISARLO =====";
+    String coderror = "Error 1 (";
+    String mensaje1 = "' ya existe en este ambito";
     String lexema;
     int fila,columna;
     
@@ -15,6 +15,11 @@ public class Sem_LexYaExiste extends Exception{
         fila = _fila;
         columna = _columna;
     }
+    
+    public void setFilaColumna(int _fila, int _columna){
+		fila = _fila;
+		columna = _columna;
+	}
     
     @Override
     public String toString(){
