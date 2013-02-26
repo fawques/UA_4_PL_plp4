@@ -542,7 +542,9 @@ erel returns [String trad, String tipo]
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
 		}
-		(RELOP siguiente = esum{$trad += $siguiente.trad;$tipo = "bool";
+		(RELOP siguiente = esum
+		{
+			$trad += $siguiente.trad;$tipo = "bool";
 			if($RELOP.text.equals("==")){
 			    $trad += "ceq\n";
 			}else if($RELOP.text.equals("!=")){
@@ -562,7 +564,19 @@ erel returns [String trad, String tipo]
 
 
 esum returns [String trad, String tipo]
-	:	primero = term {$trad = $primero.trad; $tipo = $primero.tipo;}(ADDOP siguiente = term{$trad += $siguiente.trad;$tipo = "int32"/*"int/real == comprobar =="*/;
+	:	primero = term {
+			$trad = $primero.trad; 
+			$tipo = $primero.tipo;
+			if($tipo.equals("bool")){
+			    //throw error 3
+			}
+		}
+		(ADDOP siguiente = term
+		{
+			if($siguiente.tipo.equals("bool")){
+			    //throw error 3
+			}
+			$trad += $siguiente.trad;$tipo = "int32"/*"int/real == comprobar =="*/;
 			if($ADDOP.text.equals("+")){
 			    $trad += "add\n";
 			}else{
