@@ -1,4 +1,4 @@
-grammar plp3;
+$tipogrammar plp3;
 
 /* Traduce con ANTLR un fichero de expresiones infijas separadas por punto 
    y coma a notaciÃ³n prefija. Usa una gramÃ¡tica EBNF.
@@ -128,7 +128,7 @@ v [String prefijo] returns [String trad]
 
 tipo	returns [String tipo]
 	:	INTEGER {$tipo = "int";}
-	|	REAL {$tipo = "double";};
+	|	REAL {$tipo = "float64";};
 
 bloque	[String prefijo] returns [String trad]
 	:	BEGIN sinstr[$prefijo] END {$trad = "{\n" + $sinstr.trad + "\n}\n";};
@@ -159,7 +159,7 @@ instr [String prefijo] returns [String trad]
 		$trad = simb.nombre_completo + " =";
 		if ($e.tipo.equals("bool")) {
                 throw new Sem_AsigNoBool($ASIG.line, $ASIG.pos);
-        } else if (simb.tipo.equals("double")) {
+        } else if (simb.tipo.equals("float64")) {
             $trad += "r ";
             if ($e.tipo.equals("int")) {
                 $trad += "itor(" + $e.trad + ");";
@@ -168,7 +168,7 @@ instr [String prefijo] returns [String trad]
             }
         } else if (simb.tipo.equals("int")) {
             $trad += "i " + $e.trad + ";";
-            if ($e.tipo.equals("double")) {
+            if ($e.tipo.equals("float64")) {
                 throw new Sem_DebeSerReal($ID.text, $ID.line, $ID.pos);
             }
         }
@@ -207,7 +207,7 @@ instr [String prefijo] returns [String trad]
 	 PARD
 		{
 			String aux;
-	        if ($e.tipo.equals("double")) {
+	        if ($e.tipo.equals("float64")) {
 	            aux = "\%g";
 	        } else {
 	            aux = "\%d";
@@ -232,12 +232,12 @@ e [String prefijo] returns [String trad, String tipo]
                 relop = "==";
             }
 
-            if (primerexpr.tipo.equals("double")) {
+            if (primerexpr.tipo.equals("float64")) {
                 relop += "r";
                 if ($nuevoexpr.tipo.equals("int")) {
                    nuevotrad  = "itor(" + nuevotrad + ")";
                 }
-            } else if ($nuevoexpr.tipo.equals("double")) {
+            } else if ($nuevoexpr.tipo.equals("float64")) {
                 relop += "r";
                 primertrad = "itor(" + primertrad + ")";
             } else {
@@ -253,8 +253,8 @@ expr [String prefijo] returns [String trad, String tipo]
 	:	primerterm = term[$prefijo]
 		{
 			$trad = $primerterm.trad;
-			String nuevatrad = null;
-			String nuevotipo = "NOTIPO";
+			//String $trad = null;
+			String $tipo = "NOTIPO";
 			String tipoanterior = $primerterm.tipo;
 		}
 	(ADDOP 
@@ -262,39 +262,39 @@ expr [String prefijo] returns [String trad, String tipo]
 			String addop = $ADDOP.text;
 	        if (addop.equals("div")) {
 	            addop = "/i";
-	            nuevatrad = addop;
-	            nuevotipo = "int";
+	            //$trad = addop;
+	            $tipo = "int";
 	        } else if (addop.equals("/")) {
 	            addop = "/r";
-				nuevatrad = addop;	
-	            nuevotipo = "double";
+				//$trad = addop;	
+	            $tipo = "float64";
 	        } else {
-	            nuevatrad = addop;
+	            //$trad = addop;
 	        }
 		}
 	nuevoterm = term[$prefijo]
 		{
-			if (nuevotipo.equals("NOTIPO")) {
+			if ($tipo.equals("NOTIPO")) {
                 if (tipoanterior.equals("int") && nuevoterm.tipo.equals("int")) {
-                    nuevatrad = $trad + " " + nuevatrad + "i" + " " + nuevoterm.trad;
-                    nuevotipo = "int";
-                } else if (tipoanterior.equals("int")) { // nuevoterm.tipo.equals("double")
+                    //$trad = $trad + " " + $trad + "i" + " " + nuevoterm.trad;
+                    $tipo = "int";
+                } else if (tipoanterior.equals("int")) { // nuevoterm.tipo.equals("float64")
                     $trad = " itor(" + $trad + ")";
-                    nuevatrad = $trad + " " + nuevatrad + "r" + " " + nuevoterm.trad;
-                    nuevotipo = "double";
-                } else if (nuevoterm.tipo.equals("int")) { // primerfactor.tipo.equals("double")
-                    nuevatrad = $trad + " " + nuevatrad + "r" + " itor(" + nuevoterm.trad + ")";
-                    nuevotipo = "double";
-                } else { // factor.tipo.equals("double") && primerfactor.tipo.equals("double")
-                    nuevatrad = $trad + " " + nuevatrad + "r" + " " + nuevoterm.trad;
-                    nuevotipo = "double";
+                    //$trad = $trad + " " + $trad + "r" + " " + nuevoterm.trad;
+                    $tipo = "float64";
+                } else if (nuevoterm.tipo.equals("int")) { // primerfactor.tipo.equals("float64")
+                    //$trad = $trad + " " + $trad + "r" + " itor(" + nuevoterm.trad + ")";
+                    $tipo = "float64";
+                } else { // factor.tipo.equals("float64") && primerfactor.tipo.equals("float64")
+                    //$trad = $trad + " " + $trad + "r" + " " + nuevoterm.trad;
+                    $tipo = "float64";
                 }
             } else {
-                if (nuevotipo.equals("int")) {
-                    if (tipoanterior.equals("double") || nuevoterm.tipo.equals("double")) {
+                if ($tipo.equals("int")) {
+                    if (tipoanterior.equals("float64") || nuevoterm.tipo.equals("float64")) {
                         throw new Sem_DivDebeSerEntero($ADDOP.line, $ADDOP.pos);
                     } else {
-                        nuevatrad = $trad + " " + nuevatrad + " " + nuevoterm.trad;
+                        //$trad = $trad + " " + $trad + " " + nuevoterm.trad;
                     }
                 } else {
                     if (tipoanterior.equals("int")) {
@@ -303,13 +303,13 @@ expr [String prefijo] returns [String trad, String tipo]
                     if (nuevoterm.tipo.equals("int")) {
                         nuevoterm.trad = " itor(" + nuevoterm.trad + ")";
                     }
-                    nuevatrad = $trad + " " + nuevatrad + " " + nuevoterm.trad;
+                    //$trad = $trad + " " + $trad + " " + nuevoterm.trad;
                 }
             }
-            $trad = nuevatrad;
-            nuevatrad = "";
-            tipoanterior = nuevotipo;
-            nuevotipo = "NOTIPO";
+            //$trad = $trad;
+            //$trad = "";
+            tipoanterior = $tipo;
+            $tipo = "NOTIPO";
 		}
 	)* {$tipo = tipoanterior;};
 
@@ -317,8 +317,8 @@ term [String prefijo] returns [String trad, String tipo]
 	:	primerfactor = factor[$prefijo]	
 		{
 			$trad = $primerfactor.trad;
-			String nuevatrad = null;
-			String nuevotipo = "NOTIPO";
+			//String $trad = null;
+			String $tipo = "NOTIPO";
 			String tipoanterior = $primerfactor.tipo;
 		}
 	(MULOP
@@ -326,54 +326,54 @@ term [String prefijo] returns [String trad, String tipo]
 			String mulop = $MULOP.text;
 	        if (mulop.equals("div")) {
 	            mulop = "/i";
-	            nuevatrad = mulop;
-	            nuevotipo = "int";
+	            //$trad = mulop;
+	            $tipo = "int";
 	        } else if (mulop.equals("/")) {
 	            mulop = "/r";
-				nuevatrad = mulop;	
-	            nuevotipo = "double";
+				//$trad = mulop;	
+	            $tipo = "float64";
 	        } else {
-	            nuevatrad = mulop;
+	            //$trad = mulop;
 	        }
 		}
 	nuevofactor = factor[$prefijo]
 		{
-			if (nuevotipo.equals("NOTIPO")) {
-                if (tipoanterior.equals("int") && nuevofactor.tipo.equals("int")) {
-                    nuevatrad = $trad + " " + nuevatrad + "i" + " " + nuevofactor.trad;
-                    nuevotipo = "int";
-                } else if (tipoanterior.equals("int")) { // nuevofactor.tipo.equals("double")
+			if ($tipo.equals("NOTIPO")) {
+                if (tipoanterior.equals("int") && $siguiente.tipo.equals("int")) {
+                    //$trad = $trad + " " + $trad + "i" + " " + nuevofactor.trad;
+                    $tipo = "int";
+                } else if (tipoanterior.equals("int")) { // $siguiente.tipo.equals("float64")
                     $trad = " itor(" + $trad + ")";
-                    nuevatrad = $trad + " " + nuevatrad + "r" + " " + nuevofactor.trad;
-                    nuevotipo = "double";
-                } else if (nuevofactor.tipo.equals("int")) { // primerfactor.tipo.equals("double")
-                    nuevatrad = $trad + " " + nuevatrad + "r" + " itor(" + nuevofactor.trad + ")";
-                    nuevotipo = "double";
-                } else { // factor.tipo.equals("double") && primerfactor.tipo.equals("double")
-                    nuevatrad = $trad + " " + nuevatrad + "r" + " " + nuevofactor.trad;
-                    nuevotipo = "double";
+                    //$trad = $trad + " " + $trad + "r" + " " + nuevofactor.trad;
+                    $tipo = "float64";
+                } else if ($siguiente.tipo.equals("int")) { // primerfactor.tipo.equals("float64")
+                    //$trad = $trad + " " + $trad + "r" + " itor(" + nuevofactor.trad + ")";
+                    $tipo = "float64";
+                } else { // factor.tipo.equals("float64") && primerfactor.tipo.equals("float64")
+                    //$trad = $trad + " " + $trad + "r" + " " + nuevofactor.trad;
+                    $tipo = "float64";
                 }
             } else {
-                if (nuevotipo.equals("int")) {
-                    if (tipoanterior.equals("double") || nuevofactor.tipo.equals("double")) {
+                if ($tipo.equals("int")) {
+                    if (tipoanterior.equals("float64") || $siguiente.tipo.equals("float64")) {
                         throw new Sem_DivDebeSerEntero($MULOP.line, $MULOP.pos);
                     } else {
-                        nuevatrad = $trad + " " + nuevatrad + " " + nuevofactor.trad;
+                        //$trad = $trad + " " + $trad + " " + nuevofactor.trad;
                     }
                 } else {
                     if (tipoanterior.equals("int")) {
                         $trad = " itor(" + $trad + ")";
                     }
-                    if (nuevofactor.tipo.equals("int")) {
+                    if ($siguiente.tipo.equals("int")) {
                         nuevofactor.trad = " itor(" + nuevofactor.trad + ")";
                     }
-                    nuevatrad = $trad + " " + nuevatrad + " " + nuevofactor.trad;
+                    //$trad = $trad + " " + $trad + " " + nuevofactor.trad;
                 }
             }
-            $trad = nuevatrad;
-            nuevatrad = "";
-            tipoanterior = nuevotipo;
-            nuevotipo = "NOTIPO";
+            //$trad = $trad;
+            //$trad = "";
+            tipoanterior = $tipo;
+            $tipo = "NOTIPO";
 		}
 	)* {$tipo = tipoanterior;};
 
@@ -396,7 +396,7 @@ factor [String prefijo] returns [String trad, String tipo]
             }
 		}
 	|	NENTERO{$trad = $NENTERO.text; $tipo = "int";}
-	|	NREAL{$trad = $NREAL.text; $tipo = "double";}
+	|	NREAL{$trad = $NREAL.text; $tipo = "float64";}
 	|	PARI expr[$prefijo] PARD {$trad = "(" + $expr.trad + ")"; $tipo = $expr.tipo;};
 */
 
@@ -414,7 +414,7 @@ metodo returns [String trad]
 
 tipoSimple returns [String trad]
 	:	INT {$trad = "int32";}
-	|	DOUBLE {$trad = "float64";}
+	|	float64 {$trad = "float64";}
 	|	BOOL {$trad="bool";};
 	
 decl returns [String trad]
@@ -487,7 +487,7 @@ dims returns [String trad]
 cambio[int variable] returns [String trad]
 	:	ASIG expr PYC{$trad = $expr.trad + "stloc " + $variable + "\n";}
 	|	PUNTO READLINEI PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n"+ "stloc " + $variable +  "\n";}
-	|	PUNTO READLINED PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n"+ "stloc " + $variable +  "\n";}
+	|	PUNTO READLINED PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.float64::Parse(string)\n"+ "stloc " + $variable +  "\n";}
 	|	PUNTO READLINEB PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";};
 
 expr returns [String trad, String tipo]
@@ -585,7 +585,30 @@ esum returns [String trad, String tipo]
 		})*;
 
 term returns [String trad, String tipo]
-	:	primero = factor {$trad = $primero.trad; $tipo = $primero.tipo;}(MULOP siguiente = factor{$trad += $siguiente.trad;$tipo = "int32"/*"int/real == comprobar =="*/;
+	:	primero = factor 
+		{
+			$trad = $primero.trad; 
+			$tipo = $primero.tipo;
+		}
+		(MULOP siguiente = factor
+		{
+			boolean convertirSiguiente = false;
+			if ($tipo.equals("int32") && $siguiente.tipo.equals("int32")) {
+				$tipo = "int32";
+			} else if ($tipo.equals("int32")) { // $siguiente.tipo.equals("float64")
+				$trad += "conf.r8\n";
+				$tipo = "float64";
+			} else if ($siguiente.tipo.equals("int32")) { // $primero.tipo.equals("float64")
+				convertirSiguiente = true;
+				$tipo = "float64";
+			} else { // $siguiente.tipo.equals("float64") && $primero.tipo.equals("float64")
+				$tipo = "float64";
+			}
+			$trad += $siguiente.trad;
+			if(converirSiguiente){
+				$trad+= "conf.r8\n";
+			}
+			
 			if($MULOP.text.equals("*")){
 			    $trad += "mul\n";
 			}else{
@@ -601,21 +624,23 @@ factor returns [String trad, String tipo]
 			}else{
 				throw new  Sem_DebeSerBool($NOT.text,$NOT.line,$NOT.pos);
 			}}
-	|	PARI ADDOP otro = factor PARD{if($ADDOP.text.equals("-")){
+	|	PARI ADDOP otro = factor PARD
+		{
+			if($ADDOP.text.equals("-")){
 				if($otro.tipo.equals("bool")){
 					//throw error 3
 				}else{
 					$trad = $otro.trad + "neg\n";
 				}
-			          }else{
+			}else{
 				if($otro.tipo.equals("bool")){
 					//throw error 3
 				}else{
 					$trad = $otro.trad;
 				}	
-			          }
-			          $tipo = $otro.tipo;
-			};
+			}
+			$tipo = $otro.tipo;
+		};
 
 base returns [String trad, String tipo]
 	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = "int32";}
@@ -627,7 +652,7 @@ base returns [String trad, String tipo]
 			} 
 			$tipo = "bool";}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
-	|	ref {$trad = "ldloc " + $ref.variable + "\n"; $tipo = $ref.tipo;};
+		|	ref {$trad = "ldloc " + $ref.variable + "\n"; $tipo = $ref.tipo;};
 
 ref returns [int variable, String tipo]
 	:	ID 
@@ -654,7 +679,7 @@ SINGLE	:	'Single';
 VOID	:	'void';
 MAIN	:	'Main';
 INT	:	'int';
-DOUBLE	:	'double';
+float64	:	'float64';
 BOOL	:	'bool';
 PUBLIC	:	'public';
 STATIC	:	'static';
@@ -672,7 +697,7 @@ CONTINUE	:	'continue';
 NEW	: 	'new';
 WRITELINE	:	'System.Console.WriteLine';
 READLINEI	: 	'int.Parse(System.Console.ReadLine())';
-READLINED	: 	'double.Parse(System.Console.ReadLine())';
+READLINED	: 	'float64.Parse(System.Console.ReadLine())';
 READLINEB	: 	'bool.Parse(System.Console.ReadLine())';
 
 
