@@ -573,10 +573,25 @@ esum returns [String trad, String tipo]
 		}
 		(ADDOP siguiente = term
 		{
+			boolean convertirSiguiente = false;
+			if ($tipo.equals("int32") && $siguiente.tipo.equals("int32")) {
+				$tipo = "int32";
+			} else if ($tipo.equals("int32")) { // $siguiente.tipo.equals("float64")
+				$trad += "conf.r8\n";
+				$tipo = "float64";
+			} else if ($siguiente.tipo.equals("int32")) { // $primero.tipo.equals("float64")
+				convertirSiguiente = true;
+				$tipo = "float64";
+			} else { // $siguiente.tipo.equals("float64") && $primero.tipo.equals("float64")
+				$tipo = "float64";
+			}
 			if($siguiente.tipo.equals("bool")){
 			    //throw error 3
 			}
-			$trad += $siguiente.trad;$tipo = "int32"/*"int/real == comprobar =="*/;
+			$trad += $siguiente.trad;
+			if(convertirSiguiente){
+				$trad+= "conf.r8\n";
+			}
 			if($ADDOP.text.equals("+")){
 			    $trad += "add\n";
 			}else{
