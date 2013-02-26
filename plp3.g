@@ -605,7 +605,7 @@ factor returns [String trad, String tipo]
 				if($otro.tipo.equals("bool")){
 					//throw error 3
 				}else{
-					$trad = $otro.trad + "not\n" + "ldc.i4 1\n" + "add\n";
+					$trad = $otro.trad + "neg\n";
 				}
 			          }else{
 				if($otro.tipo.equals("bool")){
