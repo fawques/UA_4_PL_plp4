@@ -1,22 +1,7 @@
 class Single{
 public static void Main()
 {
-
-  int a,b;
-  bool k;
-  double d,e;
-
-  b = 5*3-10+3;
-  a = b -2;
-  d = 3.5;
-  e.double.Parse(System.Console.ReadLine());
-
-  k = (!!!True)|(b-a>1);
-  
+  int a[,,];
   System.Console.WriteLine(a);
-  System.Console.WriteLine(b);
-  System.Console.WriteLine(k);
-  System.Console.WriteLine(d);
-  System.Console.WriteLine(e);
 }
 }
