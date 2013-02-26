@@ -491,15 +491,58 @@ cambio[int variable] returns [String trad]
 	|	PUNTO READLINEB PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";};
 
 expr returns [String trad, String tipo]
-	:	primero = eand {$trad = $primero.trad; $tipo = $primero.tipo;}(OR siguiente = eand{$trad += $siguiente.trad;$tipo = "bool";
-			$trad += "or\n";})*;
+	:	primero = eand 
+		{
+			$trad = $primero.trad; 
+			$tipo = $primero.tipo;
+		}
+		(OR 
+		{
+			if(!$tipo.equals("bool"){
+				throw new  Sem_DebeSerBool($OR.text,$OR.line,$OR.pos);
+			}
+		}
+		siguiente = eand
+		{
+			$trad += $siguiente.trad;
+			$tipo = "bool";
+			if(!$siguiente.tipo.equals("bool"){
+				throw new  Sem_DebeSerBool($OR.text,$OR.line,$OR.pos);
+			}
+			$trad += "or\n";
+		}
+		)*;
 
 eand returns [String trad, String tipo]
-	:	primero = erel {$trad = $primero.trad; $tipo = $primero.tipo;}(AND siguiente = erel{$trad += $siguiente.trad;$tipo = "bool";
-			$trad += "and\n";})*;
+	:	primero = erel 
+		{
+			$trad = $primero.trad; 
+			$tipo = $primero.tipo;
+		}
+		(AND 
+		{
+			if(!$tipo.equals("bool"){
+				throw new  Sem_DebeSerBool($AND.text,$AND.line,$AND.pos);
+			}
+		}
+		siguiente = erel
+		{
+			$trad += $siguiente.trad;
+			$tipo = "bool";
+			if(!$siguiente.tipo.equals("bool"){
+				throw new  Sem_DebeSerBool($AND.text,$AND.line,$AND.pos);
+			}
+			$trad += "and\n";
+		}
+		)*;
 
 erel returns [String trad, String tipo]
-	:	primero = esum {$trad = $primero.trad; $tipo = $primero.tipo;}(RELOP siguiente = esum{$trad += $siguiente.trad;$tipo = "bool";
+	:	primero = esum 
+		{
+			$trad = $primero.trad; 
+			$tipo = $primero.tipo;
+		}
+		(RELOP siguiente = esum{$trad += $siguiente.trad;$tipo = "bool";
 			if($RELOP.text.equals("==")){
 			    $trad += "ceq\n";
 			}else if($RELOP.text.equals("!=")){
@@ -542,7 +585,7 @@ factor returns [String trad, String tipo]
 				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
 				$tipo = "bool";
 			}else{
-				//throw exception error 4
+				throw new  Sem_DebeSerBool($NOT.text,$NOT.line,$NOT.pos);
 			}}
 	|	PARI ADDOP otro = factor PARD{if($ADDOP.text.equals("-")){
 				if($otro.tipo.equals("bool")){

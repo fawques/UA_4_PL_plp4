@@ -5,9 +5,9 @@
  */
 public class Sem_DebeSerBool extends Exception{
     
-    String coderror = "Error 10 (";
-    String mensaje1 = "): en la instruccion '";
-    String mensaje2 = "' la expresion debe ser relacional";
+    String coderror = "Error 4 (";
+    String mensaje1 = "): tipo incompatible en operador logico '";
+    String mensaje2 = "'";
     String lexema;
     int fila,columna;
     
