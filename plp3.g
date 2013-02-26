@@ -492,11 +492,11 @@ cambio[int variable] returns [String trad]
 
 expr returns [String trad, String tipo]
 	:	primero = eand {$trad = $primero.trad; $tipo = $primero.tipo;}(OR siguiente = eand{$trad += $siguiente.trad;$tipo = "bool";
-			$trad += "add\n" + "ldc.i4 0\n" + "ceq\n" + "ldc.i4 1\n" + "xor\n";})*;
+			$trad += "or\n";})*;
 
 eand returns [String trad, String tipo]
 	:	primero = erel {$trad = $primero.trad; $tipo = $primero.tipo;}(AND siguiente = erel{$trad += $siguiente.trad;$tipo = "bool";
-			$trad += "mul\n" + "ldc.i4 0\n" + "ceq\n" + "ldc.i4 1\n" + "xor\n";})*;
+			$trad += "and\n";})*;
 
 erel returns [String trad, String tipo]
 	:	primero = esum {$trad = $primero.trad; $tipo = $primero.tipo;}(RELOP siguiente = esum{$trad += $siguiente.trad;$tipo = "bool";
