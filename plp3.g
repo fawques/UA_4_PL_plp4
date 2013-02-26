@@ -1,4 +1,4 @@
-$tipogrammar plp3;
+grammar plp3;
 
 /* Traduce con ANTLR un fichero de expresiones infijas separadas por punto 
    y coma a notaciÃ³n prefija. Usa una gramÃ¡tica EBNF.
@@ -414,7 +414,7 @@ metodo returns [String trad]
 
 tipoSimple returns [String trad]
 	:	INT {$trad = "int32";}
-	|	float64 {$trad = "float64";}
+	|	DOUBLE {$trad = "float64";}
 	|	BOOL {$trad="bool";};
 	
 decl returns [String trad]
@@ -487,7 +487,7 @@ dims returns [String trad]
 cambio[int variable] returns [String trad]
 	:	ASIG expr PYC{$trad = $expr.trad + "stloc " + $variable + "\n";}
 	|	PUNTO READLINEI PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n"+ "stloc " + $variable +  "\n";}
-	|	PUNTO READLINED PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.float64::Parse(string)\n"+ "stloc " + $variable +  "\n";}
+	|	PUNTO READLINED PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n"+ "stloc " + $variable +  "\n";}
 	|	PUNTO READLINEB PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";};
 
 expr returns [String trad, String tipo]
@@ -498,7 +498,7 @@ expr returns [String trad, String tipo]
 		}
 		(OR 
 		{
-			if(!$tipo.equals("bool"){
+			if(!$tipo.equals("bool")){
 				throw new  Sem_DebeSerBool($OR.text,$OR.line,$OR.pos);
 			}
 		}
@@ -506,7 +506,7 @@ expr returns [String trad, String tipo]
 		{
 			$trad += $siguiente.trad;
 			$tipo = "bool";
-			if(!$siguiente.tipo.equals("bool"){
+			if(!$siguiente.tipo.equals("bool")){
 				throw new  Sem_DebeSerBool($OR.text,$OR.line,$OR.pos);
 			}
 			$trad += "or\n";
@@ -521,7 +521,7 @@ eand returns [String trad, String tipo]
 		}
 		(AND 
 		{
-			if(!$tipo.equals("bool"){
+			if(!$tipo.equals("bool")){
 				throw new  Sem_DebeSerBool($AND.text,$AND.line,$AND.pos);
 			}
 		}
@@ -529,7 +529,7 @@ eand returns [String trad, String tipo]
 		{
 			$trad += $siguiente.trad;
 			$tipo = "bool";
-			if(!$siguiente.tipo.equals("bool"){
+			if(!$siguiente.tipo.equals("bool")){
 				throw new  Sem_DebeSerBool($AND.text,$AND.line,$AND.pos);
 			}
 			$trad += "and\n";
@@ -605,7 +605,7 @@ term returns [String trad, String tipo]
 				$tipo = "float64";
 			}
 			$trad += $siguiente.trad;
-			if(converirSiguiente){
+			if(convertirSiguiente){
 				$trad+= "conf.r8\n";
 			}
 			
@@ -679,7 +679,7 @@ SINGLE	:	'Single';
 VOID	:	'void';
 MAIN	:	'Main';
 INT	:	'int';
-float64	:	'float64';
+DOUBLE	:	'double';
 BOOL	:	'bool';
 PUBLIC	:	'public';
 STATIC	:	'static';
@@ -697,7 +697,7 @@ CONTINUE	:	'continue';
 NEW	: 	'new';
 WRITELINE	:	'System.Console.WriteLine';
 READLINEI	: 	'int.Parse(System.Console.ReadLine())';
-READLINED	: 	'float64.Parse(System.Console.ReadLine())';
+READLINED	: 	'double.Parse(System.Console.ReadLine())';
 READLINEB	: 	'bool.Parse(System.Console.ReadLine())';
 
 
