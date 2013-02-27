@@ -433,15 +433,15 @@ decl returns [String trad]
 	
 varid[String tipo] returns [Tipo resultado]
 	:	ID {
-			$resultado = new Tipo($tipo,0,null);
+			$resultado = new Tipo($tipo);
 		       } 
 		       (CORI 
 		       {
-		       	$resultado = new Tipo("array",0,$resultado);
+		       	$resultado = new Tipo($tipo,$resultado);
 		       }
 		       (COMA
 		       {
-		       	$resultado = new Tipo("array",0,$resultado);
+		       	$resultado = new Tipo($tipo,$resultado);
 		       }
 		       )* CORD)?
 		       {
@@ -472,7 +472,40 @@ instr returns [String trad]
 	|	BREAK PYC{$trad = "instr";}
 	|	CONTINUE PYC{$trad = "instr";}
 	|	ref cambio[$ref.variable]{$trad = $cambio.trad;}
-	|	ID ASIG NEW tipoSimple CORI dims CORD PYC{$trad = "instr";}
+	|	ID 
+		{
+			Simbolo simb = tS.getSimbolo($ID.text);
+			String tipo_final_simbolo = simb.getTipoFinal();
+			Tipo tipo_simbolo = simb.getTipo();
+			if(!simb.esArray()){
+				//throw Error 11
+			}
+		}
+		ASIG NEW tipoSimple 
+		{
+			if(!tipo_final_simbolo.equals($tipoSimple.trad)){
+				// throw Error 14
+			}
+			
+			
+		}
+		 CORI dims[tipo_simbolo] CORD
+		 {
+		 	if($dims.tipoFinal.array){
+		 		//throw Error 10 $CORD.line $CORD.pos
+		 	}
+		 }
+		 PYC
+		 {
+		 	String auxTipo;
+		 	$trad = "ldc.i4 " + $dims.dimension + "\n";
+		 	if($tipoSimple.trad.equals("int32") || $tipoSimple.trad.equals("bool")){
+		 		auxTipo = "[mscorlib]System.Int32";
+		 	}else{
+		 		auxTipo = "[mscorlib]System.Double";
+		 	}
+		 	$trad +="newarr " + auxTipo + "\n" + "stloc " + simb.posicion_locals + "\n";
+		 }
 	|	WRITELINE PARI expr PARD PYC{
 			$trad = $expr.trad;
 			String aux = $expr.tipo;
@@ -481,8 +514,25 @@ instr returns [String trad]
 			$trad += "call void [mscorlib]System.Console::WriteLine(" + aux + ")\n";
 		};
 
-dims returns [String trad]
-	:	ENTERO (COMA ENTERO)*;
+dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
+	:	primero=ENTERO
+		{
+			$tipo.setDimension($primero.text);
+			$dimension = $tipo.getDimension();
+			$tipo = $tipo.getTipoBase();
+		}
+		 (COMA siguiente=ENTERO
+		 {
+		 	if($tipo.array){
+				$tipo.setDimension($siguiente.text);
+				$dimension *= $tipo.getDimension();
+				$tipo = $tipo.getTipoBase();
+			}else{
+				//throw Error 10
+			}
+		}
+		 )*
+		 {$tipoFinal = $tipo;};
 
 cambio[int variable] returns [String trad]
 	:	ASIG expr PYC{$trad = $expr.trad + "stloc " + $variable + "\n";}
@@ -525,44 +575,6 @@ eand returns [String trad, String tipo]
 		}
 		)*;
 
-erel returns [String trad, String tipo]
-	:	primero = esum 
-		{
-			$trad = $primero.trad; 
-			$tipo = $primero.tipo;
-		}
-		(RELOP siguiente = esum
-		{
-			boolean convertirSiguiente = false;
-			if (($tipo.equals("int32") ||($tipo.equals("bool"))&& ($siguiente.tipo.equals("int32") || ($siguiente.tipo.equals("bool"))) {
-			} else if (($tipo.equals("int32") ||($tipo.equals("bool")) { // $siguiente.tipo.equals("float64")
-				$trad += "conv.r8\n";
-			} else if (($siguiente.tipo.equals("int32") || ($siguiente.tipo.equals("bool")) { // $primero.tipo.equals("float64")
-				convertirSiguiente = true;
-			}
-
-			$trad += $siguiente.trad;
-			if(convertirSiguiente){
-				$trad+= "conv.r8\n";
-			}
-			
-			if($RELOP.text.equals("==")){
-			    $trad += "ceq\n";
-			}else if($RELOP.text.equals("!=")){
-			    $trad += "ceq\n" + "ldc.i4 1\n" + "xor\n";
-			}else if($RELOP.text.equals("<")){
-			    $trad += "sub\n" + "ldc.i4 0\n" + "clt\n";
-			}else if($RELOP.text.equals(">")){
-			    $trad += "sub\n" + "ldc.i4 0\n" + "cgt\n";
-			}else if($RELOP.text.equals("<=")){
-			    $trad += "sub\n" + "dup\n" + "stloc 0\n" + "ldc.i4 0\n" + "clt\n" + "ldloc 0\n" + "ldc.i4 0\n" + "ceq\n" + "or\n";
-			}else if($RELOP.text.equals(">=")){
-			    $trad += "sub\n" + "dup\n" + "stloc 0\n" + "ldc.i4 0\n" + "cgt\n" + "ldloc 0\n" + "ldc.i4 0\n" + "ceq\n" + "or\n";
-			}
-			
-			
-		})*;
-
 
 esum returns [String trad, String tipo]
 	:	primero = term {
@@ -597,6 +609,46 @@ esum returns [String trad, String tipo]
 			    $trad += "sub\n";
 			}
 		})*;
+erel returns [String trad, String tipo]
+	:	primero = esum 
+		{
+			$trad = $primero.trad; 
+			$tipo = $primero.tipo;
+		}
+		(RELOP siguiente = esum
+		{
+			boolean convertirSiguiente = false;
+			if (($tipo.equals("int32") || $tipo.equals("bool")) && ($siguiente.tipo.equals("int32") || $siguiente.tipo.equals("bool"))) {
+			} else if ($tipo.equals("int32") || $tipo.equals("bool")) { // $siguiente.tipo.equals("float64")
+				$trad += "conv.r8\n";
+			} else if ($siguiente.tipo.equals("int32") || $siguiente.tipo.equals("bool")) { // $primero.tipo.equals("float64")
+				convertirSiguiente = true;
+			}
+
+			$trad += $siguiente.trad;
+			if(convertirSiguiente){
+				$trad+= "conv.r8\n";
+			}
+			$tipo = "bool";
+			
+			if($RELOP.text.equals("==")){
+			    $trad += "ceq\n";
+			}else if($RELOP.text.equals("!=")){
+			    $trad += "ceq\n" + "ldc.i4 1\n" + "xor\n";
+			}else if($RELOP.text.equals("<")){
+			    $trad += "clt\n";
+			}else if($RELOP.text.equals(">")){
+			    $trad += "cgt\n";
+			}else if($RELOP.text.equals("<=")){
+			    $trad += "sub\n" + "dup\n" + "stloc 0\n" + "ldc.i4 0\n" + "clt\n" + "ldloc 0\n" + "ldc.i4 0\n" + "ceq\n" + "or\n";
+			}else if($RELOP.text.equals(">=")){
+			    $trad += "sub\n" + "dup\n" + "stloc 0\n" + "ldc.i4 0\n" + "cgt\n" + "ldloc 0\n" + "ldc.i4 0\n" + "ceq\n" + "or\n";
+			}
+			
+			
+		})*;
+
+
 
 term returns [String trad, String tipo]
 	:	primero = factor 

@@ -1,0 +1,20 @@
+class Single{
+public static void Main()
+{
+	int a[], b[,], c[,,];
+	double x[], y[,], z[,,];
+	bool i[], j[,], k[,,];
+
+	a = new int[2];
+	b = new int[2,3];
+	c = new int[2,3,4];
+
+	x = new double[2];
+	y = new double[2,3];
+	z = new double[2,3,4];
+	i = new bool[2];
+	j = new bool[2,3];
+	k = new bool[2,3,4];
+
+}
+}

@@ -17,6 +17,28 @@ public class Simbolo {
         tipo = _tipo;
     }
     
+    public Tipo getTipo(){
+		return tipo;
+	}
+    
+    public String getTipoFinal(){
+		String aux = tipo.getTipo();
+		if(aux.equals("array")){
+			return tipo.getTipoFinal();
+		} else{
+			return aux;
+		}
+	}
+	
+	public boolean esArray(){
+		String aux = tipo.getTipo();
+		return aux.equals("array");
+	}
+	
+	public int getDimension(){
+		return tipo.getDimensionTotal();
+	}
+    
     @Override
     public String toString(){
 		return nombre + ":" + tipo + "@" + posicion_locals;

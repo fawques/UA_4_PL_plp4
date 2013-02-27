@@ -12,17 +12,20 @@ public class Tipo {
     String tipo;
     int dimension;
     Tipo tipobase;
+    boolean array;
     
     public Tipo(String _tipo){
         tipo = _tipo;
         dimension = 0;
         tipobase = null;
+        array = false;
     }
     
-    public Tipo(String _tipo, int _dim, Tipo _tipobase){
+    public Tipo(String _tipo, Tipo _tipobase){
         tipo = _tipo;
-        dimension = _dim;
+        dimension = -1;
         tipobase = _tipobase;
+        array = true;
     }
     
     public Tipo(Tipo _anterior){
@@ -35,17 +38,40 @@ public class Tipo {
 		return tipo;
 	}
 	
-    public int getDimension(){
-		return dimension;
-	}
-	
     public Tipo getTipoBase(){
 		return tipobase;
 	}
 	
+	public String getTipoFinal(){
+		if(array){
+			return tipobase.getTipoFinal();
+		} else{
+			return tipo;
+		}
+	}
+	
+    public int getDimension(){
+		return dimension;
+	}
+	
+    public int getDimensionTotal(){
+		if(array){
+			return dimension*tipobase.getDimensionTotal();
+		}else{
+			return 1;
+		}
+	}
+	
+    public void setDimension(int _dim){
+		dimension = _dim;
+	}
+    public void setDimension(String _dim){
+		dimension = Integer.parseInt(_dim);
+	}
+	
 	@Override
 	public String toString(){
-		if (tipobase != null){
+		if (array){
 			return tipobase.toStringSoloTipo() + "[]";
 			//return "[] -> " + tipobase.toString();
 		}else{
@@ -55,7 +81,7 @@ public class Tipo {
 	}
 	
 	private String toStringSoloTipo(){
-		if (tipobase != null){
+		if (array){
 			return tipobase.toStringSoloTipo();
 		}else{
 			return tipo;
