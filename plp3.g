@@ -496,19 +496,13 @@ expr returns [String trad, String tipo]
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
 		}
-		(OR 
-		{
-			if(!$tipo.equals("bool")){
-				throw new  Sem_DebeSerBool($OR.text,$OR.line,$OR.pos);
-			}
-		}
-		siguiente = eand
+		(OR siguiente = eand
 		{
 			$trad += $siguiente.trad;
-			$tipo = "bool";
-			if(!$siguiente.tipo.equals("bool")){
+			if(!$siguiente.tipo.equals("bool") || !$tipo.equals("bool")){
 				throw new  Sem_DebeSerBool($OR.text,$OR.line,$OR.pos);
 			}
+			$tipo = "bool";
 			$trad += "or\n";
 		}
 		)*;
@@ -519,19 +513,14 @@ eand returns [String trad, String tipo]
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
 		}
-		(AND 
-		{
-			if(!$tipo.equals("bool")){
-				throw new  Sem_DebeSerBool($AND.text,$AND.line,$AND.pos);
-			}
-		}
-		siguiente = erel
+		(AND siguiente = erel
 		{
 			$trad += $siguiente.trad;
-			$tipo = "bool";
-			if(!$siguiente.tipo.equals("bool")){
+			
+			if(!$siguiente.tipo.equals("bool") || !$tipo.equals("bool")){
 				throw new  Sem_DebeSerBool($AND.text,$AND.line,$AND.pos);
 			}
+			$tipo = "bool";
 			$trad += "and\n";
 		}
 		)*;
@@ -544,7 +533,19 @@ erel returns [String trad, String tipo]
 		}
 		(RELOP siguiente = esum
 		{
-			$trad += $siguiente.trad;$tipo = "bool";
+			boolean convertirSiguiente = false;
+			if (($tipo.equals("int32") ||($tipo.equals("bool"))&& ($siguiente.tipo.equals("int32") || ($siguiente.tipo.equals("bool"))) {
+			} else if (($tipo.equals("int32") ||($tipo.equals("bool")) { // $siguiente.tipo.equals("float64")
+				$trad += "conv.r8\n";
+			} else if (($siguiente.tipo.equals("int32") || ($siguiente.tipo.equals("bool")) { // $primero.tipo.equals("float64")
+				convertirSiguiente = true;
+			}
+
+			$trad += $siguiente.trad;
+			if(convertirSiguiente){
+				$trad+= "conv.r8\n";
+			}
+			
 			if($RELOP.text.equals("==")){
 			    $trad += "ceq\n";
 			}else if($RELOP.text.equals("!=")){
@@ -567,17 +568,17 @@ esum returns [String trad, String tipo]
 	:	primero = term {
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
-			if($tipo.equals("bool")){
-			    //throw error 3
-			}
 		}
 		(ADDOP siguiente = term
 		{
+			if($siguiente.tipo.equals("bool")|| $tipo.equals("bool")){
+				throw new  Sem_DebeSerNum($ADDOP.text,$ADDOP.line,$ADDOP.pos);
+			}
 			boolean convertirSiguiente = false;
 			if ($tipo.equals("int32") && $siguiente.tipo.equals("int32")) {
 				$tipo = "int32";
 			} else if ($tipo.equals("int32")) { // $siguiente.tipo.equals("float64")
-				$trad += "conf.r8\n";
+				$trad += "conv.r8\n";
 				$tipo = "float64";
 			} else if ($siguiente.tipo.equals("int32")) { // $primero.tipo.equals("float64")
 				convertirSiguiente = true;
@@ -585,12 +586,10 @@ esum returns [String trad, String tipo]
 			} else { // $siguiente.tipo.equals("float64") && $primero.tipo.equals("float64")
 				$tipo = "float64";
 			}
-			if($siguiente.tipo.equals("bool")){
-			    //throw error 3
-			}
+
 			$trad += $siguiente.trad;
 			if(convertirSiguiente){
-				$trad+= "conf.r8\n";
+				$trad+= "conv.r8\n";
 			}
 			if($ADDOP.text.equals("+")){
 			    $trad += "add\n";
@@ -607,11 +606,14 @@ term returns [String trad, String tipo]
 		}
 		(MULOP siguiente = factor
 		{
+			if($siguiente.tipo.equals("bool") || $tipo.equals("bool")){
+				throw new  Sem_DebeSerNum($MULOP.text,$MULOP.line,$MULOP.pos);
+			}
 			boolean convertirSiguiente = false;
 			if ($tipo.equals("int32") && $siguiente.tipo.equals("int32")) {
 				$tipo = "int32";
 			} else if ($tipo.equals("int32")) { // $siguiente.tipo.equals("float64")
-				$trad += "conf.r8\n";
+				$trad += "conv.r8\n";
 				$tipo = "float64";
 			} else if ($siguiente.tipo.equals("int32")) { // $primero.tipo.equals("float64")
 				convertirSiguiente = true;
@@ -621,7 +623,7 @@ term returns [String trad, String tipo]
 			}
 			$trad += $siguiente.trad;
 			if(convertirSiguiente){
-				$trad+= "conf.r8\n";
+				$trad+= "conv.r8\n";
 			}
 			
 			if($MULOP.text.equals("*")){
@@ -643,13 +645,13 @@ factor returns [String trad, String tipo]
 		{
 			if($ADDOP.text.equals("-")){
 				if($otro.tipo.equals("bool")){
-					//throw error 3
+					throw new  Sem_DebeSerNum($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 				}else{
 					$trad = $otro.trad + "neg\n";
 				}
 			}else{
 				if($otro.tipo.equals("bool")){
-					//throw error 3
+					throw new  Sem_DebeSerNum($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 				}else{
 					$trad = $otro.trad;
 				}	
