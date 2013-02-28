@@ -44,362 +44,6 @@ grammar plp3;
 }
 
 /* Analizador sintáctico: */
-
-
-/* 
-s returns [String resultado]
-	:	PROGRAM {tS = new tablaSimbolos();} ID PYC vsp["main_"] bloque["main_"]
-	{
-	$resultado = "// program " + $ID.text + "\n" + $vsp.trad + "int main()" + $bloque.trad;
-	} EOF;
-
-vsp [String prefijo] returns [String trad]
-	:	{$trad = "";} ( unvsp[$prefijo] {trad += $unvsp.trad;} )+;
-
-unvsp [String prefijo] returns [String trad]
-	:	FUNCTION ID
-	{
-		String nuevoPrefijo = $prefijo;
-		try {
-				tS.add($ID.text, $prefijo, "funcion");
-            } catch (Sem_LexYaExiste ex) {
-				ex.fila = $ID.line;
-				ex.columna = $ID.pos;
-				throw ex;
-            }
-        String nombre_funcion = $ID.text;
-		tS = new tablaSimbolos(tS);
-		
-		if (!$prefijo.equals("main_")) {
-			nombre_funcion = $prefijo + $ID.text;
-			nuevoPrefijo += $ID.text + "_";
-		} else {
-			nuevoPrefijo = $ID.text + "_";
-		}
-	}
-	DOSP tipo PYC vsp[nuevoPrefijo] bloque[nuevoPrefijo] PYC 
-	{
-		tS = tS.pop();
-		$trad = $vsp.trad + $tipo.tipo + " " + nombre_funcion + "()" + $bloque.trad;
-	}
-	|	VAR {String aux ="";} ( v[$prefijo] {aux +=$v.trad;})+ {$trad = aux;};
-
-v [String prefijo] returns [String trad]
-	:	primerID = ID 
-	{
-	    String aux =$prefijo + $primerID.text;
-	    String id = $prefijo + $primerID.text;
-            // vamos asignando notipo para luego poner el tipo encontrado
-            ArrayList<Simbolo> variables_sin_tipo = new ArrayList<Simbolo>();
-            Simbolo simbolo = new Simbolo($primerID.text, id, "NOTIPO");
-            try {
-                tS.add(simbolo);
-            } catch (Sem_LexYaExiste ex) {
-                ex.fila = $primerID.line;
-                ex.columna = $primerID.pos;
-                throw ex;
-            }
-            variables_sin_tipo.add(simbolo);
-	}
-	( COMA nuevoID = ID
-		{
-		    aux += ", " + $prefijo + $nuevoID.text;
-		    simbolo = new Simbolo($nuevoID.text, $prefijo + $nuevoID.text, "NOTIPO");
-	            id = $prefijo + $nuevoID.text;
-	
-	            try {
-		                tS.add(simbolo);
-		            } catch (Sem_LexYaExiste ex) {
-		                ex.fila = $nuevoID.line;
-		                ex.columna = $nuevoID.pos;
-		                throw ex;
-		            }
-		
-	            variables_sin_tipo.add(simbolo);
-		} )* 
-	DOSP tipo 
-	{
-	//recolocamos el tipo
-            for (Simbolo item : variables_sin_tipo) {
-	        	item.tipo = $tipo.tipo;
-            }
-            variables_sin_tipo.clear();
-	} PYC {$trad = $tipo.tipo + " " + aux + ";\n";};
-
-tipo	returns [String tipo]
-	:	INTEGER {$tipo = "int";}
-	|	REAL {$tipo = "float64";};
-
-bloque	[String prefijo] returns [String trad]
-	:	BEGIN sinstr[$prefijo] END {$trad = "{\n" + $sinstr.trad + "\n}\n";};
-	
-sinstr [String prefijo] returns [String trad]
- 	:	primerinstr = instr[$prefijo] {String aux =$primerinstr.trad;} (PYC nuevoinstr = instr[$prefijo] {aux += "\n" + $nuevoinstr.trad;})* {$trad = aux; };
-
-instr [String prefijo] returns [String trad]
-	:	bloque[$prefijo] {$trad = $bloque.trad;}
-	|	ID 
-	{
-		Simbolo simb;
-		String tipo;
-        try {
-            simb = tS.getSimbolo($ID.text);
-//            tipo = simb.tipo;
-            if (simb.tipo.equals("funcion")) {
-                throw new Sem_NoVar($ID.text, $ID.line, $ID.pos);
-            }
-                    } catch (Sem_LexNoDefinido ex) {
-            ex.fila = $ID.line;
-			ex.columna = $ID.pos;
-            throw ex;
-        }
-	}
-	ASIG e[$prefijo] 
-	{
-		$trad = simb.nombre_completo + " =";
-		if ($e.tipo.equals("bool")) {
-                throw new Sem_AsigNoBool($ASIG.line, $ASIG.pos);
-        } else if (simb.tipo.equals("float64")) {
-            $trad += "r ";
-            if ($e.tipo.equals("int")) {
-                $trad += "itor(" + $e.trad + ");";
-            } else {
-                $trad += $e.trad + ";";
-            }
-        } else if (simb.tipo.equals("int")) {
-            $trad += "i " + $e.trad + ";";
-            if ($e.tipo.equals("float64")) {
-                throw new Sem_DebeSerReal($ID.text, $ID.line, $ID.pos);
-            }
-        }
-	}
-	|	IF e[$prefijo] 
-		{
-			if (!"bool".equals($e.tipo)) {
-	            throw new Sem_DebeSerBool("if", $IF.line, $IF.pos);
-	        }
-	    }
-    THEN primerinstr = instr[$prefijo] 
-    	{
-    		$trad = "if(" + $e.trad + ")\n" + $primerinstr.trad;
-    	}
-    (ELSE nuevoinstr = instr[$prefijo]
-	    {
-	    	$trad += "\n" + $ELSE.text + "\n" + $nuevoinstr.trad;
-	    }
-    )? ENDIF
-	|	WHILE e[$prefijo]
-		{
-			if (!"bool".equals($e.tipo)) {
-	            throw new Sem_DebeSerBool("while", $WHILE.line, $WHILE.pos);
-	        }
-	    }
-    DO primerinstr = instr[$prefijo]
-    	{
-    		$trad = "while(" + $e.trad + ")\n" + $primerinstr.trad;
-    	}
-    |	WRITELN PARI e[$prefijo]
-		{
-			if ("bool".equals($e.tipo)) {
-				throw new Sem_WritelnNoBool($WRITELN.line, $WRITELN.pos);
-	        }
-	    }
-	 PARD
-		{
-			String aux;
-	        if ($e.tipo.equals("float64")) {
-	            aux = "\%g";
-	        } else {
-	            aux = "\%d";
-	        }
-			$trad = "printf(\"" + aux + "\\n\"," + $e.trad + ");";
-		};
-
-e [String prefijo] returns [String trad, String tipo]
-	:	primerexpr = expr[$prefijo]
-		{
-			$tipo = $primerexpr.tipo;
-			$trad = $primerexpr.trad;
-			String primertrad = $trad;
-		}
-	(RELOP nuevoexpr = expr[$prefijo] 
-		{
-			String nuevotrad = $nuevoexpr.trad;
-			String relop = $RELOP.text;
-			if (relop.equals("<>")) {
-                relop = "!=";
-            } else if (relop.equals("=")) {
-                relop = "==";
-            }
-
-            if (primerexpr.tipo.equals("float64")) {
-                relop += "r";
-                if ($nuevoexpr.tipo.equals("int")) {
-                   nuevotrad  = "itor(" + nuevotrad + ")";
-                }
-            } else if ($nuevoexpr.tipo.equals("float64")) {
-                relop += "r";
-                primertrad = "itor(" + primertrad + ")";
-            } else {
-                relop += "i";
-            }
-
-            $trad = primertrad + " " + relop + " " + nuevotrad;
-            $tipo = "bool";
-		}
-	)?;
-
-expr [String prefijo] returns [String trad, String tipo]
-	:	primerterm = term[$prefijo]
-		{
-			$trad = $primerterm.trad;
-			//String $trad = null;
-			String $tipo = "NOTIPO";
-			String tipoanterior = $primerterm.tipo;
-		}
-	(ADDOP 
-		{
-			String addop = $ADDOP.text;
-	        if (addop.equals("div")) {
-	            addop = "/i";
-	            //$trad = addop;
-	            $tipo = "int";
-	        } else if (addop.equals("/")) {
-	            addop = "/r";
-				//$trad = addop;	
-	            $tipo = "float64";
-	        } else {
-	            //$trad = addop;
-	        }
-		}
-	nuevoterm = term[$prefijo]
-		{
-			if ($tipo.equals("NOTIPO")) {
-                if (tipoanterior.equals("int") && nuevoterm.tipo.equals("int")) {
-                    //$trad = $trad + " " + $trad + "i" + " " + nuevoterm.trad;
-                    $tipo = "int";
-                } else if (tipoanterior.equals("int")) { // nuevoterm.tipo.equals("float64")
-                    $trad = " itor(" + $trad + ")";
-                    //$trad = $trad + " " + $trad + "r" + " " + nuevoterm.trad;
-                    $tipo = "float64";
-                } else if (nuevoterm.tipo.equals("int")) { // primerfactor.tipo.equals("float64")
-                    //$trad = $trad + " " + $trad + "r" + " itor(" + nuevoterm.trad + ")";
-                    $tipo = "float64";
-                } else { // factor.tipo.equals("float64") && primerfactor.tipo.equals("float64")
-                    //$trad = $trad + " " + $trad + "r" + " " + nuevoterm.trad;
-                    $tipo = "float64";
-                }
-            } else {
-                if ($tipo.equals("int")) {
-                    if (tipoanterior.equals("float64") || nuevoterm.tipo.equals("float64")) {
-                        throw new Sem_DivDebeSerEntero($ADDOP.line, $ADDOP.pos);
-                    } else {
-                        //$trad = $trad + " " + $trad + " " + nuevoterm.trad;
-                    }
-                } else {
-                    if (tipoanterior.equals("int")) {
-                        $trad = " itor(" + $trad + ")";
-                    }
-                    if (nuevoterm.tipo.equals("int")) {
-                        nuevoterm.trad = " itor(" + nuevoterm.trad + ")";
-                    }
-                    //$trad = $trad + " " + $trad + " " + nuevoterm.trad;
-                }
-            }
-            //$trad = $trad;
-            //$trad = "";
-            tipoanterior = $tipo;
-            $tipo = "NOTIPO";
-		}
-	)* {$tipo = tipoanterior;};
-
-term [String prefijo] returns [String trad, String tipo]
-	:	primerfactor = factor[$prefijo]	
-		{
-			$trad = $primerfactor.trad;
-			//String $trad = null;
-			String $tipo = "NOTIPO";
-			String tipoanterior = $primerfactor.tipo;
-		}
-	(MULOP
-		{
-			String mulop = $MULOP.text;
-	        if (mulop.equals("div")) {
-	            mulop = "/i";
-	            //$trad = mulop;
-	            $tipo = "int";
-	        } else if (mulop.equals("/")) {
-	            mulop = "/r";
-				//$trad = mulop;	
-	            $tipo = "float64";
-	        } else {
-	            //$trad = mulop;
-	        }
-		}
-	nuevofactor = factor[$prefijo]
-		{
-			if ($tipo.equals("NOTIPO")) {
-                if (tipoanterior.equals("int") && $siguiente.tipo.equals("int")) {
-                    //$trad = $trad + " " + $trad + "i" + " " + nuevofactor.trad;
-                    $tipo = "int";
-                } else if (tipoanterior.equals("int")) { // $siguiente.tipo.equals("float64")
-                    $trad = " itor(" + $trad + ")";
-                    //$trad = $trad + " " + $trad + "r" + " " + nuevofactor.trad;
-                    $tipo = "float64";
-                } else if ($siguiente.tipo.equals("int")) { // primerfactor.tipo.equals("float64")
-                    //$trad = $trad + " " + $trad + "r" + " itor(" + nuevofactor.trad + ")";
-                    $tipo = "float64";
-                } else { // factor.tipo.equals("float64") && primerfactor.tipo.equals("float64")
-                    //$trad = $trad + " " + $trad + "r" + " " + nuevofactor.trad;
-                    $tipo = "float64";
-                }
-            } else {
-                if ($tipo.equals("int")) {
-                    if (tipoanterior.equals("float64") || $siguiente.tipo.equals("float64")) {
-                        throw new Sem_DivDebeSerEntero($MULOP.line, $MULOP.pos);
-                    } else {
-                        //$trad = $trad + " " + $trad + " " + nuevofactor.trad;
-                    }
-                } else {
-                    if (tipoanterior.equals("int")) {
-                        $trad = " itor(" + $trad + ")";
-                    }
-                    if ($siguiente.tipo.equals("int")) {
-                        nuevofactor.trad = " itor(" + nuevofactor.trad + ")";
-                    }
-                    //$trad = $trad + " " + $trad + " " + nuevofactor.trad;
-                }
-            }
-            //$trad = $trad;
-            //$trad = "";
-            tipoanterior = $tipo;
-            $tipo = "NOTIPO";
-		}
-	)* {$tipo = tipoanterior;};
-
-factor [String prefijo] returns [String trad, String tipo]
-	:	ID
-		{
-			String nombre;
-            try {
-                Simbolo simb = tS.getSimbolo($ID.text);
-                $tipo = simb.tipo;
-                nombre = simb.nombre_completo;
-                if ($tipo.equals("funcion")) {
-                    throw new Sem_NoVar($ID.text, $ID.line, $ID.pos);
-                }
-                $trad = nombre;
-            } catch (Sem_LexNoDefinido ex) {
-                ex.fila = $ID.line;
-                ex.columna = $ID.pos;
-                throw ex;
-            }
-		}
-	|	NENTERO{$trad = $NENTERO.text; $tipo = "int";}
-	|	NREAL{$trad = $NREAL.text; $tipo = "float64";}
-	|	PARI expr[$prefijo] PARD {$trad = "(" + $expr.trad + ")"; $tipo = $expr.tipo;};
-*/
-
 sAux returns[String resultado]
 	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + "PruebaVariables.fnt" + "' {}\n" + $clase.trad;};
 
@@ -471,7 +115,7 @@ instr returns [String trad]
 	|	FOR PARI INT ID ASIG expr TO expr STEP (ADDOP)? ENTERO PARD instr{$trad = "instr";}
 	|	BREAK PYC{$trad = "instr";}
 	|	CONTINUE PYC{$trad = "instr";}
-	|	ref cambio[$ref.variable]{$trad = $cambio.trad;}
+	|	ref cambio[$ref.variable,$ref.trad]{$trad = $cambio.trad;}
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
@@ -533,9 +177,22 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		 )*
 		 {$tipoFinal = $tipo;};
+cambio[int variable, String array] returns [String trad]
+	:	ASIG expr PYC
+		{
+			if($array.equals("")){
+				$trad = $expr.trad + "stloc " + $variable + "\n";				
+			}else{
+				$trad = $arrray + $expr.trad + "stelem.";
+				if($expr.tipo.equals("int32") || $expr.tipo.equals("bool")){
+					$trad += "i4\n";	
+				}else{
+					$trad += "r8\n";
+				}
+				 $trad += $variable + "\n";
+			}
 
-cambio[int variable] returns [String trad]
-	:	ASIG expr PYC{$trad = $expr.trad + "stloc " + $variable + "\n";}
+		}
 	|	PUNTO READLINEI PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n"+ "stloc " + $variable +  "\n";}
 	|	PUNTO READLINED PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n"+ "stloc " + $variable +  "\n";}
 	|	PUNTO READLINEB PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";};
@@ -721,24 +378,53 @@ base returns [String trad, String tipo]
 			} 
 			$tipo = "bool";}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
-		|	ref {$trad = "ldloc " + $ref.variable + "\n"; $tipo = $ref.tipo;};
+	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad ; $tipo = $ref.tipo;};
 
-ref returns [int variable, String tipo]
+ref returns [int variable, String tipo, String trad]
 	:	ID 
 		{
+			Simbolo referencia;
 			try{
-			    Simbolo referencia = tS.getSimbolo($ID.text);
-			    $variable= referencia.posicion_locals; 
-			    $tipo = referencia.tipo.toString();
+			    referencia = tS.getSimbolo($ID.text);
+			    $variable= "" + referencia.posicion_locals; 
+			    $tipo = referencia.tipo.getTipo();
+			    $trad = "";
 			}catch(Sem_LexNoDefinido e){
 			    e.setFilaColumna($ID.line,$ID.pos);
 			    throw e;
 			}
 		} 
-		(CORI indices CORD{System.err.println("========== Aún no implementado ==========");})?;
+		(CORI indices[referencia] CORD
+		{
+			if(!$tipo.equals("array")){
+				// throw error 11
+			}
+			$tipo = referencia.tipo.getTipoFinal();
+			$trad += "\n" + $indices.trad + "ldelem.";
+			if($tipo.equals("int32") || $tipo.equals("bool")){
+				$trad += "i4\n";	
+			}else{
+				$trad += "r8\n";
+			}
+		}
+		)?;
 
-indices returns [String trad]
-	:	expr (COMA expr)*;
+indices[Simbolo elemento] returns [String trad]
+	:	primero=expr
+		{
+			Tipo tipoElem = $elemento.tipo;
+			if($primero.tipo.equals("float64")){
+				// truncar
+			}else if($primero.tipo.equals("bool")){
+				// throw error 13
+			}
+			
+			// TODO: comprobar si el índice se sale de rango...
+			
+			int dimensionRestante = tipoElem.getDimensionTotal();
+			$trad = $primero.trad + "ldc.i4 " + dimensionRestante + "\n" + "mul\n";			
+		}
+		 (COMA siguiente=expr)*;
 
 /* Analizador léxico: */
 
