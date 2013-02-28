@@ -177,19 +177,19 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		 )*
 		 {$tipoFinal = $tipo;};
-cambio[int variable, String array] returns [String trad]
+cambio[int variable, String array_pasado] returns [String trad]
 	:	ASIG expr PYC
 		{
-			if($array.equals("")){
+			if($array_pasado.equals("")){
 				$trad = $expr.trad + "stloc " + $variable + "\n";				
 			}else{
-				$trad = $arrray + $expr.trad + "stelem.";
+				
+				$trad = "ldloc " + $variable + "\n" + $array_pasado + $expr.trad + "stelem.";
 				if($expr.tipo.equals("int32") || $expr.tipo.equals("bool")){
 					$trad += "i4\n";	
 				}else{
 					$trad += "r8\n";
 				}
-				 $trad += $variable + "\n";
 			}
 
 		}
@@ -378,17 +378,18 @@ base returns [String trad, String tipo]
 			} 
 			$tipo = "bool";}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
-	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad ; $tipo = $ref.tipo;};
+	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;};
 
-ref returns [int variable, String tipo, String trad]
+ref returns [int variable, String tipo, String trad, String getDato]
 	:	ID 
 		{
 			Simbolo referencia;
 			try{
 			    referencia = tS.getSimbolo($ID.text);
-			    $variable= "" + referencia.posicion_locals; 
+			    $variable= referencia.posicion_locals; 
 			    $tipo = referencia.tipo.getTipo();
 			    $trad = "";
+			    $getDato = "";
 			}catch(Sem_LexNoDefinido e){
 			    e.setFilaColumna($ID.line,$ID.pos);
 			    throw e;
@@ -400,11 +401,12 @@ ref returns [int variable, String tipo, String trad]
 				// throw error 11
 			}
 			$tipo = referencia.tipo.getTipoFinal();
-			$trad += "\n" + $indices.trad + "ldelem.";
+			$trad += "\n" + $indices.trad ;
+			$getDato = "ldelem.";
 			if($tipo.equals("int32") || $tipo.equals("bool")){
-				$trad += "i4\n";	
+				$getDato += "i4\n";	
 			}else{
-				$trad += "r8\n";
+				$getDato += "r8\n";
 			}
 		}
 		)?;
@@ -421,7 +423,7 @@ indices[Simbolo elemento] returns [String trad]
 			
 			// TODO: comprobar si el índice se sale de rango...
 			
-			int dimensionRestante = tipoElem.getDimensionTotal();
+			int dimensionRestante = tipoElem.tipobase.getDimensionTotal();
 			$trad = $primero.trad + "ldc.i4 " + dimensionRestante + "\n" + "mul\n";			
 		}
 		 (COMA siguiente=expr)*;
