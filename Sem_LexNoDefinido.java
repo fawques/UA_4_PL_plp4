@@ -23,7 +23,7 @@ public class Sem_LexNoDefinido extends Exception{
     
     @Override
     public String toString(){
-        return coderror + fila + "," + (columna+1) + "): '" + lexema + mensaje1;
+        return coderror + fila + "," + (columna+1) + "): simbolo '" + lexema + mensaje1;
     }
     
     
