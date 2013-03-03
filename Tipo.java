@@ -63,10 +63,14 @@ public class Tipo {
 	}
 	
     public void setDimension(int _dim){
-		dimension = _dim;
+		if(_dim > 0){
+			dimension = _dim;
+		}else{
+			// throw Error 8
+		}
 	}
     public void setDimension(String _dim){
-		dimension = Integer.parseInt(_dim);
+		setDimension(Integer.parseInt(_dim));
 	}
 	
 	@Override
