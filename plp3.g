@@ -414,9 +414,10 @@ ref returns [int variable, String tipo, String trad, String getDato]
 indices[Simbolo elemento] returns [String trad]
 	:	primero=expr
 		{
+			$trad = $primero.trad;
 			Tipo tipoElem = $elemento.tipo;
 			if($primero.tipo.equals("float64")){
-				// truncar
+				$trad += "conv.i4\n";
 			}else if($primero.tipo.equals("bool")){
 				// throw error 13
 			}
@@ -424,9 +425,23 @@ indices[Simbolo elemento] returns [String trad]
 			// TODO: comprobar si el índice se sale de rango...
 			
 			int dimensionRestante = tipoElem.tipobase.getDimensionTotal();
-			$trad = $primero.trad + "ldc.i4 " + dimensionRestante + "\n" + "mul\n";			
+			$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n";			
 		}
-		 (COMA siguiente=expr)*;
+		 (COMA siguiente=expr
+		 {
+		 	$trad += $siguiente.trad;
+		 	tipoElem = tipoElem.tipobase;
+		 	if($siguiente.tipo.equals("float64")){
+				$trad += "conv.i4\n";
+			}else if($siguiente.tipo.equals("bool")){
+				// throw error 13
+			}
+			
+			// TODO: comprobar si el índice se sale de rango...
+			dimensionRestante = tipoElem.tipobase.getDimensionTotal();
+			$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n" + "add\n";
+		 }
+		 )*;
 
 /* Analizador léxico: */
 
