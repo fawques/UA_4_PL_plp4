@@ -161,16 +161,28 @@ instr returns [String trad]
 dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 	:	primero=ENTERO
 		{
-			$tipo.setDimension($primero.text);
-			$dimension = $tipo.getDimension();
-			$tipo = $tipo.getTipoBase();
+			try{
+				$tipo.setDimension($primero.text);
+				$dimension = $tipo.getDimension();
+				$tipo = $tipo.getTipoBase();
+			}catch(Exception e/*Error8*/){
+				// e.fila = $primero.line;
+				// e.col = $primero.pos;
+				// throw e;
+			}
 		}
 		 (COMA siguiente=ENTERO
 		 {
 		 	if($tipo.array){
-				$tipo.setDimension($siguiente.text);
-				$dimension *= $tipo.getDimension();
-				$tipo = $tipo.getTipoBase();
+		 		try{
+					$tipo.setDimension($siguiente.text);
+					$dimension *= $tipo.getDimension();
+					$tipo = $tipo.getTipoBase();
+				}catch(Exception e/*Error8*/){
+					// e.fila = $siguiente.line;
+					// e.col = $siguiente.pos;
+					// throw e;
+				}
 			}else{
 				//throw Error 10
 			}
