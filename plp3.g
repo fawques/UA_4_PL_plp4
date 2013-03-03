@@ -37,6 +37,7 @@ grammar plp3;
 
 @parser::members {
 	tablaSimbolos tS;
+	int numEtiqueta = 0;
 	public void emitErrorMessage(String msg) {
 		System.err.println(msg);
 		System.exit(1);
@@ -108,8 +109,32 @@ bloque returns [String trad]
 	:	{tS = new tablaSimbolos(tS);}LLAVEI declins LLAVED{$trad = $declins.trad;tS = tS.pop();};
 
 instr returns [String trad]
-	:	bloque{$trad = "{\n"+$bloque.trad+";}";}
-	|	IF PARI expr PARD instr (ELSE instr)? {$trad = "instr";}
+	:	bloque{$trad = $bloque.trad;}
+	|	IF PARI expr 
+		{
+			int etiqElse = -1;
+			int etiqFin = -1;
+			if($expr.tipo.equals("bool")){
+			etiqFin = numEtiqueta;
+			numEtiqueta++;
+			etiqElse = numEtiqueta;
+			numEtiqueta++;
+			$trad = $expr.trad + "ldc.i4 0\n" + "beq et" + etiqElse + "\n";
+			}else{
+				// throw Error 5
+			}
+			
+		}
+		PARD insif=instr
+		{
+			$trad += $insif.trad + "br et"+etiqFin + "\n";
+			$trad += "et" + etiqElse + ": ";
+		}
+		(ELSE inselse=instr
+		{
+			$trad += $inselse.trad;
+		}
+		)?{$trad += "et" + etiqFin + ": ";}
 	|	WHILE PARI expr PARD instr{$trad = "instr";}
 	|	FOREACH PARI VAR ID IN ID PARD instr{$trad = "instr";}
 	|	FOR PARI INT ID ASIG expr TO expr STEP (ADDOP)? ENTERO PARD instr{$trad = "instr";}
