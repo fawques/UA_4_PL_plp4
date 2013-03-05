@@ -115,11 +115,11 @@ instr returns [String trad]
 			int etiqElse = -1;
 			int etiqFin = -1;
 			if($expr.tipo.equals("bool")){
-			etiqFin = numEtiqueta;
-			numEtiqueta++;
-			etiqElse = numEtiqueta;
-			numEtiqueta++;
-			$trad = $expr.trad + "ldc.i4 0\n" + "beq et" + etiqElse + "\n";
+				etiqFin = numEtiqueta;
+				numEtiqueta++;
+				etiqElse = numEtiqueta;
+				numEtiqueta++;
+				$trad = $expr.trad + "ldc.i4 0\n" + "beq et" + etiqElse + "\n";
 			}else{
 				// throw Error 5
 			}
