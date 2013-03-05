@@ -135,7 +135,19 @@ instr returns [String trad]
 			$trad += $inselse.trad;
 		}
 		)?{$trad += "et" + etiqFin + ": ";}
-	|	WHILE PARI expr PARD instr{$trad = "instr";}
+	|	WHILE PARI expr PARD contenido=instr
+		{
+			if($expr.tipo.equals("bool")){
+				int etiqInicio = numEtiqueta;
+				numEtiqueta++;
+				int etiqFin = numEtiqueta;
+				numEtiqueta++;
+				$trad = "et" + etiqInicio + ": " + $expr.trad + "ldc.i4 0\n" + "beq et" + etiqFin + "\n";
+				$trad += $contenido.trad + "br et" + etiqInicio + "\n" + "et" + etiqFin + ": ";
+			}else{
+				// throw error
+			}
+		}
 	|	FOREACH PARI VAR ID IN ID PARD instr{$trad = "instr";}
 	|	FOR PARI INT ID ASIG expr TO expr STEP (ADDOP)? ENTERO PARD instr{$trad = "instr";}
 	|	BREAK PYC{$trad = "instr";}
