@@ -149,19 +149,43 @@ instr returns [String trad]
 			}
 		}
 	|	FOREACH PARI VAR ID IN ID PARD instr{$trad = "instr";}
-	|	FOR PARI INT ID ASIG expr
+	|	FOR PARI INT ID ASIG inicializacion=expr
 		{
 			tS = new tablaSimbolos(tS);
 			$trad = ".locals(int32)\n";
 			Tipo tipoIterador = new Tipo("int32");
 			tS.add("i",tipoIterador);
 			Simbolo iterador = tS.getSimbolo("i");
-			$trad += $expr.trad;
+			$trad += $inicializacion.trad;
 			$trad += "stloc " + iterador.posicion_locals + "\n";
 			
 		}
-		TO expr STEP (ADDOP)? ENTERO PARD instr
+		TO limite=expr
 		{
+			$trad += $limite.trad + "stloc 0\n";
+			int etiqIni = numEtiqueta;
+			numEtiqueta++;
+			int etiqFin = numEtiqueta;
+			numEtiqueta++;
+
+		}
+		 STEP (ADDOP)? ENTERO PARD contenido=instr
+		{
+			if
+			$trad+= "et" + etiqIni + ": " + "ldloc " + iterador.posicion_locals + "\n" + "ldloc 0\n" + "bgt et" + etiqFin + "\n";
+			$trad+= $contenido.trad;
+			
+			$trad += "ldloc " + iterador.posicion_locals + "\n" + "ldc.i4 " + $ENTERO.text + "\n";
+			
+			if($ADDOP == null || $ADDOP.text.equals("+")){
+				$trad += "add\n";
+			}else{
+				$trad += "sub\n";
+			}
+			$trad += "stloc " + iterador.posicion_locals + "\n";
+			
+			
+			$trad += "br et" + etiqIni + "\n" + "et" + etiqFin + ": ";
 			tS = tS.pop();
 		}
 	|	BREAK PYC{$trad = "instr";}
