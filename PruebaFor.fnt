@@ -1,0 +1,9 @@
+class Single{
+public static void Main()
+{
+	for(int i= 100 to 10 step -5){
+		System.Console.WriteLine(i);
+	}
+
+}
+}
