@@ -13,7 +13,7 @@ public static void Main()
 		System.Console.WriteLine(i);
 	}
 
-	for(int i= 99 to 1 step -0){
+	for(int i= 99 to 1 step +1){
 		//System.Console.WriteLine(i);
 	}
 
