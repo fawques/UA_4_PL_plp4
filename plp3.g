@@ -149,7 +149,21 @@ instr returns [String trad]
 			}
 		}
 	|	FOREACH PARI VAR ID IN ID PARD instr{$trad = "instr";}
-	|	FOR PARI INT ID ASIG expr TO expr STEP (ADDOP)? ENTERO PARD instr{$trad = "instr";}
+	|	FOR PARI INT ID ASIG expr
+		{
+			tS = new tablaSimbolos(tS);
+			$trad = ".locals(int32)\n";
+			Tipo tipoIterador = new Tipo("int32");
+			tS.add("i",tipoIterador);
+			Simbolo iterador = tS.getSimbolo("i");
+			$trad += $expr.trad;
+			$trad += "stloc " + iterador.posicion_locals + "\n";
+			
+		}
+		TO expr STEP (ADDOP)? ENTERO PARD instr
+		{
+			tS = tS.pop();
+		}
 	|	BREAK PYC{$trad = "instr";}
 	|	CONTINUE PYC{$trad = "instr";}
 	|	ref cambio[$ref.variable,$ref.trad]{$trad = $cambio.trad;}
