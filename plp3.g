@@ -171,8 +171,13 @@ instr returns [String trad]
 		}
 		 STEP (ADDOP)? ENTERO PARD contenido=instr
 		{
-			if
-			$trad+= "et" + etiqIni + ": " + "ldloc " + iterador.posicion_locals + "\n" + "ldloc 0\n" + "bgt et" + etiqFin + "\n";
+			$trad+= "et" + etiqIni + ": " + "ldloc " + iterador.posicion_locals + "\n" + "ldloc 0\n";
+			if($ADDOP == null || $ADDOP.text.equals("+")){
+				$trad += "bgt et" + etiqFin + "\n";
+			}else{
+				$trad += "blt et" + etiqFin + "\n";			
+			}
+			 
 			$trad+= $contenido.trad;
 			
 			$trad += "ldloc " + iterador.posicion_locals + "\n" + "ldc.i4 " + $ENTERO.text + "\n";
