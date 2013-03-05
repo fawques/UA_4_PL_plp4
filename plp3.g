@@ -153,8 +153,8 @@ instr returns [String trad]
 		{
 			tS = new tablaSimbolos(tS);
 			$trad = ".locals(int32)\n";
-			Tipo tipoIterador = new Tipo("int32");
-			tS.add("i",tipoIterador);
+			Tipo tipoIterador = new Tipo("int32",true);
+			tS.add($ID.text,tipoIterador);
 			Simbolo iterador = tS.getSimbolo("i");
 			$trad += $inicializacion.trad;
 			$trad += "stloc " + iterador.posicion_locals + "\n";
@@ -195,7 +195,7 @@ instr returns [String trad]
 		}
 	|	BREAK PYC{$trad = "instr";}
 	|	CONTINUE PYC{$trad = "instr";}
-	|	ref cambio[$ref.variable,$ref.trad]{$trad = $cambio.trad;}
+	|	ref cambio[$ref.variable,$ref.trad,$ref.indice]{$trad = $cambio.trad;}
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
@@ -269,9 +269,14 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		 )*
 		 {$tipoFinal = $tipo;};
-cambio[int variable, String array_pasado] returns [String trad]
+cambio[int variable, String array_pasado, boolean indice] returns [String trad]
 	:	ASIG expr PYC
 		{
+			if($indice){
+				//throw Error 15
+				System.err.println("ERROR 15");
+				System.exit(1);
+			}
 			if($array_pasado.equals("")){
 				$trad = $expr.trad + "stloc " + $variable + "\n";				
 			}else{
@@ -472,7 +477,7 @@ base returns [String trad, String tipo]
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
 	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;};
 
-ref returns [int variable, String tipo, String trad, String getDato]
+ref returns [int variable, String tipo, String trad, String getDato, boolean indice]
 	:	ID 
 		{
 			Simbolo referencia;
@@ -482,6 +487,7 @@ ref returns [int variable, String tipo, String trad, String getDato]
 			    $tipo = referencia.tipo.getTipo();
 			    $trad = "";
 			    $getDato = "";
+			    $indice = referencia.tipo.isIndice();
 			}catch(Sem_LexNoDefinido e){
 			    e.setFilaColumna($ID.line,$ID.pos);
 			    throw e;

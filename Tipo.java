@@ -13,13 +13,25 @@ public class Tipo {
     int dimension;
     Tipo tipobase;
     boolean array;
+    boolean indice;
     
     public Tipo(String _tipo){
         tipo = _tipo;
         dimension = 0;
         tipobase = null;
         array = false;
+        indice = false;
+		
     }
+    
+    public Tipo(String _tipo, boolean _indice){
+        tipo = _tipo;
+        dimension = 0;
+        tipobase = null;
+        array = false;
+        indice = true;
+    }
+    
     
     public Tipo(String _tipo, Tipo _tipobase){
         tipo = _tipo;
@@ -36,6 +48,10 @@ public class Tipo {
     
     public String getTipo(){
 		return tipo;
+	} 
+	
+	public boolean isIndice(){
+		return indice;
 	}
 	
     public Tipo getTipoBase(){
