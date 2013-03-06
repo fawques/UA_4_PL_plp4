@@ -6,3 +6,4 @@ plp3Parser.java
 *~
 output/*
 *.tokens
+*.sublime-*
