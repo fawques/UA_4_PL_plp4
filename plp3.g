@@ -194,9 +194,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 				$trad += "stloc " + posicion + "\n"; // y lo guardamos en el iterador
 
 			}else{
-				// TODO: throw error 11
-				System.err.println("error 11");
-				System.exit(1);
+				throw new Error_11($idArray.text,$idArray.line,$idArray.pos);
 			}
 		}
 		PARD contenido=instr[etiqFin,etiqContinue]
@@ -621,10 +619,6 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 		} 
 		(CORI indices[referencia, $ID] CORD
 		{
-
-			if(!referencia.tipo.array){
-				// throw error 11
-			}
 			$tipo = referencia.tipo.getTipoFinal();
 			$trad += "\n" + $indices.trad ;
 			$getDato = "ldelem.";
@@ -652,10 +646,8 @@ indices[Simbolo elemento, Token id] returns [String trad]
 			if($primero.tipo.equals("float64")){
 				$trad += "conv.i4\n";
 			}else if($primero.tipo.equals("bool")){
-				// throw error 13
+				throw new Error_13($id.getLine(),$id.getCharPositionInLine());
 			}
-			
-			// TODO: comprobar si el índice se sale de rango...
 			
 			int dimensionRestante = tipoElem.tipobase.getDimensionTotal();
 			$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n";		
@@ -671,10 +663,9 @@ indices[Simbolo elemento, Token id] returns [String trad]
 				 	if($siguiente.tipo.equals("float64")){
 					$trad += "conv.i4\n";
 				}else if($siguiente.tipo.equals("bool")){
-					// throw error 13
+					throw new Error_13($COMA.line,$COMA.pos);
 				}
 				
-				// TODO: comprobar si el índice se sale de rango...
 				dimensionRestante = tipoElem.tipobase.getDimensionTotal();
 				$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n" + "add\n";
 				tipoElem = tipoElem.tipobase;
