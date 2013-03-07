@@ -58,10 +58,10 @@ clase returns [String trad]
 metodo returns [String trad]
 	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
 
-tipoSimple returns [String trad]
-	:	INT {$trad = "int32";}
-	|	DOUBLE {$trad = "float64";}
-	|	BOOL {$trad="bool";};
+tipoSimple returns [String trad, int line, int pos]
+	:	INT {$trad = "int32";$line = $INT.line; $pos = $INT.pos;}
+	|	DOUBLE {$trad = "float64";$line = $DOUBLE.line; $pos = $DOUBLE.pos;}
+	|	BOOL {$trad="bool";$line = $BOOL.line; $pos = $BOOL.pos;};
 	
 decl returns [String trad]
 	:	tipoSimple primervarid = varid[$tipoSimple.trad] 
@@ -294,7 +294,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 		ASIG NEW tipoSimple 
 		{
 			if(!tipo_final_simbolo.equals($tipoSimple.trad)){
-				// throw Error 14
+				throw new Error_14($tipoSimple.trad,$tipoSimple.line, $tipoSimple.pos);
 			}
 			
 			
@@ -357,9 +357,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 		{
 			String expresion = $expr.trad;
 			if($indice){
-				//throw Error 15
-				System.err.println("ERROR 15");
-				System.exit(1);
+				throw new Error_15($ASIG.line,$ASIG.pos);
 			}
 
 			if(!$tipo.equals($expr.tipo)){
@@ -395,6 +393,9 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 		}
 	|	PUNTO READLINEI PYC
 		{
+			if($indice){
+				throw new Error_15($READLINEI.line,$READLINEI.pos);
+			}
 			if($tipo.equals("int32"))
 				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n"+ "stloc " + $variable +  "\n";
 			else
@@ -402,6 +403,9 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 		}
 	|	PUNTO READLINED PYC
 		{
+			if($indice){
+				throw new Error_15($READLINED.line,$READLINED.pos);
+			}
 			if($tipo.equals("float64"))
 				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n"+ "stloc " + $variable +  "\n";
 			else
@@ -409,6 +413,9 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 		}
 	|	PUNTO READLINEB PYC
 		{
+			if($indice){
+				throw new Error_15($READLINEB.line,$READLINEB.pos);
+			}
 			if($tipo.equals("bool"))
 				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";
 			else
