@@ -333,10 +333,10 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 				$tipo.setDimension($primero.text);
 				$dimension = $tipo.getDimension();
 				$tipo = $tipo.getTipoBase();
-			}catch(Exception e/*Error8*/){
-				// e.fila = $primero.line;
-				// e.col = $primero.pos;
-				// throw e;
+			}catch(Error_8 e){
+				e.fila = $primero.line;
+				e.col = $primero.pos;
+				throw e;
 			}
 		}
 		 (COMA siguiente=ENTERO
@@ -346,10 +346,10 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 					$tipo.setDimension($siguiente.text);
 					$dimension *= $tipo.getDimension();
 					$tipo = $tipo.getTipoBase();
-				}catch(Exception e/*Error8*/){
-					// e.fila = $siguiente.line;
-					// e.col = $siguiente.pos;
-					// throw e;
+				}catch(Error_8 e){
+					e.fila = $siguiente.line;
+					e.col = $siguiente.pos;
+					throw e;
 				}
 			}else{
 				//throw Error 10

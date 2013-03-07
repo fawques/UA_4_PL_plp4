@@ -82,7 +82,7 @@ public class Tipo {
 		if(_dim > 0){
 			dimension = _dim;
 		}else{
-			// throw Error 8
+			throw new Error_8(0,0);
 		}
 	}
     public void setDimension(String _dim){
