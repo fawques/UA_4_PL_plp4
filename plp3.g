@@ -56,7 +56,7 @@ clase returns [String trad]
 	:	CLASS SINGLE LLAVEI {$trad=".class 'Single' extends [mscorlib]System.Object \n{\n";} metodo {$trad+=$metodo.trad + "\n}";} LLAVED;
 
 metodo returns [String trad]
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
 
 tipoSimple returns [String trad, int line, int pos]
 	:	INT {$trad = "int32";$line = $INT.line; $pos = $INT.pos;}
@@ -102,22 +102,22 @@ varid[String tipo] returns [Tipo resultado]
 		};
 
 declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
-	:	{$trad = "";}(instr[$etiquetaBreakBucle, $etiquetaContinueBucle] {$trad += $instr.trad;}| decl{$trad += $decl.trad;
+	:	{$trad = "";}(instr[$etiquetaBreakBucle, $etiquetaContinueBucle,false] {$trad += $instr.trad;}| decl{$trad += $decl.trad;
 	// ==========================================================	
 		//System.out.println("tS = "+tS.getAll());
 	// ==========================================================		
 		})*;
 
-bloque[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
-	:	{tS = new tablaSimbolos(tS);}LLAVEI declins[$etiquetaBreakBucle, $etiquetaContinueBucle] LLAVED{$trad = $declins.trad;tS = tS.pop();};
+bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad]
+	:	{if(creaAmbito){ tS = new tablaSimbolos(tS);}}LLAVEI declins[$etiquetaBreakBucle, $etiquetaContinueBucle] LLAVED{$trad = $declins.trad;if(creaAmbito){ tS = tS.pop();}};
 
-instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
+instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad]
 @init{
 		int etiqFin = -1;
 		int etiqIni = -1;
 		int etiqContinue = -1;
 	}
-	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle]{$trad = $bloque.trad;}
+	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle, true]{$trad = $bloque.trad;}
 	|	IF PARI expr 
 		{
 			int etiqElse = -1;
@@ -133,12 +133,12 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 			}
 			
 		}
-		PARD insif=instr[$etiquetaBreakBucle,$etiquetaContinueBucle]
+		PARD insif=instr[$etiquetaBreakBucle,$etiquetaContinueBucle,true]
 		{
 			$trad += $insif.trad + "br et"+etiqFin + "\n";
 			$trad += "et" + etiqElse + ": ";
 		}
-		(ELSE inselse=instr[$etiquetaBreakBucle,$etiquetaContinueBucle]
+		(ELSE inselse=instr[$etiquetaBreakBucle,$etiquetaContinueBucle,true]
 		{
 			$trad += $inselse.trad;
 		}
@@ -154,7 +154,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 				throw new Error_5($WHILE.text,$WHILE.line,$WHILE.pos);
 			}
 		}
-		PARD contenido=instr[etiqFin,etiqIni]
+		PARD contenido=instr[etiqFin,etiqIni,true]
 		{
 				$trad = "et" + etiqIni + ": " + $expr.trad + "ldc.i4 0\n" + "beq et" + etiqFin + "\n";
 				$trad += $contenido.trad + "br et" + etiqIni + "\n" + "et" + etiqFin + ": ";
@@ -197,11 +197,12 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 				throw new Error_11($idArray.text,$idArray.line,$idArray.pos);
 			}
 		}
-		PARD contenido=instr[etiqFin,etiqContinue]
+		PARD contenido=instr[etiqFin,etiqContinue,false]
 		{
 			$trad += $contenido.trad;
 			$trad += "et" + etiqContinue + ": ldloc 0\n" + "ldc.i4 1\n" + "add\n" + "stloc 0\n" + "br et" + etiqIni + "\n";
 			$trad += "et" + etiqFin + ": ";
+			tS = tS.pop();
 		}
 	|	FOR PARI INT ID ASIG inicializacion=expr
 		{
@@ -233,7 +234,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 			numEtiqueta++;
 
 		}
-		STEP (ADDOP)? ENTERO PARD contenido=instr[etiqFin,etiqContinue]
+		STEP (ADDOP)? ENTERO PARD contenido=instr[etiqFin,etiqContinue,false]
 		{
 			$trad+= "et" + etiqIni + ": " + "ldloc " + posicion + "\n" + "ldloc " + (posicion+1) + "\n";
 			if($ADDOP == null || $ADDOP.text.equals("+")){
@@ -288,7 +289,15 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 		ASIG NEW tipoSimple 
 		{
 			if(!tipo_final_simbolo.equals($tipoSimple.trad)){
-				throw new Error_14($tipoSimple.trad,$tipoSimple.line, $tipoSimple.pos);
+				String lexema;
+				if($tipoSimple.trad.equals("int32")){
+					lexema = "int";
+				}else if($tipoSimple.trad.equals("float64")){
+					lexema = "double";
+				}else{
+					lexema = "bool";
+				}
+				throw new Error_14(lexema,$tipoSimple.line, $tipoSimple.pos);
 			}
 			
 			
@@ -517,9 +526,9 @@ erel returns [String trad, String tipo]
 			}else if($RELOP.text.equals(">")){
 			    $trad += "cgt\n";
 			}else if($RELOP.text.equals("<=")){
-			    $trad += "sub\n" + "dup\n" + "stloc 0\n" + "ldc.i4 0\n" + "clt\n" + "ldloc 0\n" + "ldc.i4 0\n" + "ceq\n" + "or\n";
+			    $trad += "cgt\n" + "ldc.i4 1\n" + "xor\n";
 			}else if($RELOP.text.equals(">=")){
-			    $trad += "sub\n" + "dup\n" + "stloc 0\n" + "ldc.i4 0\n" + "cgt\n" + "ldloc 0\n" + "ldc.i4 0\n" + "ceq\n" + "or\n";
+			    $trad += "clt\n" + "ldc.i4 1\n" + "xor\n";	
 			}
 			
 			
@@ -590,7 +599,12 @@ factor returns [String trad, String tipo]
 
 base returns [String trad, String tipo]
 	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = "int32";}
-	|	REAL{$trad ="ldc.r8 " +  $REAL.text + "\n"; $tipo = "float64";}
+	|	REAL
+		{
+			/*StringBuilder numeroReal = new StringBuilder($REAL.text);
+			numeroReal.setCharAt(numeroReal.indexOf("."), ',');*/
+			$trad ="ldc.r8 " + $REAL.text + "\n"; $tipo = "float64";
+		}
 	|	BOOLEANO{if($BOOLEANO.text.equals("True")){
 				$trad = "ldc.i4 1\n";
 			}else{
@@ -658,7 +672,7 @@ indices[Simbolo elemento, Token id] returns [String trad]
 		{
 			
 			if(!tipoElem.array){
-				throw new Error_12($id.getLine(),$id.getCharPositionInLine());
+				throw new Error_12($COMA.getLine(),$COMA.getCharPositionInLine());
 			}else{
 			 	$trad += $siguiente.trad;
 				 	if($siguiente.tipo.equals("float64")){
