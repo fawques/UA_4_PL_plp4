@@ -46,17 +46,18 @@ grammar plp3;
 }
 
 /* Analizador sintáctico: */
-sAux returns[String resultado]
-	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + "PruebaVariables.fnt" + "' {}\n" + $clase.trad;};
-
 s[String archivo] returns [String resultado]
 	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + $archivo + "' {}\n" + $clase.trad;};
 
 clase returns [String trad]
 	:	CLASS SINGLE LLAVEI {$trad=".class 'Single' extends [mscorlib]System.Object \n{\n";} metodo {$trad+=$metodo.trad + "\n}";} LLAVED;
 
+// ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
+
 metodo returns [String trad]
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack "+$bloque.maxstack+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
+
+// ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
 tipoSimple returns [String trad, int line, int pos]
 	:	INT {$trad = "int32";$line = $INT.line; $pos = $INT.pos;}
@@ -101,23 +102,40 @@ varid[String tipo] returns [Tipo resultado]
 			}
 		};
 
-declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
-	:	{$trad = "";}(instr[$etiquetaBreakBucle, $etiquetaContinueBucle,false] {$trad += $instr.trad;}| decl{$trad += $decl.trad;
-	// ==========================================================	
-		//System.out.println("tS = "+tS.getAll());
-	// ==========================================================		
+declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad, int maxstack]
+	:	{
+			$trad = "";
+		}
+		(instr[$etiquetaBreakBucle, $etiquetaContinueBucle,true] 
+		{
+			$trad += $instr.trad;
+		}
+		| decl
+		{
+			$trad += $decl.trad;	
 		})*;
 
-bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad]
-	:	{if(creaAmbito){ tS = new tablaSimbolos(tS);}}LLAVEI declins[$etiquetaBreakBucle, $etiquetaContinueBucle] LLAVED{$trad = $declins.trad;if(creaAmbito){ tS = tS.pop();}};
+bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack]
+	:	{
+			if($creaAmbito){
+				tS = new tablaSimbolos(tS);
+			}
+		}
+		LLAVEI declins[$etiquetaBreakBucle, $etiquetaContinueBucle] LLAVED
+		{
+			$trad = $declins.trad;
+			if($creaAmbito){
+				tS = tS.pop();
+			}
+		};
 
-instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad]
+instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack]
 @init{
 		int etiqFin = -1;
 		int etiqIni = -1;
 		int etiqContinue = -1;
 	}
-	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle, true]{$trad = $bloque.trad;}
+	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle, $creaAmbito]{$trad = $bloque.trad;}
 	|	IF PARI expr 
 		{
 			int etiqElse = -1;
@@ -355,7 +373,7 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		)*
 		{$tipoFinal = $tipo;};
-cambio[int variable, String array_pasado, boolean indice, String tipo] returns [String trad]
+cambio[int variable, String array_pasado, boolean indice, String tipo] returns [String trad, int maxstack]
 	:	ASIG expr PYC
 		{
 			String expresion = $expr.trad;
@@ -426,7 +444,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			
 		};
 
-expr returns [String trad, String tipo]
+expr returns [String trad, String tipo, int maxstack]
 	:	primero = eand 
 		{
 			$trad = $primero.trad; 
@@ -443,7 +461,7 @@ expr returns [String trad, String tipo]
 		}
 		)*;
 
-eand returns [String trad, String tipo]
+eand returns [String trad, String tipo, int maxstack]
 	:	primero = erel 
 		{
 			$trad = $primero.trad; 
@@ -462,7 +480,7 @@ eand returns [String trad, String tipo]
 		)*;
 
 
-esum returns [String trad, String tipo]
+esum returns [String trad, String tipo, int maxstack]
 	:	primero = term {
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
@@ -495,7 +513,7 @@ esum returns [String trad, String tipo]
 			    $trad += "sub\n";
 			}
 		})*;
-erel returns [String trad, String tipo]
+erel returns [String trad, String tipo, int maxstack]
 	:	primero = esum 
 		{
 			$trad = $primero.trad; 
@@ -536,7 +554,7 @@ erel returns [String trad, String tipo]
 
 
 
-term returns [String trad, String tipo]
+term returns [String trad, String tipo, int maxstack]
 	:	primero = factor 
 		{
 			$trad = $primero.trad; 
@@ -571,7 +589,7 @@ term returns [String trad, String tipo]
 			}
 		})*;
 
-factor returns [String trad, String tipo]
+factor returns [String trad, String tipo, int maxstack]
 	:	base{$trad = $base.trad; $tipo = $base.tipo;}
 	|	NOT otro = factor{if($otro.tipo.equals("bool")){
 				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
@@ -597,7 +615,7 @@ factor returns [String trad, String tipo]
 			$tipo = $otro.tipo;
 		};
 
-base returns [String trad, String tipo]
+base returns [String trad, String tipo, int maxstack]
 	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = "int32";}
 	|	REAL
 		{
@@ -614,7 +632,7 @@ base returns [String trad, String tipo]
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
 	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;};
 
-ref returns [int variable, String tipo, String trad, String getDato, boolean indice]
+ref returns [int variable, String tipo, String trad, String getDato, boolean indice, int maxstack]
 	:	ID 
 		{
 			Simbolo referencia;
@@ -650,7 +668,7 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 			}
 		};
 
-indices[Simbolo elemento, Token id] returns [String trad]
+indices[Simbolo elemento, Token id] returns [String trad, int maxstack]
 	:	primero=expr
 		{
 			$trad = $primero.trad;
