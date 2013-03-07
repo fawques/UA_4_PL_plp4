@@ -31,8 +31,7 @@ public class Simbolo {
 	}
 	
 	public boolean esArray(){
-		String aux = tipo.getTipo();
-		return aux.equals("array");
+		return tipo.array;
 	}
 	
 	public int getDimension(){
