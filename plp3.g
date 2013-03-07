@@ -1,7 +1,7 @@
 grammar plp3;
 
 /* Traduce con ANTLR un fichero de expresiones infijas separadas por punto 
-   y coma a notaciÃ³n prefija. Usa una gramÃ¡tica EBNF.
+   y coma a notación prefija. Usa una gramática EBNF.
 */ 
 
 @header {
@@ -38,6 +38,7 @@ grammar plp3;
 @parser::members {
 	tablaSimbolos tS;
 	int numEtiqueta = 0;
+	int numVariable = 1;
 	public void emitErrorMessage(String msg) {
 		System.err.println(msg);
 		System.exit(1);
@@ -91,7 +92,9 @@ varid[String tipo] returns [Tipo resultado]
 		       )* CORD)?
 		       {
 		       	try{
-			           tS.add($ID.text,$resultado);
+
+			           tS.add($ID.text,$resultado,numVariable);
+			           numVariable++;
 			}catch(Sem_LexYaExiste ex){
 			           ex.setFilaColumna($ID.line,$ID.pos);
 			           throw ex;
@@ -145,24 +148,77 @@ instr returns [String trad]
 				$trad = "et" + etiqInicio + ": " + $expr.trad + "ldc.i4 0\n" + "beq et" + etiqFin + "\n";
 				$trad += $contenido.trad + "br et" + etiqInicio + "\n" + "et" + etiqFin + ": ";
 			}else{
-				// throw error
+				// throw error 5
 			}
 		}
-	|	FOREACH PARI VAR ID IN ID PARD instr{$trad = "instr";}
+	|	FOREACH PARI VAR iterador=ID IN idArray=ID
+		{
+			Simbolo array = tS.getSimbolo($idArray.text);
+			int etiqInicio = -1;
+			int etiqFin = -1;
+			if(array.esArray()){
+				tS = new tablaSimbolos(tS);
+				String tFinal = array.getTipoFinal();
+				$trad = ".locals(" + tFinal + ")\n";
+				Tipo tipoIterador = new Tipo(tFinal,true);
+				int posicion = numVariable;
+				tS.add($iterador.text,tipoIterador,numVariable);
+				numVariable++;
+
+				etiqInicio = numEtiqueta;
+				numEtiqueta++;
+
+				etiqFin = numEtiqueta;
+				numEtiqueta++;
+
+				$trad += "ldc.i4 0\n" + "stloc 0\n";
+				$trad += "et" + etiqInicio + ": ";
+				$trad += "ldloc 0\n" + "ldc.i4 " + (array.getDimension()-1) + "\n" + "bgt et" + etiqFin + "\n";
+				$trad += "ldloc " + array.posicion_locals + "\n";
+				$trad += "ldloc 0\n" + "ldelem.";
+				if(tipoIterador.tipo.equals("int32") || tipoIterador.tipo.equals("bool")){
+					$trad += "i4\n";	
+				}else{
+					$trad += "r8\n";
+				}
+				$trad += "stloc " + posicion + "\n"; // y lo guardamos en el iterador
+
+			}else{
+				// TODO: throw error 11
+				System.err.println("error 11");
+				System.exit(1);
+			}
+		}
+		PARD contenido=instr
+		{
+			$trad += $contenido.trad;
+			$trad += "ldloc 0\n" + "ldc.i4 1\n" + "add\n" + "stloc 0\n" + "br et" + etiqInicio + "\n";
+			$trad += "et" + etiqFin + ": ";
+		}
 	|	FOR PARI INT ID ASIG inicializacion=expr
 		{
 			tS = new tablaSimbolos(tS);
 			$trad = ".locals(int32)\n";
 			Tipo tipoIterador = new Tipo("int32",true);
-			tS.add($ID.text,tipoIterador);
-			Simbolo iterador = tS.getSimbolo("i");
+			int posicion =numVariable;
+			tS.add($ID.text,tipoIterador,numVariable);
+				numVariable++;
 			$trad += $inicializacion.trad;
-			$trad += "stloc " + iterador.posicion_locals + "\n";
+			$trad += "stloc " + posicion + "\n";
 			
 		}
 		TO limite=expr
 		{
-			$trad += $limite.trad + "stloc 0\n";
+			$trad += ".locals(int32)\n" + $limite.trad;
+			numVariable++;
+			if($limite.tipo.equals("float64")){
+				$trad+= "conv.i4";
+			}else if($limite.tipo.equals("bool")){
+				// TODO: throw error 17 $TO.line
+				System.err.println("error 17");
+				System.exit(1);
+			}
+			$trad += "stloc " + (posicion+1) + "\n";
 			int etiqIni = numEtiqueta;
 			numEtiqueta++;
 			int etiqFin = numEtiqueta;
@@ -171,7 +227,7 @@ instr returns [String trad]
 		}
 		 STEP (ADDOP)? ENTERO PARD contenido=instr
 		{
-			$trad+= "et" + etiqIni + ": " + "ldloc " + iterador.posicion_locals + "\n" + "ldloc 0\n";
+			$trad+= "et" + etiqIni + ": " + "ldloc " + posicion + "\n" + "ldloc " + (posicion+1) + "\n";
 			if($ADDOP == null || $ADDOP.text.equals("+")){
 				$trad += "bgt et" + etiqFin + "\n";
 			}else{
@@ -180,14 +236,14 @@ instr returns [String trad]
 			 
 			$trad+= $contenido.trad;
 			
-			$trad += "ldloc " + iterador.posicion_locals + "\n" + "ldc.i4 " + $ENTERO.text + "\n";
+			$trad += "ldloc " + posicion + "\n" + "ldc.i4 " + $ENTERO.text + "\n";
 			
 			if($ADDOP == null || $ADDOP.text.equals("+")){
 				$trad += "add\n";
 			}else{
 				$trad += "sub\n";
 			}
-			$trad += "stloc " + iterador.posicion_locals + "\n";
+			$trad += "stloc " + posicion + "\n";
 			
 			
 			$trad += "br et" + etiqIni + "\n" + "et" + etiqFin + ": ";
