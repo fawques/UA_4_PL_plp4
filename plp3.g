@@ -222,9 +222,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 			if($limite.tipo.equals("float64")){
 				$trad+= "conv.i4";
 			}else if($limite.tipo.equals("bool")){
-				// TODO: throw error 17 $TO.line
-				System.err.println("error 17");
-				System.exit(1);
+				throw new Error_17($TO.line,$TO.pos);
 			}
 			$trad += "stloc " + (posicion+1) + "\n";
 			etiqIni = numEtiqueta;
@@ -266,9 +264,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 			if($etiquetaBreakBucle != -1){
 				$trad = "br et" + $etiquetaBreakBucle + "\n";
 			}else{
-				// throw Error 16
-				System.err.println("Error 16");
-				System.exit(1);
+				throw new Error_16($BREAK.text,$BREAK.line,$BREAK.pos);
 			}
 			
 		}
@@ -276,9 +272,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 			if($etiquetaContinueBucle != -1){
 				$trad = "br et"+$etiquetaContinueBucle + "\n";
 			}else{
-				// throw Error 16
-				System.err.println("Error 16");
-				System.exit(1);
+				throw new Error_16($CONTINUE.text,$CONTINUE.line,$CONTINUE.pos);
 			}
 		}
 	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo]{$trad = $cambio.trad;}
