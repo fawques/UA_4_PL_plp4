@@ -56,7 +56,7 @@ clase returns [String trad]
 	:	CLASS SINGLE LLAVEI {$trad=".class 'Single' extends [mscorlib]System.Object \n{\n";} metodo {$trad+=$metodo.trad + "\n}";} LLAVED;
 
 metodo returns [String trad]
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
 
 tipoSimple returns [String trad]
 	:	INT {$trad = "int32";}
@@ -101,22 +101,22 @@ varid[String tipo] returns [Tipo resultado]
 			}
 		       };
 
-declins returns [String trad]
-	:	{$trad = "";}(instr[-1,-1] {$trad += $instr.trad;}| decl{$trad += $decl.trad;
+declins[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
+	:	{$trad = "";}(instr[$etiquetaFinBucle, $etiquetaIniBucle] {$trad += $instr.trad;}| decl{$trad += $decl.trad;
 	// ==========================================================	
 		//System.out.println("tS = "+tS.getAll());
 	// ==========================================================		
 		})*;
 
-bloque returns [String trad]
-	:	{tS = new tablaSimbolos(tS);}LLAVEI declins LLAVED{$trad = $declins.trad;tS = tS.pop();};
+bloque[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
+	:	{tS = new tablaSimbolos(tS);}LLAVEI declins[$etiquetaFinBucle, $etiquetaIniBucle] LLAVED{$trad = $declins.trad;tS = tS.pop();};
 
 instr[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
 @init{
 		int etiqFin = -1;
 		int etiqIni = -1;
 	}
-	:	bloque{$trad = $bloque.trad;}
+	:	bloque[$etiquetaFinBucle, $etiquetaIniBucle]{$trad = $bloque.trad;}
 	|	IF PARI expr 
 		{
 			int etiqElse = -1;
