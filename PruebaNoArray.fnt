@@ -1,0 +1,7 @@
+class Single{
+public static void Main()
+{
+  int a;
+  System.Console.WriteLine(a[0,0,0]);
+}
+}

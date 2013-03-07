@@ -78,28 +78,28 @@ decl returns [String trad]
 		};
 	
 varid[String tipo] returns [Tipo resultado]
-	:	ID {
+	:	ID 
+		{
 			$resultado = new Tipo($tipo);
-		       } 
-		       (CORI 
-		       {
-		       	$resultado = new Tipo($tipo,$resultado);
-		       }
-		       (COMA
-		       {
-		       	$resultado = new Tipo($tipo,$resultado);
-		       }
-		       )* CORD)?
-		       {
-		       	try{
-
-			           tS.add($ID.text,$resultado,numVariable);
-			           numVariable++;
+		} 
+		(CORI 
+		{
+			$resultado = new Tipo($tipo,$resultado);
+		}
+		(COMA
+		{
+			$resultado = new Tipo($tipo,$resultado);
+		}
+		)* CORD)?
+		{
+			try{
+				tS.add($ID.text,$resultado,numVariable);
+				numVariable++;
 			}catch(Error_1 ex){
-			           ex.setFilaColumna($ID.line,$ID.pos);
-			           throw ex;
+				ex.setFilaColumna($ID.line,$ID.pos);
+				throw ex;
 			}
-		       };
+		};
 
 declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 	:	{$trad = "";}(instr[$etiquetaBreakBucle, $etiquetaContinueBucle] {$trad += $instr.trad;}| decl{$trad += $decl.trad;
@@ -290,7 +290,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 			String tipo_final_simbolo = simb.getTipoFinal();
 			Tipo tipo_simbolo = simb.getTipo();
 			if(!simb.esArray()){
-				//throw Error 11
+				throw new Error_11($ID.text,$ID.line,$ID.pos);
 			}
 		}
 		ASIG NEW tipoSimple 
@@ -304,7 +304,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 		 CORI dims[tipo_simbolo] CORD
 		 {
 		 	if($dims.tipoFinal.array){
-		 		//throw Error 10 $CORD.line $CORD.pos
+		 		throw new Error_10( $CORD.line,$CORD.pos);
 		 	}
 		 }
 		 PYC
@@ -320,10 +320,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 		 }
 	|	WRITELINE PARI expr PARD PYC{
 			$trad = $expr.trad;
-			String aux = $expr.tipo;
-			/*if(aux.equals("bool"))
-				aux = "int32";*/
-			$trad += "call void [mscorlib]System.Console::WriteLine(" + aux + ")\n";
+			$trad += "call void [mscorlib]System.Console::WriteLine(" + $expr.tipo + ")\n";
 		};
 
 dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
@@ -335,7 +332,7 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 				$tipo = $tipo.getTipoBase();
 			}catch(Error_8 e){
 				e.fila = $primero.line;
-				e.col = $primero.pos;
+				e.columna = $primero.pos;
 				throw e;
 			}
 		}
@@ -348,15 +345,15 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 					$tipo = $tipo.getTipoBase();
 				}catch(Error_8 e){
 					e.fila = $siguiente.line;
-					e.col = $siguiente.pos;
+					e.columna = $siguiente.pos;
 					throw e;
 				}
 			}else{
-				//throw Error 10
+				throw new Error_10($COMA.line,$COMA.pos);
 			}
 		}
-		 )*
-		 {$tipoFinal = $tipo;};
+		)*
+		{$tipoFinal = $tipo;};
 cambio[int variable, String array_pasado, boolean indice, String tipo] returns [String trad]
 	:	ASIG expr PYC
 		{
@@ -619,10 +616,13 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 			    e.setFilaColumna($ID.line,$ID.pos);
 			    throw e;
 			}
+
+
 		} 
-		(CORI indices[referencia] CORD
+		(CORI indices[referencia, $ID] CORD
 		{
-			if(!$tipo.equals("array")){
+
+			if(!referencia.tipo.array){
 				// throw error 11
 			}
 			$tipo = referencia.tipo.getTipoFinal();
@@ -634,13 +634,21 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 				$getDato += "r8\n";
 			}
 		}
-		)?;
+		)?
+		{
+			if(referencia.esArray() && $getDato.equals("")){
+				throw new Error_9($ID.text,$CORD.line,$CORD.pos);
+			}
+		};
 
-indices[Simbolo elemento] returns [String trad]
+indices[Simbolo elemento, Token id] returns [String trad]
 	:	primero=expr
 		{
 			$trad = $primero.trad;
 			Tipo tipoElem = $elemento.tipo;
+			if(!tipoElem.array){
+				throw new Error_11($id.getText(),$id.getLine(),$id.getCharPositionInLine());
+			}
 			if($primero.tipo.equals("float64")){
 				$trad += "conv.i4\n";
 			}else if($primero.tipo.equals("bool")){
@@ -650,23 +658,34 @@ indices[Simbolo elemento] returns [String trad]
 			// TODO: comprobar si el índice se sale de rango...
 			
 			int dimensionRestante = tipoElem.tipobase.getDimensionTotal();
-			$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n";			
+			$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n";		
+			tipoElem = tipoElem.tipobase;	
 		}
-		 (COMA siguiente=expr
-		 {
-		 	$trad += $siguiente.trad;
-		 	tipoElem = tipoElem.tipobase;
-		 	if($siguiente.tipo.equals("float64")){
-				$trad += "conv.i4\n";
-			}else if($siguiente.tipo.equals("bool")){
-				// throw error 13
-			}
+		(COMA siguiente=expr
+		{
 			
-			// TODO: comprobar si el índice se sale de rango...
-			dimensionRestante = tipoElem.tipobase.getDimensionTotal();
-			$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n" + "add\n";
-		 }
-		 )*;
+			if(!tipoElem.array){
+				throw new Error_12($id.getLine(),$id.getCharPositionInLine());
+			}else{
+			 	$trad += $siguiente.trad;
+				 	if($siguiente.tipo.equals("float64")){
+					$trad += "conv.i4\n";
+				}else if($siguiente.tipo.equals("bool")){
+					// throw error 13
+				}
+				
+				// TODO: comprobar si el índice se sale de rango...
+				dimensionRestante = tipoElem.tipobase.getDimensionTotal();
+				$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n" + "add\n";
+				tipoElem = tipoElem.tipobase;
+			}
+		}
+		)*
+		{
+			if(tipoElem.array){
+				throw new Error_9($id.getText(),$id.getLine(),$id.getCharPositionInLine());
+			}
+		};
 
 /* Analizador léxico: */
 

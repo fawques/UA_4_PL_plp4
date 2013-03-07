@@ -78,14 +78,14 @@ public class Tipo {
 		}
 	}
 	
-    public void setDimension(int _dim){
+    public void setDimension(int _dim) throws Error_8{
 		if(_dim > 0){
 			dimension = _dim;
 		}else{
 			throw new Error_8(0,0);
 		}
 	}
-    public void setDimension(String _dim){
+    public void setDimension(String _dim) throws Error_8{
 		setDimension(Integer.parseInt(_dim));
 	}
 	
