@@ -3,14 +3,14 @@
  *
  * @author victor
  */
-public class Sem_LexNoDefinido extends Exception{
+public class Error_2 extends Exception{
     
     String coderror = "Error 2 (";
     String mensaje1 = "' no ha sido declarado";
     String lexema;
     int fila,columna;
     
-    public Sem_LexNoDefinido(String lex, int _fila, int _columna){
+    public Error_2(String lex, int _fila, int _columna){
         lexema = lex;
         fila = _fila;
         columna = _columna;

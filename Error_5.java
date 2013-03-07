@@ -3,15 +3,15 @@
  *
  * @author victor
  */
-public class Sem_DebeSerNum extends Exception{
+public class Error_5 extends Exception{
     
-    String coderror = "Error 3 (";
-    String mensaje1 = "): tipo incompatible en operador aritmetico '";
+    String coderror = "Error 5 (";
+    String mensaje1 = "): la expresion debe ser de tipo booleano en la instruccion '";
     String mensaje2 = "'";
     String lexema;
     int fila,columna;
     
-    public Sem_DebeSerNum(String lex, int _fila, int _columna){
+    public Error_5(String lex, int _fila, int _columna){
         lexema = lex;
         fila = _fila;
         columna = _columna;

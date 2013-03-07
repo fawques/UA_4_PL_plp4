@@ -95,7 +95,7 @@ varid[String tipo] returns [Tipo resultado]
 
 			           tS.add($ID.text,$resultado,numVariable);
 			           numVariable++;
-			}catch(Sem_LexYaExiste ex){
+			}catch(Error_1 ex){
 			           ex.setFilaColumna($ID.line,$ID.pos);
 			           throw ex;
 			}
@@ -129,7 +129,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 				numEtiqueta++;
 				$trad = $expr.trad + "ldc.i4 0\n" + "beq et" + etiqElse + "\n";
 			}else{
-				// throw Error 5
+				throw new Error_5($IF.text,$IF.line,$IF.pos);
 			}
 			
 		}
@@ -151,7 +151,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 				etiqFin = numEtiqueta;
 				numEtiqueta++;
 			}else{
-				// throw error 5
+				throw new Error_5($WHILE.text,$WHILE.line,$WHILE.pos);
 			}
 		}
 		PARD contenido=instr[etiqFin,etiqIni]
@@ -392,7 +392,7 @@ expr returns [String trad, String tipo]
 		{
 			$trad += $siguiente.trad;
 			if(!$siguiente.tipo.equals("bool") || !$tipo.equals("bool")){
-				throw new  Sem_DebeSerBool($OR.text,$OR.line,$OR.pos);
+				throw new  Error_4($OR.text,$OR.line,$OR.pos);
 			}
 			$tipo = "bool";
 			$trad += "or\n";
@@ -410,7 +410,7 @@ eand returns [String trad, String tipo]
 			$trad += $siguiente.trad;
 			
 			if(!$siguiente.tipo.equals("bool") || !$tipo.equals("bool")){
-				throw new  Sem_DebeSerBool($AND.text,$AND.line,$AND.pos);
+				throw new  Error_4($AND.text,$AND.line,$AND.pos);
 			}
 			$tipo = "bool";
 			$trad += "and\n";
@@ -426,7 +426,7 @@ esum returns [String trad, String tipo]
 		(ADDOP siguiente = term
 		{
 			if($siguiente.tipo.equals("bool")|| $tipo.equals("bool")){
-				throw new  Sem_DebeSerNum($ADDOP.text,$ADDOP.line,$ADDOP.pos);
+				throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 			}
 			boolean convertirSiguiente = false;
 			if ($tipo.equals("int32") && $siguiente.tipo.equals("int32")) {
@@ -501,7 +501,7 @@ term returns [String trad, String tipo]
 		(MULOP siguiente = factor
 		{
 			if($siguiente.tipo.equals("bool") || $tipo.equals("bool")){
-				throw new  Sem_DebeSerNum($MULOP.text,$MULOP.line,$MULOP.pos);
+				throw new  Error_3($MULOP.text,$MULOP.line,$MULOP.pos);
 			}
 			boolean convertirSiguiente = false;
 			if ($tipo.equals("int32") && $siguiente.tipo.equals("int32")) {
@@ -533,19 +533,19 @@ factor returns [String trad, String tipo]
 				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
 				$tipo = "bool";
 			}else{
-				throw new  Sem_DebeSerBool($NOT.text,$NOT.line,$NOT.pos);
+				throw new  Error_4($NOT.text,$NOT.line,$NOT.pos);
 			}}
 	|	PARI ADDOP otro = factor PARD
 		{
 			if($ADDOP.text.equals("-")){
 				if($otro.tipo.equals("bool")){
-					throw new  Sem_DebeSerNum($ADDOP.text,$ADDOP.line,$ADDOP.pos);
+					throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 				}else{
 					$trad = $otro.trad + "neg\n";
 				}
 			}else{
 				if($otro.tipo.equals("bool")){
-					throw new  Sem_DebeSerNum($ADDOP.text,$ADDOP.line,$ADDOP.pos);
+					throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 				}else{
 					$trad = $otro.trad;
 				}	
@@ -576,7 +576,7 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 			    $trad = "";
 			    $getDato = "";
 			    $indice = referencia.tipo.isIndice();
-			}catch(Sem_LexNoDefinido e){
+			}catch(Error_2 e){
 			    e.setFilaColumna($ID.line,$ID.pos);
 			    throw e;
 			}

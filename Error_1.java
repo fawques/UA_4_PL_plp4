@@ -3,14 +3,14 @@
  *
  * @author victor
  */
-public class Sem_LexYaExiste extends Exception{
+public class Error_1 extends Exception{
     
     String coderror = "Error 1 (";
     String mensaje1 = "' ya existe en este ambito";
     String lexema;
     int fila,columna;
     
-    public Sem_LexYaExiste(String lex, int _fila, int _columna){
+    public Error_1(String lex, int _fila, int _columna){
         lexema = lex;
         fila = _fila;
         columna = _columna;

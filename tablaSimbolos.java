@@ -22,25 +22,25 @@ public class tablaSimbolos {
         anterior = _anterior;
     }
     
-    public void add(String nombre, Tipo tipo, int posicion_max) throws Sem_LexYaExiste{
+    public void add(String nombre, Tipo tipo, int posicion_max) throws Error_1{
         Simbolo item = new Simbolo(nombre,posicion_max, tipo);
         if (!contiene(item)) {
             lista.add(item);
         }else{
-            throw new Sem_LexYaExiste(item.nombre, 0, 0);
+            throw new Error_1(item.nombre, 0, 0);
         }
     }
     
-    public int add(Simbolo item) throws Sem_LexYaExiste{
+    public int add(Simbolo item) throws Error_1{
         if (!contiene(item)) {
             lista.add(item);
             return item.posicion_locals;
         }else{
-            throw new Sem_LexYaExiste(item.nombre, 0, 0);
+            throw new Error_1(item.nombre, 0, 0);
         }
     }
     
-    public Tipo getTipo(String nombre) throws Sem_LexNoDefinido {
+    public Tipo getTipo(String nombre) throws Error_2 {
         for (Simbolo simbolo : lista) {
             if (simbolo.nombre.equals(nombre)) {
                 return simbolo.tipo;
@@ -51,10 +51,10 @@ public class tablaSimbolos {
             return anterior.getTipo(nombre);
         }
         // no se ha encontrado el símbolo
-        throw new Sem_LexNoDefinido(nombre, 0, 0);
+        throw new Error_2(nombre, 0, 0);
     }
     
-    public Simbolo getSimbolo(String nombre) throws Sem_LexNoDefinido {
+    public Simbolo getSimbolo(String nombre) throws Error_2 {
         for (Simbolo simbolo : lista) {
             if (simbolo.nombre.equals(nombre)) {
                 return simbolo;
@@ -65,7 +65,7 @@ public class tablaSimbolos {
             return anterior.getSimbolo(nombre);
         }
         // no se ha encontrado el símbolo
-        throw new Sem_LexNoDefinido(nombre, 0, 0);
+        throw new Error_2(nombre, 0, 0);
     }
     
     public ArrayList<Simbolo> getAll(){

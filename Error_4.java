@@ -3,7 +3,7 @@
  *
  * @author victor
  */
-public class Sem_DebeSerBool extends Exception{
+public class Error_4 extends Exception{
     
     String coderror = "Error 4 (";
     String mensaje1 = "): tipo incompatible en operador logico '";
@@ -11,7 +11,7 @@ public class Sem_DebeSerBool extends Exception{
     String lexema;
     int fila,columna;
     
-    public Sem_DebeSerBool(String lex, int _fila, int _columna){
+    public Error_4(String lex, int _fila, int _columna){
         lexema = lex;
         fila = _fila;
         columna = _columna;
