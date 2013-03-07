@@ -101,22 +101,23 @@ varid[String tipo] returns [Tipo resultado]
 			}
 		       };
 
-declins[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
-	:	{$trad = "";}(instr[$etiquetaFinBucle, $etiquetaIniBucle] {$trad += $instr.trad;}| decl{$trad += $decl.trad;
+declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
+	:	{$trad = "";}(instr[$etiquetaBreakBucle, $etiquetaContinueBucle] {$trad += $instr.trad;}| decl{$trad += $decl.trad;
 	// ==========================================================	
 		//System.out.println("tS = "+tS.getAll());
 	// ==========================================================		
 		})*;
 
-bloque[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
-	:	{tS = new tablaSimbolos(tS);}LLAVEI declins[$etiquetaFinBucle, $etiquetaIniBucle] LLAVED{$trad = $declins.trad;tS = tS.pop();};
+bloque[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
+	:	{tS = new tablaSimbolos(tS);}LLAVEI declins[$etiquetaBreakBucle, $etiquetaContinueBucle] LLAVED{$trad = $declins.trad;tS = tS.pop();};
 
-instr[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
+instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 @init{
 		int etiqFin = -1;
 		int etiqIni = -1;
+		int etiqContinue = -1;
 	}
-	:	bloque[$etiquetaFinBucle, $etiquetaIniBucle]{$trad = $bloque.trad;}
+	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle]{$trad = $bloque.trad;}
 	|	IF PARI expr 
 		{
 			int etiqElse = -1;
@@ -132,12 +133,12 @@ instr[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
 			}
 			
 		}
-		PARD insif=instr[$etiquetaFinBucle,$etiquetaIniBucle]
+		PARD insif=instr[$etiquetaBreakBucle,$etiquetaContinueBucle]
 		{
 			$trad += $insif.trad + "br et"+etiqFin + "\n";
 			$trad += "et" + etiqElse + ": ";
 		}
-		(ELSE inselse=instr[$etiquetaFinBucle,$etiquetaIniBucle]
+		(ELSE inselse=instr[$etiquetaBreakBucle,$etiquetaContinueBucle]
 		{
 			$trad += $inselse.trad;
 		}
@@ -177,6 +178,9 @@ instr[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
 				etiqFin = numEtiqueta;
 				numEtiqueta++;
 
+				etiqContinue = numEtiqueta;
+				numEtiqueta++;
+
 				$trad += "ldc.i4 0\n" + "stloc 0\n";
 				$trad += "et" + etiqIni + ": ";
 				$trad += "ldloc 0\n" + "ldc.i4 " + (array.getDimension()-1) + "\n" + "bgt et" + etiqFin + "\n";
@@ -195,10 +199,10 @@ instr[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
 				System.exit(1);
 			}
 		}
-		PARD contenido=instr[etiqFin,etiqIni]
+		PARD contenido=instr[etiqFin,etiqContinue]
 		{
 			$trad += $contenido.trad;
-			$trad += "ldloc 0\n" + "ldc.i4 1\n" + "add\n" + "stloc 0\n" + "br et" + etiqIni + "\n";
+			$trad += "et" + etiqContinue + ": ldloc 0\n" + "ldc.i4 1\n" + "add\n" + "stloc 0\n" + "br et" + etiqIni + "\n";
 			$trad += "et" + etiqFin + ": ";
 		}
 	|	FOR PARI INT ID ASIG inicializacion=expr
@@ -227,22 +231,26 @@ instr[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
 			$trad += "stloc " + (posicion+1) + "\n";
 			etiqIni = numEtiqueta;
 			numEtiqueta++;
-			$etiquetaFinBucle = numEtiqueta;
+			etiqFin = numEtiqueta;
+			numEtiqueta++;
+			etiqContinue = numEtiqueta;
 			numEtiqueta++;
 
 		}
-		STEP (ADDOP)? ENTERO PARD contenido=instr[$etiquetaFinBucle,etiqIni]
+		STEP (ADDOP)? ENTERO PARD contenido=instr[etiqFin,etiqContinue]
 		{
 			$trad+= "et" + etiqIni + ": " + "ldloc " + posicion + "\n" + "ldloc " + (posicion+1) + "\n";
 			if($ADDOP == null || $ADDOP.text.equals("+")){
-				$trad += "bgt et" + $etiquetaFinBucle + "\n";
+				$trad += "bgt et" + etiqFin + "\n";
 			}else{
-				$trad += "blt et" + $etiquetaFinBucle + "\n";			
+				$trad += "blt et" + etiqFin + "\n";			
 			}
 			 
 			$trad+= $contenido.trad;
+
 			
-			$trad += "ldloc " + posicion + "\n" + "ldc.i4 " + $ENTERO.text + "\n";
+			
+			$trad += "et" + etiqContinue + ": ldloc " + posicion + "\n" + "ldc.i4 " + $ENTERO.text + "\n";
 			
 			if($ADDOP == null || $ADDOP.text.equals("+")){
 				$trad += "add\n";
@@ -252,13 +260,13 @@ instr[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
 			$trad += "stloc " + posicion + "\n";
 			
 			
-			$trad += "br et" + etiqIni + "\n" + "et" + $etiquetaFinBucle + ": ";
+			$trad += "br et" + etiqIni + "\n" + "et" + etiqFin + ": ";
 			tS = tS.pop();
 		}
 	|	BREAK PYC
 		{
-			if($etiquetaFinBucle != -1){
-				$trad = "br et" + $etiquetaFinBucle + "\n";
+			if($etiquetaBreakBucle != -1){
+				$trad = "br et" + $etiquetaBreakBucle + "\n";
 			}else{
 				// throw Error 16
 				System.err.println("Error 16");
@@ -267,8 +275,8 @@ instr[int etiquetaFinBucle, int etiquetaIniBucle] returns [String trad]
 			
 		}
 	|	CONTINUE PYC{
-			if($etiquetaIniBucle != -1){
-				$trad = "br et"+$etiquetaIniBucle + "\n";
+			if($etiquetaContinueBucle != -1){
+				$trad = "br et"+$etiquetaContinueBucle + "\n";
 			}else{
 				// throw Error 16
 				System.err.println("Error 16");
