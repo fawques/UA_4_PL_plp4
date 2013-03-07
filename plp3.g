@@ -283,7 +283,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad]
 				System.exit(1);
 			}
 		}
-	|	ref cambio[$ref.variable,$ref.trad,$ref.indice]{$trad = $cambio.trad;}
+	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo]{$trad = $cambio.trad;}
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
@@ -357,19 +357,39 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		 )*
 		 {$tipoFinal = $tipo;};
-cambio[int variable, String array_pasado, boolean indice] returns [String trad]
+cambio[int variable, String array_pasado, boolean indice, String tipo] returns [String trad]
 	:	ASIG expr PYC
 		{
+			String expresion = $expr.trad;
 			if($indice){
 				//throw Error 15
 				System.err.println("ERROR 15");
 				System.exit(1);
 			}
+
+			if(!$tipo.equals($expr.tipo)){
+				if($tipo.equals("int32")){
+					if($expr.tipo.equals("float64")){
+						expresion += "conv.i4\n";
+					}else{
+						throw new Error_6($ASIG.line,$ASIG.pos);
+					}
+				}else if($tipo.equals("bool")){
+					throw new Error_6($ASIG.line,$ASIG.pos);
+				}else{ // tipo = float64
+					if($expr.tipo.equals("int32")){
+						expresion += "conv.r8\n";
+					}else{
+						throw new Error_6($ASIG.line,$ASIG.pos);
+					}
+				}
+			}
+
 			if($array_pasado.equals("")){
-				$trad = $expr.trad + "stloc " + $variable + "\n";				
+				$trad = expresion + "stloc " + $variable + "\n";				
 			}else{
 				
-				$trad = "ldloc " + $variable + "\n" + $array_pasado + $expr.trad + "stelem.";
+				$trad = "ldloc " + $variable + "\n" + $array_pasado + expresion + "stelem.";
 				if($expr.tipo.equals("int32") || $expr.tipo.equals("bool")){
 					$trad += "i4\n";	
 				}else{
@@ -378,9 +398,28 @@ cambio[int variable, String array_pasado, boolean indice] returns [String trad]
 			}
 
 		}
-	|	PUNTO READLINEI PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n"+ "stloc " + $variable +  "\n";}
-	|	PUNTO READLINED PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n"+ "stloc " + $variable +  "\n";}
-	|	PUNTO READLINEB PYC{$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";};
+	|	PUNTO READLINEI PYC
+		{
+			if($tipo.equals("int32"))
+				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n"+ "stloc " + $variable +  "\n";
+			else
+				throw new Error_7($READLINEI.line,$READLINEI.pos);
+		}
+	|	PUNTO READLINED PYC
+		{
+			if($tipo.equals("float64"))
+				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n"+ "stloc " + $variable +  "\n";
+			else
+				throw new Error_7($READLINED.line,$READLINED.pos);
+		}
+	|	PUNTO READLINEB PYC
+		{
+			if($tipo.equals("bool"))
+				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";
+			else
+				throw new Error_7($READLINEB.line,$READLINEB.pos);
+			
+		};
 
 expr returns [String trad, String tipo]
 	:	primero = eand 
