@@ -1,0 +1,23 @@
+class Single{
+public static void Main()
+{
+int a;
+double b;
+bool c;
+a.int.Parse(System.Console.ReadLine());
+System.Console.WriteLine(a);
+b.double.Parse(System.Console.ReadLine());
+System.Console.WriteLine(b);
+c.bool.Parse(System.Console.ReadLine());
+System.Console.WriteLine(c);
+
+//a.double.Parse(System.Console.ReadLine());
+//a.bool.Parse(System.Console.ReadLine());
+
+//b.int.Parse(System.Console.ReadLine());
+//b.bool.Parse(System.Console.ReadLine());
+
+c.double.Parse(System.Console.ReadLine());
+//c.int.Parse(System.Console.ReadLine());
+}
+}
