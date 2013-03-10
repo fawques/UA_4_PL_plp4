@@ -46,6 +46,9 @@ grammar plp3;
 }
 
 /* Analizador sintáctico: */
+aAux returns [String resultado]
+	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly 'aaa' {}\n" + $clase.trad;};
+
 s[String archivo] returns [String resultado]
 	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + $archivo + "' {}\n" + $clase.trad;};
 
@@ -55,7 +58,7 @@ clase returns [String trad]
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
 metodo returns [String trad]
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack "+$bloque.maxstack+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
@@ -181,13 +184,17 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 	|	FOREACH PARI VAR iterador=ID IN idArray=ID
 		{
 			Simbolo array = tS.getSimbolo($idArray.text);
+			int iteradorInt = -1;
 			if(array.esArray()){
 				tS = new tablaSimbolos(tS);
 				String tFinal = array.getTipoFinal();
-				$trad = ".locals(" + tFinal + ")\n";
+				$trad = ".locals(" + tFinal + ", int32)\n";
 				Tipo tipoIterador = new Tipo(tFinal,true);
 				int posicion = numVariable;
+
 				tS.add($iterador.text,tipoIterador,numVariable);
+				numVariable++;
+				iteradorInt = numVariable;
 				numVariable++;
 
 				etiqIni = numEtiqueta;
@@ -199,11 +206,11 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 				etiqContinue = numEtiqueta;
 				numEtiqueta++;
 
-				$trad += "ldc.i4 0\n" + "stloc 0\n";
+				$trad += "ldc.i4 0\n" + "stloc " + iteradorInt + "\n";
 				$trad += "et" + etiqIni + ": ";
-				$trad += "ldloc 0\n" + "ldc.i4 " + (array.getDimension()-1) + "\n" + "bgt et" + etiqFin + "\n";
+				$trad += "ldloc " + iteradorInt + "\n" + "ldc.i4 " + (array.getDimension()-1) + "\n" + "bgt et" + etiqFin + "\n";
 				$trad += "ldloc " + array.posicion_locals + "\n";
-				$trad += "ldloc 0\n" + "ldelem.";
+				$trad += "ldloc " + iteradorInt + "\n" + "ldelem.";
 				if(tipoIterador.tipo.equals("int32") || tipoIterador.tipo.equals("bool")){
 					$trad += "i4\n";	
 				}else{
@@ -218,7 +225,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		PARD contenido=instr[etiqFin,etiqContinue,false]
 		{
 			$trad += $contenido.trad;
-			$trad += "et" + etiqContinue + ": ldloc 0\n" + "ldc.i4 1\n" + "add\n" + "stloc 0\n" + "br et" + etiqIni + "\n";
+			$trad += "et" + etiqContinue + ": ldloc " + iteradorInt + "\n" + "ldc.i4 1\n" + "add\n" + "stloc " + iteradorInt + "\n" + "br et" + etiqIni + "\n";
 			$trad += "et" + etiqFin + ": ";
 			tS = tS.pop();
 		}
@@ -381,18 +388,21 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 				throw new Error_15($ASIG.line,$ASIG.pos);
 			}
 
-			if(!$tipo.equals($expr.tipo)){
+			String tipoExpr = $expr.tipo;
+			if(!$tipo.equals(tipoExpr)){
 				if($tipo.equals("int32")){
-					if($expr.tipo.equals("float64")){
+					if(tipoExpr.equals("float64")){
 						expresion += "conv.i4\n";
+						tipoExpr = "int32";
 					}else{
 						throw new Error_6($ASIG.line,$ASIG.pos);
 					}
 				}else if($tipo.equals("bool")){
 					throw new Error_6($ASIG.line,$ASIG.pos);
 				}else{ // tipo = float64
-					if($expr.tipo.equals("int32")){
+					if(tipoExpr.equals("int32")){
 						expresion += "conv.r8\n";
+						tipoExpr = "float64";
 					}else{
 						throw new Error_6($ASIG.line,$ASIG.pos);
 					}
@@ -403,8 +413,8 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 				$trad = expresion + "stloc " + $variable + "\n";				
 			}else{
 				
-				$trad = "ldloc " + $variable + "\n" + $array_pasado + expresion + "stelem.";
-				if($expr.tipo.equals("int32") || $expr.tipo.equals("bool")){
+				$trad = "ldloc " + $variable + "\n" + $array_pasado + expresion + "stelem.";		
+				if(tipoExpr.equals("int32") || tipoExpr.equals("bool")){
 					$trad += "i4\n";	
 				}else{
 					$trad += "r8\n";
@@ -417,8 +427,15 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			if($indice){
 				throw new Error_15($READLINEI.line,$READLINEI.pos);
 			}
-			if($tipo.equals("int32"))
-				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n"+ "stloc " + $variable +  "\n";
+			if($tipo.equals("int32")){
+				if($array_pasado.equals("")){
+					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n";
+					$trad += "stloc " + $variable +  "\n";
+				}else{
+					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n";
+					$trad += "stelem.i4 \n";
+				}
+			}
 			else
 				throw new Error_7($READLINEI.line,$READLINEI.pos);
 		}
@@ -427,8 +444,15 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			if($indice){
 				throw new Error_15($READLINED.line,$READLINED.pos);
 			}
-			if($tipo.equals("float64"))
-				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n"+ "stloc " + $variable +  "\n";
+			if($tipo.equals("float64")){
+					if($array_pasado.equals("")){
+					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
+					$trad += "stloc " + $variable +  "\n";
+				}else{
+					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
+					$trad += "stelem.i4 \n";
+				}
+			}
 			else
 				throw new Error_7($READLINED.line,$READLINED.pos);
 		}
@@ -437,8 +461,15 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			if($indice){
 				throw new Error_15($READLINEB.line,$READLINEB.pos);
 			}
-			if($tipo.equals("bool"))
-				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n"+ "stloc " + $variable +  "\n";
+			if($tipo.equals("bool")){
+				if($array_pasado.equals("")){
+					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n";
+					$trad += "stloc " + $variable +  "\n";
+				}else{
+					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n";
+					$trad += "stelem.i4 \n";
+				}
+			}
 			else
 				throw new Error_7($READLINEB.line,$READLINEB.pos);
 			
