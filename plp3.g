@@ -6,6 +6,7 @@ grammar plp3;
 
 @header {
 	import java.lang.String;
+	import java.lang.Math;
 }
 
 @rulecatch {
@@ -108,14 +109,16 @@ varid[String tipo] returns [Tipo resultado]
 declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad, int maxstack]
 	:	{
 			$trad = "";
+			$maxstack = 0;
 		}
 		(instr[$etiquetaBreakBucle, $etiquetaContinueBucle,true] 
 		{
 			$trad += $instr.trad;
+			$maxstack = Math.max($maxstack,$instr.maxstack);
 		}
 		| decl
 		{
-			$trad += $decl.trad;	
+			$trad += $decl.trad;
 		})*;
 
 bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack]
@@ -127,6 +130,7 @@ bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] re
 		LLAVEI declins[$etiquetaBreakBucle, $etiquetaContinueBucle] LLAVED
 		{
 			$trad = $declins.trad;
+			$maxstack = $declins.maxstack;
 			if($creaAmbito){
 				tS = tS.pop();
 			}
@@ -138,7 +142,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		int etiqIni = -1;
 		int etiqContinue = -1;
 	}
-	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle, $creaAmbito]{$trad = $bloque.trad;}
+	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle, $creaAmbito]{$trad = $bloque.trad;$maxstack = $bloque.maxstack;}
 	|	IF PARI expr 
 		{
 			int etiqElse = -1;
@@ -149,6 +153,8 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 				etiqElse = numEtiqueta;
 				numEtiqueta++;
 				$trad = $expr.trad + "ldc.i4 0\n" + "beq et" + etiqElse + "\n";
+				// como expr siempre tiene que dejar al menos un elemento en la pila, max(expr.maxstack,1) da expr seguro
+				$maxstack = $expr.maxstack;
 			}else{
 				throw new Error_5($IF.text,$IF.line,$IF.pos);
 			}
@@ -158,10 +164,12 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		{
 			$trad += $insif.trad + "br et"+etiqFin + "\n";
 			$trad += "et" + etiqElse + ": ";
+			$maxstack = Math.max($insif.maxstack,$maxstack);
 		}
 		(ELSE inselse=instr[$etiquetaBreakBucle,$etiquetaContinueBucle,true]
 		{
 			$trad += $inselse.trad;
+			$maxstack = Math.max($inselse.maxstack,$maxstack);
 		}
 		)?{$trad += "et" + etiqFin + ": ";}
 	|	WHILE PARI expr
@@ -179,6 +187,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		{
 				$trad = "et" + etiqIni + ": " + $expr.trad + "ldc.i4 0\n" + "beq et" + etiqFin + "\n";
 				$trad += $contenido.trad + "br et" + etiqIni + "\n" + "et" + etiqFin + ": ";
+				$maxstack = Math.max($expr.maxstack,$contenido.maxstack);
 			
 		}
 	|	FOREACH PARI VAR iterador=ID IN idArray=ID
@@ -217,6 +226,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 					$trad += "r8\n";
 				}
 				$trad += "stloc " + posicion + "\n"; // y lo guardamos en el iterador
+				$maxstack = 2;
 
 			}else{
 				throw new Error_11($idArray.text,$idArray.line,$idArray.pos);
@@ -228,6 +238,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			$trad += "et" + etiqContinue + ": ldloc " + iteradorInt + "\n" + "ldc.i4 1\n" + "add\n" + "stloc " + iteradorInt + "\n" + "br et" + etiqIni + "\n";
 			$trad += "et" + etiqFin + ": ";
 			tS = tS.pop();
+			$maxstack = Math.max($contenido.maxstack, $maxstack);
 		}
 	|	FOR PARI INT ID ASIG inicializacion=expr
 		{
@@ -239,6 +250,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 				numVariable++;
 			$trad += $inicializacion.trad;
 			$trad += "stloc " + posicion + "\n";
+			$maxstack = $inicializacion.maxstack;
 			
 		}
 		TO limite=expr
@@ -257,6 +269,8 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			numEtiqueta++;
 			etiqContinue = numEtiqueta;
 			numEtiqueta++;
+
+			$maxstack = Math.max($limite.maxstack,$maxstack);
 
 		}
 		STEP (ADDOP)? ENTERO PARD contenido=instr[etiqFin,etiqContinue,false]
@@ -284,6 +298,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			
 			$trad += "br et" + etiqIni + "\n" + "et" + etiqFin + ": ";
 			tS = tS.pop();
+			$maxstack = Math.max(2,Math.max($contenido.maxstack,$maxstack));
 		}
 	|	BREAK PYC
 		{
@@ -292,7 +307,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}else{
 				throw new Error_16($BREAK.text,$BREAK.line,$BREAK.pos);
 			}
-			
+			$maxstack = 0;
 		}
 	|	CONTINUE PYC{
 			if($etiquetaContinueBucle != -1){
@@ -300,8 +315,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}else{
 				throw new Error_16($CONTINUE.text,$CONTINUE.line,$CONTINUE.pos);
 			}
+			$maxstack = 0;
 		}
-	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo]{$trad = $cambio.trad;}
+	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo]{$trad = $cambio.trad;$maxstack = Math.max($ref.maxstack,$cambio.maxstack);}
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
@@ -343,10 +359,12 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		 		auxTipo = "[mscorlib]System.Double";
 		 	}
 		 	$trad +="newarr " + auxTipo + "\n" + "stloc " + simb.posicion_locals + "\n";
+		 	$maxstack = 1;
 		 }
 	|	WRITELINE PARI expr PARD PYC{
 			$trad = $expr.trad;
 			$trad += "call void [mscorlib]System.Console::WriteLine(" + $expr.tipo + ")\n";
+			$maxstack = $expr.maxstack;
 		};
 
 dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
@@ -410,7 +428,8 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			}
 
 			if($array_pasado.equals("")){
-				$trad = expresion + "stloc " + $variable + "\n";				
+				$trad = expresion + "stloc " + $variable + "\n";
+				$maxstack = $expr.maxstack;				
 			}else{
 				
 				$trad = "ldloc " + $variable + "\n" + $array_pasado + expresion + "stelem.";		
@@ -419,6 +438,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 				}else{
 					$trad += "r8\n";
 				}
+				$maxstack = Math.max($expr.maxstack, 1); // TODO: añadir array_pasado
 			}
 
 		}
@@ -435,6 +455,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n";
 					$trad += "stelem.i4 \n";
 				}
+				$maxstack = 1; // TODO: añadir array_pasado
 			}
 			else
 				throw new Error_7($READLINEI.line,$READLINEI.pos);
@@ -452,6 +473,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
 					$trad += "stelem.i4 \n";
 				}
+				$maxstack = 1; // TODO: añadir array_pasado
 			}
 			else
 				throw new Error_7($READLINED.line,$READLINED.pos);
@@ -469,6 +491,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n";
 					$trad += "stelem.i4 \n";
 				}
+				$maxstack = 1; // TODO: añadir array_pasado
 			}
 			else
 				throw new Error_7($READLINEB.line,$READLINEB.pos);
@@ -480,6 +503,7 @@ expr returns [String trad, String tipo, int maxstack]
 		{
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
+			$maxstack = $primero.maxstack;
 		}
 		(OR siguiente = eand
 		{
@@ -489,6 +513,7 @@ expr returns [String trad, String tipo, int maxstack]
 			}
 			$tipo = "bool";
 			$trad += "or\n";
+			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		}
 		)*;
 
@@ -497,6 +522,7 @@ eand returns [String trad, String tipo, int maxstack]
 		{
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
+			$maxstack = $primero.maxstack;
 		}
 		(AND siguiente = erel
 		{
@@ -507,6 +533,7 @@ eand returns [String trad, String tipo, int maxstack]
 			}
 			$tipo = "bool";
 			$trad += "and\n";
+			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		}
 		)*;
 
@@ -515,6 +542,7 @@ esum returns [String trad, String tipo, int maxstack]
 	:	primero = term {
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
+			$maxstack = $primero.maxstack;
 		}
 		(ADDOP siguiente = term
 		{
@@ -543,12 +571,14 @@ esum returns [String trad, String tipo, int maxstack]
 			}else{
 			    $trad += "sub\n";
 			}
+			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		})*;
 erel returns [String trad, String tipo, int maxstack]
 	:	primero = esum 
 		{
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
+			$maxstack = $primero.maxstack;
 		}
 		(RELOP siguiente = esum
 		{
@@ -579,6 +609,7 @@ erel returns [String trad, String tipo, int maxstack]
 			}else if($RELOP.text.equals(">=")){
 			    $trad += "clt\n" + "ldc.i4 1\n" + "xor\n";	
 			}
+			$maxstack = Math.max($siguiente.maxstack +1,$maxstack);
 			
 			
 		})*;
@@ -590,6 +621,7 @@ term returns [String trad, String tipo, int maxstack]
 		{
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
+			$maxstack = $primero.maxstack;
 		}
 		(MULOP siguiente = factor
 		{
@@ -618,13 +650,15 @@ term returns [String trad, String tipo, int maxstack]
 			}else{
 			    $trad += "div\n"; 
 			}
+			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		})*;
 
 factor returns [String trad, String tipo, int maxstack]
-	:	base{$trad = $base.trad; $tipo = $base.tipo;}
+	:	base{$trad = $base.trad; $tipo = $base.tipo;$maxstack = $base.maxstack;}
 	|	NOT otro = factor{if($otro.tipo.equals("bool")){
 				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
 				$tipo = "bool";
+				$maxstack = Math.max($otro.maxstack,2);
 			}else{
 				throw new  Error_4($NOT.text,$NOT.line,$NOT.pos);
 			}}
@@ -644,24 +678,25 @@ factor returns [String trad, String tipo, int maxstack]
 				}	
 			}
 			$tipo = $otro.tipo;
+			$maxstack = $otro.maxstack;
 		};
 
 base returns [String trad, String tipo, int maxstack]
-	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = "int32";}
+	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = "int32";$maxstack = 1;}
 	|	REAL
 		{
 			/*StringBuilder numeroReal = new StringBuilder($REAL.text);
 			numeroReal.setCharAt(numeroReal.indexOf("."), ',');*/
-			$trad ="ldc.r8 " + $REAL.text + "\n"; $tipo = "float64";
+			$trad ="ldc.r8 " + $REAL.text + "\n"; $tipo = "float64";$maxstack = 1;
 		}
 	|	BOOLEANO{if($BOOLEANO.text.equals("True")){
 				$trad = "ldc.i4 1\n";
 			}else{
 				$trad = "ldc.i4 0\n";
 			} 
-			$tipo = "bool";}
-	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;}
-	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;};
+			$tipo = "bool";$maxstack = 1;}
+	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;$maxstack = $expr.maxstack;}
+	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;$maxstack = $ref.maxstack + 1;};
 
 ref returns [int variable, String tipo, String trad, String getDato, boolean indice, int maxstack]
 	:	ID 
@@ -674,6 +709,7 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 			    $trad = "";
 			    $getDato = "";
 			    $indice = referencia.tipo.isIndice();
+			    $maxstack = 0;
 			}catch(Error_2 e){
 			    e.setFilaColumna($ID.line,$ID.pos);
 			    throw e;
@@ -691,11 +727,12 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 			}else{
 				$getDato += "r8\n";
 			}
+			$maxstack += $indices.maxstack + 1;
 		}
 		)?
 		{
 			if(referencia.esArray() && $getDato.equals("")){
-				throw new Error_9($ID.text,$CORD.line,$CORD.pos);
+				throw new Error_9($ID.text,$ID.line,$ID.pos);
 			}
 		};
 
@@ -715,7 +752,8 @@ indices[Simbolo elemento, Token id] returns [String trad, int maxstack]
 			
 			int dimensionRestante = tipoElem.tipobase.getDimensionTotal();
 			$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n";		
-			tipoElem = tipoElem.tipobase;	
+			tipoElem = tipoElem.tipobase;
+			$maxstack = $primero.maxstack + 1;
 		}
 		(COMA siguiente=expr
 		{
@@ -734,6 +772,7 @@ indices[Simbolo elemento, Token id] returns [String trad, int maxstack]
 				$trad += "ldc.i4 " + dimensionRestante + "\n" + "mul\n" + "add\n";
 				tipoElem = tipoElem.tipobase;
 			}
+			$maxstack = Math.max($siguiente.maxstack + 2, $maxstack);
 		}
 		)*
 		{
