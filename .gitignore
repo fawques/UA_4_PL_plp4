@@ -7,4 +7,5 @@ plp3Parser.java
 output/*
 *.tokens
 *.sublime-*
-autocorrector-plp3/programa/*
+autocorrector-plp3/*
+*.tmp

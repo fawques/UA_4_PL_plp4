@@ -1,8 +1,0 @@
-class Single{
-public static void Main()
-{
-bool a,b,c; 
-a=False;
-System.Console.WriteLine(a+3);
-}
-}
