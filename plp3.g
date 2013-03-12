@@ -505,7 +505,13 @@ expr returns [String trad, String tipo, int maxstack]
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
 		}
-		(OR siguiente = eand
+		(OR 
+		{
+			if(!$tipo.equals("bool")){
+				throw new  Error_4($OR.text,$OR.line,$OR.pos);
+			}
+		}
+		siguiente = eand
 		{
 			$trad += $siguiente.trad;
 			if(!$siguiente.tipo.equals("bool") || !$tipo.equals("bool")){
@@ -524,11 +530,17 @@ eand returns [String trad, String tipo, int maxstack]
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
 		}
-		(AND siguiente = erel
+		(AND
+		{
+			if(!$tipo.equals("bool")){
+				throw new  Error_4($AND.text,$AND.line,$AND.pos);
+			}
+		}
+		siguiente = erel
 		{
 			$trad += $siguiente.trad;
 			
-			if(!$siguiente.tipo.equals("bool") || !$tipo.equals("bool")){
+			if(!$siguiente.tipo.equals("bool")){
 				throw new  Error_4($AND.text,$AND.line,$AND.pos);
 			}
 			$tipo = "bool";
@@ -544,7 +556,13 @@ esum returns [String trad, String tipo, int maxstack]
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
 		}
-		(ADDOP siguiente = term
+		(ADDOP 
+		{
+			if($tipo.equals("bool")){
+				throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
+			}
+		}
+		siguiente = term
 		{
 			if($siguiente.tipo.equals("bool")|| $tipo.equals("bool")){
 				throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
@@ -623,9 +641,15 @@ term returns [String trad, String tipo, int maxstack]
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
 		}
-		(MULOP siguiente = factor
+		(MULOP
 		{
-			if($siguiente.tipo.equals("bool") || $tipo.equals("bool")){
+			if($tipo.equals("bool")){
+				throw new  Error_3($MULOP.text,$MULOP.line,$MULOP.pos);
+			}
+		}
+		siguiente = factor
+		{
+			if($siguiente.tipo.equals("bool")){
 				throw new  Error_3($MULOP.text,$MULOP.line,$MULOP.pos);
 			}
 			boolean convertirSiguiente = false;
