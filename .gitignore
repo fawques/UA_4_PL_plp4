@@ -9,3 +9,5 @@ output/*
 *.sublime-*
 autocorrector-plp3/*
 *.tmp
+aciertos.txt
+fallos.txt
