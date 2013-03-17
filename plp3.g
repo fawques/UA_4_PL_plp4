@@ -258,7 +258,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			$trad += ".locals(int32)\n" + $limite.trad;
 			numVariable++;
 			if($limite.tipo.equals("float64")){
-				$trad+= "conv.i4";
+				$trad+= "conv.i4\n";
 			}else if($limite.tipo.equals("bool")){
 				throw new Error_17($TO.line,$TO.pos);
 			}
@@ -741,7 +741,7 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 
 
 		} 
-		(CORI indices[referencia, $ID] CORD
+		(CORI indices[referencia, $ID, $CORI] CORD
 		{
 			$tipo = referencia.tipo.getTipoFinal();
 			$trad += "\n" + $indices.trad ;
@@ -760,7 +760,7 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 			}
 		};
 
-indices[Simbolo elemento, Token id] returns [String trad, int maxstack]
+indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxstack]
 	:	primero=expr
 		{
 			$trad = $primero.trad;
@@ -771,7 +771,7 @@ indices[Simbolo elemento, Token id] returns [String trad, int maxstack]
 			if($primero.tipo.equals("float64")){
 				$trad += "conv.i4\n";
 			}else if($primero.tipo.equals("bool")){
-				throw new Error_13($id.getLine(),$id.getCharPositionInLine());
+				throw new Error_13($cori.getLine(),$cori .getCharPositionInLine());
 			}
 			
 			int dimensionRestante = tipoElem.tipobase.getDimensionTotal();
