@@ -249,6 +249,8 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			tS.add($ID.text,tipoIterador,numVariable);
 				numVariable++;
 			$trad += $inicializacion.trad;
+			if($inicializacion.tipo.equals("float64"))
+				$trad += "conv.i4\n";
 			$trad += "stloc " + posicion + "\n";
 			$maxstack = $inicializacion.maxstack;
 			
@@ -471,7 +473,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 					$trad += "stloc " + $variable +  "\n";
 				}else{
 					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
-					$trad += "stelem.i4 \n";
+					$trad += "stelem.r8 \n";
 				}
 				$maxstack = 1; // TODO: añadir array_pasado
 			}
