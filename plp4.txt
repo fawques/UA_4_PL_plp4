@@ -1,2 +1,2 @@
 AUTOR = 48717414; Guzmán Pedrajas, Víctor
-HORAS = 83
+HORAS = 0

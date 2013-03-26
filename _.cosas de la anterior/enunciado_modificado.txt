@@ -1,8 +1,0 @@
-program colores; 
-  var a,b,c:integer;    
-  begin
-    a := 77;
-    b := 2
-    c := 3
-  end
-

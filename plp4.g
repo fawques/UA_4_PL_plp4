@@ -1,4 +1,4 @@
-grammar plp3;
+grammar plp4;
 
 /* Traduce con ANTLR un fichero de expresiones infijas separadas por punto 
    y coma a notación prefija. Usa una gramática EBNF.
