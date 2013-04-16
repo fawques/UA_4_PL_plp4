@@ -835,6 +835,8 @@ WRITELINE	:	'System.Console.WriteLine';
 READLINEI	: 	'int.Parse(System.Console.ReadLine())';
 READLINED	: 	'double.Parse(System.Console.ReadLine())';
 READLINEB	: 	'bool.Parse(System.Console.ReadLine())';
+RETURN 		:	'return';
+PRIVATE		:	'private';
 
 
 LLAVEI	:	'{';
