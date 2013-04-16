@@ -1,6 +1,6 @@
 *.class
-plp3Lexer.java
-plp3Parser.java
+plp4Lexer.java
+plp4Parser.java
 *.il
 *.exe*
 *~
