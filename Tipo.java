@@ -53,6 +53,10 @@ public class Tipo {
 	public boolean isIndice(){
 		return indice;
 	}
+
+	public boolean esArray(){
+		return array;
+	}
 	
     public Tipo getTipoBase(){
 		return tipobase;

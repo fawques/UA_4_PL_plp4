@@ -47,9 +47,6 @@ grammar plp4;
 }
 
 /* Analizador sintáctico: */
-aAux returns [String resultado]
-	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly 'aaa' {}\n" + $clase.trad;};
-
 s[String archivo] returns [String resultado]
 	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + $archivo + "' {}\n" + $clase.trad;};
 
@@ -59,8 +56,8 @@ clase returns [String trad]
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
 metodo returns [String trad]
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";}
-	|	PUBLIC (TipoSimple)? ID PARI args PARD bloque;
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
+//	|	PUBLIC (tipoSimple)? ID PARI args PARD bloque;
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
@@ -348,7 +345,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		}
 		 CORI dims[tipo_simbolo] CORD
 		 {
-		 	if($dims.tipoFinal.array){
+		 	if($dims.tipoFinal.esArray()){
 		 		throw new Error_10( $CORD.line,$CORD.pos);
 		 	}
 		 }
@@ -388,7 +385,7 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		 (COMA siguiente=ENTERO
 		 {
-		 	if($tipo.array){
+		 	if($tipo.esArray()){
 		 		try{
 					$tipo.setDimension($siguiente.text);
 					$dimension *= $tipo.getDimension();
@@ -772,7 +769,7 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 		{
 			$trad = $primero.trad;
 			Tipo tipoElem = $elemento.tipo;
-			if(!tipoElem.array){
+			if(!tipoElem.esArray()){
 				throw new Error_11($id.getText(),$id.getLine(),$id.getCharPositionInLine());
 			}
 			if($primero.tipo.equals("float64")){
@@ -789,7 +786,7 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 		(COMA siguiente=expr
 		{
 			
-			if(!tipoElem.array){
+			if(!tipoElem.esArray()){
 				throw new Error_12($COMA.getLine(),$COMA.getCharPositionInLine());
 			}else{
 			 	$trad += $siguiente.trad;
@@ -807,7 +804,7 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 		}
 		)*
 		{
-			if(tipoElem.array){
+			if(tipoElem.esArray()){
 				throw new Error_9($id.getText(),$id.getLine(),$id.getCharPositionInLine());
 			}
 		};
@@ -825,10 +822,10 @@ visibilidad
 args
 	:	(DOUBLE ID (COMA DOUBLE ID)*)?;
 
-// Cambiamos la gramática de tipo a tipogram para no colisionar con la clase Tipo que ya teníamos
-tipogram
+// Cambiamos la gramática de tipo a tipopl para no colisionar con la clase Tipo que ya teníamos
+tipopl
 	:	ID
-	|	TipoSimple;
+	|	tipoSimple;
 
 params
 	:	(expr (COMA expr)*)?;
