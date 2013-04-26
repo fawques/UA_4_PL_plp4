@@ -21,9 +21,9 @@ public class Simbolo {
 		return tipo;
 	}
     
-    public String getTipoFinal(){
-		String aux = tipo.getTipo();
-		if(aux.equals("array")){
+    public tipoLiteral getTipoFinal(){
+		tipoLiteral aux = tipo.getTipo();
+		if(aux == tipoLiteral.array){
 			return tipo.getTipoFinal();
 		} else{
 			return aux;
@@ -31,7 +31,7 @@ public class Simbolo {
 	}
 	
 	public boolean esArray(){
-		return tipo.array;
+		return tipo.esArray();
 	}
 	
 	public int getDimension(){

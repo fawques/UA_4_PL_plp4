@@ -9,13 +9,14 @@ import java.util.ArrayList;
  */
 public class Tipo {
     
-    String tipo;
+    tipoLiteral tipo;
     int dimension;
     Tipo tipobase;
     boolean array;
     boolean indice;
     
-    public Tipo(String _tipo){
+    public Tipo(tipoLiteral _tipo){
+
         tipo = _tipo;
         dimension = 0;
         tipobase = null;
@@ -24,17 +25,16 @@ public class Tipo {
 		
     }
     
-    public Tipo(String _tipo, boolean _indice){
+    public Tipo(tipoLiteral _tipo, boolean _indice){
         tipo = _tipo;
         dimension = 0;
         tipobase = null;
-        array = false;
         indice = true;
     }
     
     
-    public Tipo(String _tipo, Tipo _tipobase){
-        tipo = _tipo;
+    public Tipo(tipoLiteral _tipo, Tipo _tipobase){
+        tipo = tipoLiteral.array;
         dimension = -1;
         tipobase = _tipobase;
         array = true;
@@ -46,7 +46,7 @@ public class Tipo {
         tipobase = _anterior.tipobase;
     }
     
-    public String getTipo(){
+    public tipoLiteral getTipo(){
 		return tipo;
 	} 
 	
@@ -55,14 +55,17 @@ public class Tipo {
 	}
 
 	public boolean esArray(){
-		return array;
+		if(tipo == tipoLiteral.array)
+			return true;
+		else
+			return false;
 	}
 	
     public Tipo getTipoBase(){
 		return tipobase;
 	}
 	
-	public String getTipoFinal(){
+	public tipoLiteral getTipoFinal(){
 		if(array){
 			return tipobase.getTipoFinal();
 		} else{
@@ -99,7 +102,7 @@ public class Tipo {
 			return tipobase.toStringSoloTipo() + "[]";
 			//return "[] -> " + tipobase.toString();
 		}else{
-			return tipo;
+			return tipo.toString();
 		}
 		
 	}
@@ -108,7 +111,7 @@ public class Tipo {
 		if (array){
 			return tipobase.toStringSoloTipo();
 		}else{
-			return tipo;
+			return tipo.toString();
 		}
 		
 	}

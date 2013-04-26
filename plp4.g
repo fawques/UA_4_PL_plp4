@@ -61,10 +61,10 @@ metodo returns [String trad]
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
-tipoSimple returns [String trad, int line, int pos]
-	:	INT {$trad = "int32";$line = $INT.line; $pos = $INT.pos;}
-	|	DOUBLE {$trad = "float64";$line = $DOUBLE.line; $pos = $DOUBLE.pos;}
-	|	BOOL {$trad="bool";$line = $BOOL.line; $pos = $BOOL.pos;};
+tipoSimple returns [tipoLiteral trad, int line, int pos]
+	:	INT {$trad = tipoLiteral.convertir("int32");$line = $INT.line; $pos = $INT.pos;}
+	|	DOUBLE {$trad = tipoLiteral.convertir("float64");$line = $DOUBLE.line; $pos = $DOUBLE.pos;}
+	|	BOOL {$trad=tipoLiteral.convertir("bool");$line = $BOOL.line; $pos = $BOOL.pos;};
 	
 decl returns [String trad]
 	:	tipoSimple primervarid = varid[$tipoSimple.trad] 
@@ -80,7 +80,7 @@ decl returns [String trad]
 			$trad += ")\n";
 		};
 	
-varid[String tipo] returns [Tipo resultado]
+varid[tipoLiteral tipo] returns [Tipo resultado]
 	:	ID 
 		{
 			$resultado = new Tipo($tipo);
@@ -145,7 +145,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		{
 			int etiqElse = -1;
 			//int etiqFin = -1;
-			if($expr.tipo.equals("bool")){
+			if($expr.tipo == tipoLiteral.bool){
 				etiqFin = numEtiqueta;
 				numEtiqueta++;
 				etiqElse = numEtiqueta;
@@ -172,7 +172,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		)?{$trad += "et" + etiqFin + ": ";}
 	|	WHILE PARI expr
 		{
-			if($expr.tipo.equals("bool")){
+			if($expr.tipo == tipoLiteral.bool){
 				etiqIni = numEtiqueta;
 				numEtiqueta++;
 				etiqFin = numEtiqueta;
@@ -194,7 +194,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			int iteradorInt = -1;
 			if(array.esArray()){
 				tS = new tablaSimbolos(tS);
-				String tFinal = array.getTipoFinal();
+				tipoLiteral tFinal = array.getTipoFinal();
 				$trad = ".locals(" + tFinal + ", int32)\n";
 				Tipo tipoIterador = new Tipo(tFinal,true);
 				int posicion = numVariable;
@@ -218,7 +218,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 				$trad += "ldloc " + iteradorInt + "\n" + "ldc.i4 " + (array.getDimension()-1) + "\n" + "bgt et" + etiqFin + "\n";
 				$trad += "ldloc " + array.posicion_locals + "\n";
 				$trad += "ldloc " + iteradorInt + "\n" + "ldelem.";
-				if(tipoIterador.tipo.equals("int32") || tipoIterador.tipo.equals("bool")){
+				if(tipoIterador.tipo == tipoLiteral.int32 || tipoIterador.tipo == tipoLiteral.bool){
 					$trad += "i4\n";	
 				}else{
 					$trad += "r8\n";
@@ -242,12 +242,12 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		{
 			tS = new tablaSimbolos(tS);
 			$trad = ".locals(int32)\n";
-			Tipo tipoIterador = new Tipo("int32",true);
+			Tipo tipoIterador = new Tipo(tipoLiteral.int32, true);
 			int posicion =numVariable;
 			tS.add($ID.text,tipoIterador,numVariable);
 				numVariable++;
 			$trad += $inicializacion.trad;
-			if($inicializacion.tipo.equals("float64"))
+			if($inicializacion.tipo == tipoLiteral.float64)
 				$trad += "conv.i4\n";
 			$trad += "stloc " + posicion + "\n";
 			$maxstack = $inicializacion.maxstack;
@@ -257,9 +257,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		{
 			$trad += ".locals(int32)\n" + $limite.trad;
 			numVariable++;
-			if($limite.tipo.equals("float64")){
+			if($limite.tipo == tipoLiteral.float64){
 				$trad+= "conv.i4\n";
-			}else if($limite.tipo.equals("bool")){
+			}else if($limite.tipo == tipoLiteral.bool){
 				throw new Error_17($TO.line,$TO.pos);
 			}
 			$trad += "stloc " + (posicion+1) + "\n";
@@ -321,7 +321,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
-			String tipo_final_simbolo = simb.getTipoFinal();
+			tipoLiteral tipo_final_simbolo = simb.getTipoFinal();
 			Tipo tipo_simbolo = simb.getTipo();
 			if(!simb.esArray()){
 				throw new Error_11($ID.text,$ID.line,$ID.pos);
@@ -329,11 +329,11 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		}
 		ASIG NEW tipoSimple 
 		{
-			if(!tipo_final_simbolo.equals($tipoSimple.trad)){
+			if(tipo_final_simbolo != $tipoSimple.trad){
 				String lexema;
-				if($tipoSimple.trad.equals("int32")){
+				if($tipoSimple.trad == tipoLiteral.int32){
 					lexema = "int";
-				}else if($tipoSimple.trad.equals("float64")){
+				}else if($tipoSimple.trad == tipoLiteral.float64){
 					lexema = "double";
 				}else{
 					lexema = "bool";
@@ -353,7 +353,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		 {
 		 	String auxTipo;
 		 	$trad = "ldc.i4 " + $dims.dimension + "\n";
-		 	if($tipoSimple.trad.equals("int32") || $tipoSimple.trad.equals("bool")){
+		 	if($tipoSimple.trad == tipoLiteral.int32 || $tipoSimple.trad == tipoLiteral.bool){
 		 		auxTipo = "[mscorlib]System.Int32";
 		 	}else{
 		 		auxTipo = "[mscorlib]System.Double";
@@ -401,7 +401,7 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		)*
 		{$tipoFinal = $tipo;};
-cambio[int variable, String array_pasado, boolean indice, String tipo] returns [String trad, int maxstack]
+cambio[int variable, String array_pasado, boolean indice, tipoLiteral tipo] returns [String trad, int maxstack]
 	:	ASIG expr PYC
 		{
 			String expresion = $expr.trad;
@@ -409,21 +409,21 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 				throw new Error_15($ASIG.line,$ASIG.pos);
 			}
 
-			String tipoExpr = $expr.tipo;
-			if(!$tipo.equals(tipoExpr)){
-				if($tipo.equals("int32")){
-					if(tipoExpr.equals("float64")){
+			tipoLiteral tipoExpr = $expr.tipo;
+			if($tipo != tipoExpr){
+				if($tipo == tipoLiteral.int32){
+					if(tipoExpr == tipoLiteral.float64){
 						expresion += "conv.i4\n";
-						tipoExpr = "int32";
+						tipoExpr = tipoLiteral.int32;
 					}else{
 						throw new Error_6($ASIG.line,$ASIG.pos);
 					}
-				}else if($tipo.equals("bool")){
+				}else if($tipo == tipoLiteral.bool){
 					throw new Error_6($ASIG.line,$ASIG.pos);
 				}else{ // tipo = float64
-					if(tipoExpr.equals("int32")){
+					if(tipoExpr == tipoLiteral.int32){
 						expresion += "conv.r8\n";
-						tipoExpr = "float64";
+						tipoExpr = tipoLiteral.float64;
 					}else{
 						throw new Error_6($ASIG.line,$ASIG.pos);
 					}
@@ -436,7 +436,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			}else{
 				
 				$trad = "ldloc " + $variable + "\n" + $array_pasado + expresion + "stelem.";		
-				if(tipoExpr.equals("int32") || tipoExpr.equals("bool")){
+				if(tipoExpr == tipoLiteral.int32 || tipoExpr == tipoLiteral.bool){
 					$trad += "i4\n";	
 				}else{
 					$trad += "r8\n";
@@ -450,7 +450,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			if($indice){
 				throw new Error_15($READLINEI.line,$READLINEI.pos);
 			}
-			if($tipo.equals("int32")){
+			if($tipo == tipoLiteral.int32){
 				if($array_pasado.equals("")){
 					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n";
 					$trad += "stloc " + $variable +  "\n";
@@ -468,7 +468,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			if($indice){
 				throw new Error_15($READLINED.line,$READLINED.pos);
 			}
-			if($tipo.equals("float64")){
+			if($tipo == tipoLiteral.float64){
 					if($array_pasado.equals("")){
 					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
 					$trad += "stloc " + $variable +  "\n";
@@ -486,7 +486,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			if($indice){
 				throw new Error_15($READLINEB.line,$READLINEB.pos);
 			}
-			if($tipo.equals("bool")){
+			if($tipo == tipoLiteral.bool){
 				if($array_pasado.equals("")){
 					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n";
 					$trad += "stloc " + $variable +  "\n";
@@ -501,7 +501,7 @@ cambio[int variable, String array_pasado, boolean indice, String tipo] returns [
 			
 		};
 
-expr returns [String trad, String tipo, int maxstack]
+expr returns [String trad, tipoLiteral tipo, int maxstack]
 	:	primero = eand 
 		{
 			$trad = $primero.trad; 
@@ -510,23 +510,23 @@ expr returns [String trad, String tipo, int maxstack]
 		}
 		(OR 
 		{
-			if(!$tipo.equals("bool")){
+			if($tipo != tipoLiteral.bool){
 				throw new  Error_4($OR.text,$OR.line,$OR.pos);
 			}
 		}
 		siguiente = eand
 		{
 			$trad += $siguiente.trad;
-			if(!$siguiente.tipo.equals("bool") || !$tipo.equals("bool")){
+			if($siguiente.tipo != tipoLiteral.bool || $tipo != tipoLiteral.bool){
 				throw new  Error_4($OR.text,$OR.line,$OR.pos);
 			}
-			$tipo = "bool";
+			$tipo = tipoLiteral.bool;
 			$trad += "or\n";
 			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		}
 		)*;
 
-eand returns [String trad, String tipo, int maxstack]
+eand returns [String trad, tipoLiteral tipo, int maxstack]
 	:	primero = erel 
 		{
 			$trad = $primero.trad; 
@@ -535,7 +535,7 @@ eand returns [String trad, String tipo, int maxstack]
 		}
 		(AND
 		{
-			if(!$tipo.equals("bool")){
+			if($tipo != tipoLiteral.bool){
 				throw new  Error_4($AND.text,$AND.line,$AND.pos);
 			}
 		}
@@ -543,17 +543,17 @@ eand returns [String trad, String tipo, int maxstack]
 		{
 			$trad += $siguiente.trad;
 			
-			if(!$siguiente.tipo.equals("bool")){
+			if($siguiente.tipo != tipoLiteral.bool){
 				throw new  Error_4($AND.text,$AND.line,$AND.pos);
 			}
-			$tipo = "bool";
+			$tipo = tipoLiteral.bool;
 			$trad += "and\n";
 			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		}
 		)*;
 
 
-esum returns [String trad, String tipo, int maxstack]
+esum returns [String trad, tipoLiteral tipo, int maxstack]
 	:	primero = term {
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
@@ -561,26 +561,26 @@ esum returns [String trad, String tipo, int maxstack]
 		}
 		(ADDOP 
 		{
-			if($tipo.equals("bool")){
+			if($tipo == tipoLiteral.bool){
 				throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 			}
 		}
 		siguiente = term
 		{
-			if($siguiente.tipo.equals("bool")|| $tipo.equals("bool")){
+			if($siguiente.tipo == tipoLiteral.bool|| $tipo == tipoLiteral.bool){
 				throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 			}
 			boolean convertirSiguiente = false;
-			if ($tipo.equals("int32") && $siguiente.tipo.equals("int32")) {
-				$tipo = "int32";
-			} else if ($tipo.equals("int32")) { // $siguiente.tipo.equals("float64")
+			if ($tipo == tipoLiteral.int32 && $siguiente.tipo == tipoLiteral.int32) {
+				$tipo = tipoLiteral.int32;
+			} else if ($tipo == tipoLiteral.int32) { // $siguiente.tipo == tipoLiteral.float64
 				$trad += "conv.r8\n";
-				$tipo = "float64";
-			} else if ($siguiente.tipo.equals("int32")) { // $primero.tipo.equals("float64")
+				$tipo = tipoLiteral.float64;
+			} else if ($siguiente.tipo == tipoLiteral.int32) { // $primero.tipo == tipoLiteral.float64
 				convertirSiguiente = true;
-				$tipo = "float64";
-			} else { // $siguiente.tipo.equals("float64") && $primero.tipo.equals("float64")
-				$tipo = "float64";
+				$tipo = tipoLiteral.float64;
+			} else { // $siguiente.tipo == tipoLiteral.float64 && $primero.tipo == tipoLiteral.float64
+				$tipo = tipoLiteral.float64;
 			}
 
 			$trad += $siguiente.trad;
@@ -594,7 +594,7 @@ esum returns [String trad, String tipo, int maxstack]
 			}
 			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		})*;
-erel returns [String trad, String tipo, int maxstack]
+erel returns [String trad, tipoLiteral tipo, int maxstack]
 	:	primero = esum 
 		{
 			$trad = $primero.trad; 
@@ -604,10 +604,10 @@ erel returns [String trad, String tipo, int maxstack]
 		(RELOP siguiente = esum
 		{
 			boolean convertirSiguiente = false;
-			if (($tipo.equals("int32") || $tipo.equals("bool")) && ($siguiente.tipo.equals("int32") || $siguiente.tipo.equals("bool"))) {
-			} else if ($tipo.equals("int32") || $tipo.equals("bool")) { // $siguiente.tipo.equals("float64")
+			if (($tipo == tipoLiteral.int32 || $tipo == tipoLiteral.bool) && ($siguiente.tipo == tipoLiteral.int32 || $siguiente.tipo == tipoLiteral.bool)) {
+			} else if ($tipo == tipoLiteral.int32 || $tipo == tipoLiteral.bool) { // $siguiente.tipo == tipoLiteral.float64
 				$trad += "conv.r8\n";
-			} else if ($siguiente.tipo.equals("int32") || $siguiente.tipo.equals("bool")) { // $primero.tipo.equals("float64")
+			} else if ($siguiente.tipo == tipoLiteral.int32 || $siguiente.tipo == tipoLiteral.bool) { // $primero.tipo == tipoLiteral.float64
 				convertirSiguiente = true;
 			}
 
@@ -615,7 +615,7 @@ erel returns [String trad, String tipo, int maxstack]
 			if(convertirSiguiente){
 				$trad+= "conv.r8\n";
 			}
-			$tipo = "bool";
+			$tipo = tipoLiteral.bool;
 			
 			if($RELOP.text.equals("==")){
 			    $trad += "ceq\n";
@@ -637,7 +637,7 @@ erel returns [String trad, String tipo, int maxstack]
 
 
 
-term returns [String trad, String tipo, int maxstack]
+term returns [String trad, tipoLiteral tipo, int maxstack]
 	:	primero = factor 
 		{
 			$trad = $primero.trad; 
@@ -646,26 +646,26 @@ term returns [String trad, String tipo, int maxstack]
 		}
 		(MULOP
 		{
-			if($tipo.equals("bool")){
+			if($tipo == tipoLiteral.bool){
 				throw new  Error_3($MULOP.text,$MULOP.line,$MULOP.pos);
 			}
 		}
 		siguiente = factor
 		{
-			if($siguiente.tipo.equals("bool")){
+			if($siguiente.tipo == tipoLiteral.bool){
 				throw new  Error_3($MULOP.text,$MULOP.line,$MULOP.pos);
 			}
 			boolean convertirSiguiente = false;
-			if ($tipo.equals("int32") && $siguiente.tipo.equals("int32")) {
-				$tipo = "int32";
-			} else if ($tipo.equals("int32")) { // $siguiente.tipo.equals("float64")
+			if ($tipo == tipoLiteral.int32 && $siguiente.tipo == tipoLiteral.int32) {
+				$tipo = tipoLiteral.int32;
+			} else if ($tipo == tipoLiteral.int32) { // $siguiente.tipo == tipoLiteral.float64
 				$trad += "conv.r8\n";
-				$tipo = "float64";
-			} else if ($siguiente.tipo.equals("int32")) { // $primero.tipo.equals("float64")
+				$tipo = tipoLiteral.float64;
+			} else if ($siguiente.tipo == tipoLiteral.int32) { // $primero.tipo == tipoLiteral.float64
 				convertirSiguiente = true;
-				$tipo = "float64";
-			} else { // $siguiente.tipo.equals("float64") && $primero.tipo.equals("float64")
-				$tipo = "float64";
+				$tipo = tipoLiteral.float64;
+			} else { // $siguiente.tipo == tipoLiteral.float64 && $primero.tipo == tipoLiteral.float64
+				$tipo = tipoLiteral.float64;
 			}
 			$trad += $siguiente.trad;
 			if(convertirSiguiente){
@@ -680,11 +680,11 @@ term returns [String trad, String tipo, int maxstack]
 			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		})*;
 
-factor returns [String trad, String tipo, int maxstack]
+factor returns [String trad, tipoLiteral tipo, int maxstack]
 	:	base{$trad = $base.trad; $tipo = $base.tipo;$maxstack = $base.maxstack;}
-	|	NOT otro = factor{if($otro.tipo.equals("bool")){
+	|	NOT otro = factor{if($otro.tipo == tipoLiteral.bool){
 				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
-				$tipo = "bool";
+				$tipo = tipoLiteral.bool;
 				$maxstack = Math.max($otro.maxstack,2);
 			}else{
 				throw new  Error_4($NOT.text,$NOT.line,$NOT.pos);
@@ -692,13 +692,13 @@ factor returns [String trad, String tipo, int maxstack]
 	|	PARI ADDOP otro = factor PARD
 		{
 			if($ADDOP.text.equals("-")){
-				if($otro.tipo.equals("bool")){
+				if($otro.tipo == tipoLiteral.bool){
 					throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 				}else{
 					$trad = $otro.trad + "neg\n";
 				}
 			}else{
-				if($otro.tipo.equals("bool")){
+				if($otro.tipo == tipoLiteral.bool){
 					throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 				}else{
 					$trad = $otro.trad;
@@ -708,25 +708,25 @@ factor returns [String trad, String tipo, int maxstack]
 			$maxstack = $otro.maxstack;
 		};
 
-base returns [String trad, String tipo, int maxstack]
-	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = "int32";$maxstack = 1;}
+base returns [String trad, tipoLiteral tipo, int maxstack]
+	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = tipoLiteral.int32;$maxstack = 1;}
 	|	REAL
 		{
 			/*StringBuilder numeroReal = new StringBuilder($REAL.text);
 			numeroReal.setCharAt(numeroReal.indexOf("."), ',');*/
-			$trad ="ldc.r8 " + $REAL.text + "\n"; $tipo = "float64";$maxstack = 1;
+			$trad ="ldc.r8 " + $REAL.text + "\n"; $tipo = tipoLiteral.float64;$maxstack = 1;
 		}
 	|	BOOLEANO{if($BOOLEANO.text.equals("True")){
 				$trad = "ldc.i4 1\n";
 			}else{
 				$trad = "ldc.i4 0\n";
 			} 
-			$tipo = "bool";$maxstack = 1;}
+			$tipo = tipoLiteral.bool;$maxstack = 1;}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;$maxstack = $expr.maxstack;}
 	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;$maxstack = $ref.maxstack + 1;}
 	|	subref PARI params PARD;
 
-ref returns [int variable, String tipo, String trad, String getDato, boolean indice, int maxstack]
+ref returns [int variable, tipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack]
 	:	ID 
 		{
 			Simbolo referencia;
@@ -750,7 +750,7 @@ ref returns [int variable, String tipo, String trad, String getDato, boolean ind
 			$tipo = referencia.tipo.getTipoFinal();
 			$trad += "\n" + $indices.trad ;
 			$getDato = "ldelem.";
-			if($tipo.equals("int32") || $tipo.equals("bool")){
+			if($tipo == tipoLiteral.int32 || $tipo == tipoLiteral.bool){
 				$getDato += "i4\n";	
 			}else{
 				$getDato += "r8\n";
@@ -772,9 +772,9 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 			if(!tipoElem.esArray()){
 				throw new Error_11($id.getText(),$id.getLine(),$id.getCharPositionInLine());
 			}
-			if($primero.tipo.equals("float64")){
+			if($primero.tipo == tipoLiteral.float64){
 				$trad += "conv.i4\n";
-			}else if($primero.tipo.equals("bool")){
+			}else if($primero.tipo == tipoLiteral.bool){
 				throw new Error_13($cori.getLine(),$cori .getCharPositionInLine());
 			}
 			
@@ -790,9 +790,9 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 				throw new Error_12($COMA.getLine(),$COMA.getCharPositionInLine());
 			}else{
 			 	$trad += $siguiente.trad;
-				 	if($siguiente.tipo.equals("float64")){
+				 	if($siguiente.tipo == tipoLiteral.float64){
 					$trad += "conv.i4\n";
-				}else if($siguiente.tipo.equals("bool")){
+				}else if($siguiente.tipo == tipoLiteral.bool){
 					throw new Error_13($COMA.line,$COMA.pos);
 				}
 				
