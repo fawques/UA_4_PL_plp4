@@ -59,7 +59,8 @@ clase returns [String trad]
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
 metodo returns [String trad]
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";}
+	|	PUBLIC (TipoSimple)? ID PARI args PARD bloque;
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
@@ -367,7 +368,10 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			$trad = $expr.trad;
 			$trad += "call void [mscorlib]System.Console::WriteLine(" + $expr.tipo + ")\n";
 			$maxstack = $expr.maxstack;
-		};
+		}
+	|	RETURN expr PYC
+	|	ID ASIG NEW ID PARI params PARD PYC
+	|	subref PARI params PARD PYC;
 
 dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 	:	primero=ENTERO
@@ -722,7 +726,8 @@ base returns [String trad, String tipo, int maxstack]
 			} 
 			$tipo = "bool";$maxstack = 1;}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;$maxstack = $expr.maxstack;}
-	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;$maxstack = $ref.maxstack + 1;};
+	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;$maxstack = $ref.maxstack + 1;}
+	|	subref PARI params PARD;
 
 ref returns [int variable, String tipo, String trad, String getDato, boolean indice, int maxstack]
 	:	ID 
@@ -806,6 +811,30 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 				throw new Error_9($id.getText(),$id.getLine(),$id.getCharPositionInLine());
 			}
 		};
+
+miembro
+	:	campo
+	|	metodo;
+campo
+	:	visibilidad decl;
+
+visibilidad
+	:	PRIVATE
+	|	PUBLIC;
+
+args
+	:	(DOUBLE ID (COMA DOUBLE ID)*)?;
+
+// Cambiamos la gramática de tipo a tipogram para no colisionar con la clase Tipo que ya teníamos
+tipogram
+	:	ID
+	|	TipoSimple;
+
+params
+	:	(expr (COMA expr)*)?;
+
+subref
+	:	ID (PUNTO ID)*;
 
 /* Analizador léxico: */
 
