@@ -12,6 +12,8 @@ public class Tipo {
     tipoLiteral tipo;
     int dimension;
     Tipo tipobase;
+    tablaSimbolos tS;
+    int numParam;
     boolean array;
     boolean indice;
     
@@ -20,6 +22,7 @@ public class Tipo {
         tipo = _tipo;
         dimension = 0;
         tipobase = null;
+        tS = null;
         array = false;
         indice = false;
 		

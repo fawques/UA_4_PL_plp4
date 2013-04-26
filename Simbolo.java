@@ -9,6 +9,8 @@ public class Simbolo {
     String nombre;
     int posicion_locals;
     Tipo tipo;
+    Visibilidad visibilidad;
+    TipoSimbolo tipo_simb;
     
     
     public Simbolo(String _nombre, int _pos, Tipo _tipo) {
