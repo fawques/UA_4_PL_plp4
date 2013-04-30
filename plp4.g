@@ -59,13 +59,13 @@ s[String archivo] returns [String resultado]
 		)+;
 
 clase returns [String trad]
-	:	CLASS ID LLAVEI {$trad=".class '" + ID.text + "' extends [mscorlib]System.Object \n{\n";} (miembro {$trad+=$miembro.trad + "\n}";})+ LLAVED;
+	:	CLASS ID LLAVEI {$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";} (miembro {$trad+=$miembro.trad + "\n}";})+ LLAVED;
 
 miembro returns [String trad]
 	:	campo {$trad = $campo.trad;}
 	|	metodo {$trad = $metodo.trad;};
 campo returns [String trad]
-	:	visibilidad decl {$trad = ".field " + $visibilidad.trad + $decl.trad + "\n"};
+	:	visibilidad decl {$trad = ".field " + $visibilidad.trad + $decl.trad + "\n";};
 
 visibilidad returns [String trad]
 	:	PRIVATE {$trad = "private";}
@@ -847,7 +847,6 @@ subref
 
 
 CLASS	:	'class';
-SINGLE	:	'Single';
 VOID	:	'void';
 MAIN	:	'Main';
 INT	:	'int';
