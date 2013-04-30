@@ -1,5 +1,5 @@
 public enum tipoLiteral{
-	array,int32,float64,bool;
+	array,int32,float64,bool,clase;
 
 	public static tipoLiteral convertir (String entrada){
 		if("array".equals(entrada))
@@ -11,6 +11,8 @@ public enum tipoLiteral{
 			return tipoLiteral.float64;
 		}else if("bool".equals(entrada)){
 			return tipoLiteral.bool;
+		}else if("clase".equals(entrada)){
+			return tipoLiteral.clase;
 		}else{
 			return null;
 		}
@@ -23,6 +25,7 @@ public enum tipoLiteral{
 			case int32: return "int32";
 			case float64: return "float64";
 			case bool: return "bool";
+			case clase: return "clase";
 			default:	return "ERROR";
 		}
 	}

@@ -66,8 +66,16 @@ tipoSimple returns [tipoLiteral trad, int line, int pos]
 	|	DOUBLE {$trad = tipoLiteral.convertir("float64");$line = $DOUBLE.line; $pos = $DOUBLE.pos;}
 	|	BOOL {$trad=tipoLiteral.convertir("bool");$line = $BOOL.line; $pos = $BOOL.pos;};
 	
+// Cambiamos la gramática de tipo a tipopl para no colisionar con la clase Tipo que ya teníamos
+tipopl returns [tipoLiteral trad, int line, int pos, String ident]
+	:	ID {$trad = tipoLiteral.clase; $ident = $ID.text; $line = $ID.line; $pos = $ID.pos;}
+	|	tipoSimple {$trad = $tipoSimple.trad; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
+
+
 decl returns [String trad]
-	:	tipoSimple primervarid = varid[$tipoSimple.trad] 
+	:	tipopl varid[$tipopl.trad] (COMA varid[$tipopl.trad])* PYC;	
+	
+	/*tipoSimple primervarid = varid[$tipoSimple.trad] 
 		{
 			$trad = ".locals(" + $primervarid.resultado.toString();
 		}
@@ -78,7 +86,7 @@ decl returns [String trad]
 		)* PYC 
 		{
 			$trad += ")\n";
-		};
+		};*/
 	
 varid[tipoLiteral tipo] returns [Tipo resultado]
 	:	ID 
@@ -821,11 +829,6 @@ visibilidad
 
 args
 	:	(DOUBLE ID (COMA DOUBLE ID)*)?;
-
-// Cambiamos la gramática de tipo a tipopl para no colisionar con la clase Tipo que ya teníamos
-tipopl
-	:	ID
-	|	tipoSimple;
 
 params
 	:	(expr (COMA expr)*)?;
