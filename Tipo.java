@@ -58,10 +58,7 @@ public class Tipo {
 	}
 
 	public boolean esArray(){
-		if(tipo == tipoLiteral.array)
-			return true;
-		else
-			return false;
+		return(tipo == tipoLiteral.array);
 	}
 	
     public Tipo getTipoBase(){

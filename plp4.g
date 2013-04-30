@@ -48,10 +48,28 @@ grammar plp4;
 
 /* Analizador sintáctico: */
 s[String archivo] returns [String resultado]
-	:	{tS = new tablaSimbolos();}clase{$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + $archivo + "' {}\n" + $clase.trad;};
+	:	{
+			tS = new tablaSimbolos();
+			$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + $archivo + "' {}\n";
+		}
+		(clase
+		{
+			$resultado += $clase.trad + "\n";
+		}
+		)+;
 
 clase returns [String trad]
-	:	CLASS SINGLE LLAVEI {$trad=".class 'Single' extends [mscorlib]System.Object \n{\n";} metodo {$trad+=$metodo.trad + "\n}";} LLAVED;
+	:	CLASS ID LLAVEI {$trad=".class '" + ID.text + "' extends [mscorlib]System.Object \n{\n";} (miembro {$trad+=$miembro.trad + "\n}";})+ LLAVED;
+
+miembro returns [String trad]
+	:	campo {$trad = $campo.trad;}
+	|	metodo {$trad = $metodo.trad;};
+campo returns [String trad]
+	:	visibilidad decl {$trad = ".field " + $visibilidad.trad + ""};
+
+visibilidad
+	:	PRIVATE
+	|	PUBLIC;
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
@@ -72,21 +90,20 @@ tipopl returns [tipoLiteral trad, int line, int pos, String ident]
 	|	tipoSimple {$trad = $tipoSimple.trad; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
 
 
+// TODO: parece ser que este ahora tiene que devolver lo que ha declarado, y el de arriba es el que tiene que poner el .locals()
 decl returns [String trad]
-	:	tipopl varid[$tipopl.trad] (COMA varid[$tipopl.trad])* PYC;	
-	
-	/*tipoSimple primervarid = varid[$tipoSimple.trad] 
+	:	tipopl primervarid = varid[$tipopl.trad]
 		{
 			$trad = ".locals(" + $primervarid.resultado.toString();
 		}
-		(COMA nuevovarid = varid[$tipoSimple.trad]
+		(COMA nuevovarid = varid[$tipopl.trad]
 		{
 			$trad+=", " + $nuevovarid.resultado.toString();
 		}
-		)* PYC 
+		)* PYC
 		{
 			$trad += ")\n";
-		};*/
+		};	
 	
 varid[tipoLiteral tipo] returns [Tipo resultado]
 	:	ID 
@@ -816,16 +833,6 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 				throw new Error_9($id.getText(),$id.getLine(),$id.getCharPositionInLine());
 			}
 		};
-
-miembro
-	:	campo
-	|	metodo;
-campo
-	:	visibilidad decl;
-
-visibilidad
-	:	PRIVATE
-	|	PUBLIC;
 
 args
 	:	(DOUBLE ID (COMA DOUBLE ID)*)?;
