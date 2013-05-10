@@ -27,6 +27,10 @@ public class Simbolo {
 	public TipoSimbolo getTipoSimbolo(){
 		return tipo_simb;
 	}
+
+	public String getNombre(){
+		return nombre;
+	}
     
     public tipoLiteral getTipoFinal(){
 		tipoLiteral aux = tipo.getTipo();

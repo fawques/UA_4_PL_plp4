@@ -66,7 +66,7 @@ s[String archivo] returns [String resultado]
 		)+;
 
 clase returns [String trad]
-	:	CLASS ID LLAVEI {$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";numCampo = 0;tS = tSClase = new tablaSimbolos(tSGlobal);} (miembro {$trad+=$miembro.trad + "\n";})+ LLAVED {$trad +="\n}";};
+	:	CLASS ID LLAVEI {$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";numCampo = 0;tS = tSClase = new tablaSimbolos(tSGlobal,$ID.text);} (miembro {$trad+=$miembro.trad + "\n";})+ LLAVED {$trad +="\n}";};
 
 miembro returns [String trad]
 	:	campo {$trad = $campo.trad;}
@@ -83,7 +83,7 @@ visibilidad returns [Visibilidad vis]
 metodo returns [String trad]
 @init{
 		numVariable = 1;
-		tS = tSMetodo = new tablaSimbolos(tSClase);
+		tS = tSMetodo = new tablaSimbolos(tSClase,tSClase.getNombre());
 	}
 	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";}
 	|	PUBLIC 
@@ -804,10 +804,19 @@ base returns [String trad, tipoLiteral tipo, int maxstack]
 			} 
 			$tipo = tipoLiteral.bool;$maxstack = 1;}
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;$maxstack = $expr.maxstack;}
-	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;$maxstack = $ref.maxstack + 1;}
+	|	ref 
+		{
+			if($ref.tipo_simbolo == TipoSimbolo.local){
+				$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;
+			}else if($ref.tipo_simbolo == TipoSimbolo.campo){
+				$trad = "ldarg 0\nldfld " + $ref.tipo + " " + tS.getNombre() + "::"+$ref.nombre + "\n";
+			}
+			$tipo = $ref.tipo;
+			$maxstack = $ref.maxstack + 1;
+		}
 	|	subref PARI params PARD;
 
-ref returns [int variable, tipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo]
+ref returns [int variable, tipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo, String nombre]
 	:	ID 
 		{
 			Simbolo referencia;
@@ -816,6 +825,7 @@ ref returns [int variable, tipoLiteral tipo, String trad, String getDato, boolea
 			    $variable= referencia.posicion_locals; 
 			    $tipo = referencia.tipo.getTipo();
 			    $tipo_simbolo = referencia.getTipoSimbolo();
+			    $nombre = referencia.getNombre();
 			    $trad = "";
 			    $getDato = "";
 			    $indice = referencia.tipo.isIndice();

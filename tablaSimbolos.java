@@ -11,15 +11,28 @@ public class tablaSimbolos {
     
     ArrayList<Simbolo> lista;
     tablaSimbolos anterior;
+    String nombre;
     
     public tablaSimbolos(){
         lista = new ArrayList<Simbolo>();
         anterior = null;
+        nombre = "";
     }
     
     public tablaSimbolos(tablaSimbolos _anterior){
         lista = new ArrayList<Simbolo>();
         anterior = _anterior;
+        nombre = _anterior.getNombre();
+    }
+
+    public tablaSimbolos(tablaSimbolos _anterior, String _nombre){
+        lista = new ArrayList<Simbolo>();
+        anterior = _anterior;
+        nombre = _nombre;
+    }
+
+    public String getNombre(){
+        return nombre;
     }
     
     public void add(String nombre, Tipo tipo, int posicion_max, TipoSimbolo tipoSimb) throws Error_1{
