@@ -39,6 +39,7 @@ grammar plp4;
 @parser::members {
 	tablaSimbolos tS;
 	int numEtiqueta = 0;
+	int numVariableBackup = 1;
 	int numVariable = 1;
 	public void emitErrorMessage(String msg) {
 		System.err.println(msg);
@@ -59,23 +60,45 @@ s[String archivo] returns [String resultado]
 		)+;
 
 clase returns [String trad]
-	:	CLASS ID LLAVEI {$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";} (miembro {$trad+=$miembro.trad + "\n}";})+ LLAVED;
+	:	CLASS ID LLAVEI {$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";} (miembro {$trad+=$miembro.trad + "\n";})+ LLAVED {$trad +="\n}";};
 
 miembro returns [String trad]
 	:	campo {$trad = $campo.trad;}
 	|	metodo {$trad = $metodo.trad;};
 campo returns [String trad]
-	:	visibilidad decl {$trad = ".field " + $visibilidad.trad + $decl.trad + "\n";};
+	:	visibilidad decl[$visibilidad.vis] {$trad = $decl.trad;}; 
 
-visibilidad returns [String trad]
-	:	PRIVATE {$trad = "private";}
-	|	PUBLIC {$trad = "public";};
+visibilidad returns [Visibilidad vis]
+	:	PRIVATE {$vis = Visibilidad.privado;}
+	|	PUBLIC {$vis = Visibilidad.publico;};
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
 metodo returns [String trad]
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";};
-//	|	PUBLIC (tipoSimple)? ID PARI args PARD bloque;
+	:	PUBLIC STATIC VOID ID PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";}
+	|	PUBLIC 
+		{
+			numVariableBackup = numVariable;
+			$trad = ".method public ";
+			tipoLiteral tipo = null;
+		}
+		(tipoSimple
+		{
+			tipo = $tipoSimple.trad;
+		}
+		)?
+		{
+			if(tipo != null){
+				$trad += tipo + " ";
+			}
+			else{
+				$trad += "void ";
+			}
+		} ID PARI args PARD bloque[-1,-1,true]
+		{
+			$trad += $ID.text + "(" + $args.trad + ")" +  " cil managed \n{\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
+			numVariable = numVariableBackup;
+		};
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
@@ -90,25 +113,39 @@ tipopl returns [tipoLiteral trad, int line, int pos, String ident]
 	|	tipoSimple {$trad = $tipoSimple.trad; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
 
 
-// TODO: parece ser que este ahora tiene que devolver lo que ha declarado, y el de arriba es el que tiene que poner el .locals()
-decl returns [String trad]
-	:	tipopl primervarid = varid[$tipopl.trad]
+decl[Visibilidad vis] returns [String trad]
+	:	tipopl primervarid = varid[$tipopl.trad,vis]
 		{
-			$trad = ".locals(" + $primervarid.resultado.toString();
+			$trad = "";
+			if(vis == Visibilidad.none)
+			{
+				$trad += ".locals(" + $primervarid.resultado.toString() + " '" + $primervarid.ident + "'";
+			}
+			else{
+				$trad += ".field " + vis + " " + $primervarid.resultado.toString() + " '" + $primervarid.ident + "'\n";
+			}
+			
 		}
-		(COMA nuevovarid = varid[$tipopl.trad]
+		(COMA nuevovarid = varid[$tipopl.trad,vis]
 		{
-			$trad+=", " + $nuevovarid.resultado.toString();
+			if(vis == Visibilidad.none)
+				$trad+=", " + $nuevovarid.resultado.toString();
+			else{
+				$trad += ".field " + vis + " " + $nuevovarid.resultado.toString() + " '" + $nuevovarid.ident + "'\n";
+			}
 		}
 		)* PYC
 		{
-			$trad += ")\n";
+			if(vis == Visibilidad.none)
+				$trad += ")";
+			$trad += "\n";
 		};	
 	
-varid[tipoLiteral tipo] returns [Tipo resultado]
+varid[tipoLiteral tipo,Visibilidad vis] returns [Tipo resultado, String ident]
 	:	ID 
 		{
 			$resultado = new Tipo($tipo);
+			$ident = $ID.text;
 		} 
 		(CORI 
 		{
@@ -120,12 +157,15 @@ varid[tipoLiteral tipo] returns [Tipo resultado]
 		}
 		)* CORD)?
 		{
-			try{
-				tS.add($ID.text,$resultado,numVariable);
-				numVariable++;
-			}catch(Error_1 ex){
-				ex.setFilaColumna($ID.line,$ID.pos);
-				throw ex;
+			//TODO: añadirlo a la tabla como un campo
+			if(vis == Visibilidad.none){
+				try{
+					tS.add($ID.text,$resultado,numVariable,TipoSimbolo.local);
+					numVariable++;
+				}catch(Error_1 ex){
+					ex.setFilaColumna($ID.line,$ID.pos);
+					throw ex;
+				}
 			}
 		};
 
@@ -139,7 +179,7 @@ declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad,
 			$trad += $instr.trad;
 			$maxstack = Math.max($maxstack,$instr.maxstack);
 		}
-		| decl
+		| decl[Visibilidad.none]
 		{
 			$trad += $decl.trad;
 		})*;
@@ -224,7 +264,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 				Tipo tipoIterador = new Tipo(tFinal,true);
 				int posicion = numVariable;
 
-				tS.add($iterador.text,tipoIterador,numVariable);
+				tS.add($iterador.text,tipoIterador,numVariable,TipoSimbolo.local);
 				numVariable++;
 				iteradorInt = numVariable;
 				numVariable++;
@@ -269,7 +309,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			$trad = ".locals(int32)\n";
 			Tipo tipoIterador = new Tipo(tipoLiteral.int32, true);
 			int posicion =numVariable;
-			tS.add($ID.text,tipoIterador,numVariable);
+			tS.add($ID.text,tipoIterador,numVariable,TipoSimbolo.local);
 				numVariable++;
 			$trad += $inicializacion.trad;
 			if($inicializacion.tipo == tipoLiteral.float64)
@@ -834,8 +874,19 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 			}
 		};
 
-args
-	:	(DOUBLE ID (COMA DOUBLE ID)*)?;
+args returns[String trad]
+	:	{
+			$trad = "";
+		}
+		(DOUBLE primerid=ID 
+		{
+			$trad += "float64 '" + $primerid.text + "'";
+		}
+		(COMA DOUBLE nuevoid=ID
+		{
+			$trad += ", float64 '" + $nuevoid.text + "'";
+		}
+		)*)?;
 
 params
 	:	(expr (COMA expr)*)?;
@@ -848,7 +899,7 @@ subref
 
 CLASS	:	'class';
 VOID	:	'void';
-MAIN	:	'Main';
+//MAIN	:	'Main';
 INT	:	'int';
 DOUBLE	:	'double';
 BOOL	:	'bool';

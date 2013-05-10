@@ -22,8 +22,8 @@ public class tablaSimbolos {
         anterior = _anterior;
     }
     
-    public void add(String nombre, Tipo tipo, int posicion_max) throws Error_1{
-        Simbolo item = new Simbolo(nombre,posicion_max, tipo);
+    public void add(String nombre, Tipo tipo, int posicion_max, TipoSimbolo tipoSimb) throws Error_1{
+        Simbolo item = new Simbolo(nombre,posicion_max, tipo, tipoSimb);
         if (!contiene(item)) {
             lista.add(item);
         }else{
