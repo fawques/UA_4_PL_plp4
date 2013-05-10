@@ -485,7 +485,11 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 cambio[int variable, String array_pasado, boolean indice, tipoLiteral tipo, TipoSimbolo tipo_simbolo] returns [String trad, int maxstack]
 	:	ASIG expr PYC
 		{
-			String expresion = $expr.trad;
+			String expresion = "";
+			if(tipo_simbolo == TipoSimbolo.campo){
+				expresion += "ldarg 0\n";
+			}
+			expresion += $expr.trad;
 			if($indice){
 				throw new Error_15($ASIG.line,$ASIG.pos);
 			}
@@ -512,7 +516,12 @@ cambio[int variable, String array_pasado, boolean indice, tipoLiteral tipo, Tipo
 			}
 
 			if($array_pasado.equals("")){
-				$trad = expresion + "stloc " + $variable + "\n";
+				if(tipo_simbolo == TipoSimbolo.local){
+					$trad = expresion + "stloc " + $variable + "\n";
+				}else if(tipo_simbolo == TipoSimbolo.campo){
+					// TODO: poner esto bien
+					$trad = expresion + "stfld " + tipoExpr + " " + tS.getNombre() + "::"+"nombre_hay_que_ponerlo_bien" + "\n";
+				}
 				$maxstack = $expr.maxstack;				
 			}else{
 				
