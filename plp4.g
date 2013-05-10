@@ -5,6 +5,7 @@ grammar plp4;
 */ 
 
 @header {
+	import java.util.ArrayList;
 	import java.lang.String;
 	import java.lang.Math;
 }
@@ -37,10 +38,14 @@ grammar plp4;
 
 
 @parser::members {
-	tablaSimbolos tS;
+	ArrayList<tablaSimbolos> listatS = new ArrayList<tablaSimbolos>();
+	tablaSimbolos tS = null;
+	tablaSimbolos tSGlobal = null;
+	tablaSimbolos tSClase = null;
+	tablaSimbolos tSMetodo = null;
 	int numEtiqueta = 0;
-	int numVariableBackup = 1;
 	int numVariable = 1;
+	int numCampo = 0;
 	public void emitErrorMessage(String msg) {
 		System.err.println(msg);
 		System.exit(1);
@@ -50,7 +55,8 @@ grammar plp4;
 /* Analizador sintáctico: */
 s[String archivo] returns [String resultado]
 	:	{
-			tS = new tablaSimbolos();
+			tS = tSGlobal = new tablaSimbolos(); 
+			listatS.add(tSGlobal);
 			$resultado = ".assembly extern mscorlib {}\n" + ".assembly '" + $archivo + "' {}\n";
 		}
 		(clase
@@ -60,7 +66,7 @@ s[String archivo] returns [String resultado]
 		)+;
 
 clase returns [String trad]
-	:	CLASS ID LLAVEI {$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";} (miembro {$trad+=$miembro.trad + "\n";})+ LLAVED {$trad +="\n}";};
+	:	CLASS ID LLAVEI {$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";numCampo = 0;tS = tSClase = new tablaSimbolos(tSGlobal);} (miembro {$trad+=$miembro.trad + "\n";})+ LLAVED {$trad +="\n}";};
 
 miembro returns [String trad]
 	:	campo {$trad = $campo.trad;}
@@ -75,10 +81,13 @@ visibilidad returns [Visibilidad vis]
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
 metodo returns [String trad]
+@init{
+		numVariable = 1;
+		tS = tSMetodo = new tablaSimbolos(tSClase);
+	}
 	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";}
 	|	PUBLIC 
 		{
-			numVariableBackup = numVariable;
 			$trad = ".method public ";
 			tipoLiteral tipo = null;
 		}
@@ -97,7 +106,6 @@ metodo returns [String trad]
 		} ID PARI args PARD bloque[-1,-1,true]
 		{
 			$trad += $ID.text + "(" + $args.trad + ")" +  " cil managed \n{\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
-			numVariable = numVariableBackup;
 		};
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
@@ -162,6 +170,14 @@ varid[tipoLiteral tipo,Visibilidad vis] returns [Tipo resultado, String ident]
 				try{
 					tS.add($ID.text,$resultado,numVariable,TipoSimbolo.local);
 					numVariable++;
+				}catch(Error_1 ex){
+					ex.setFilaColumna($ID.line,$ID.pos);
+					throw ex;
+				}
+			}else{
+				try{
+					tS.add($ID.text,$resultado,numCampo,TipoSimbolo.campo);
+					numCampo++;
 				}catch(Error_1 ex){
 					ex.setFilaColumna($ID.line,$ID.pos);
 					throw ex;
@@ -382,7 +398,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}
 			$maxstack = 0;
 		}
-	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo]{$trad = $cambio.trad;$maxstack = Math.max($ref.maxstack,$cambio.maxstack);}
+	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo,$ref.tipo_simbolo]{$trad = $cambio.trad;$maxstack = Math.max($ref.maxstack,$cambio.maxstack);}
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
@@ -466,7 +482,7 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		)*
 		{$tipoFinal = $tipo;};
-cambio[int variable, String array_pasado, boolean indice, tipoLiteral tipo] returns [String trad, int maxstack]
+cambio[int variable, String array_pasado, boolean indice, tipoLiteral tipo, TipoSimbolo tipo_simbolo] returns [String trad, int maxstack]
 	:	ASIG expr PYC
 		{
 			String expresion = $expr.trad;
@@ -791,7 +807,7 @@ base returns [String trad, tipoLiteral tipo, int maxstack]
 	|	ref {$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;$tipo = $ref.tipo;$maxstack = $ref.maxstack + 1;}
 	|	subref PARI params PARD;
 
-ref returns [int variable, tipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack]
+ref returns [int variable, tipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo]
 	:	ID 
 		{
 			Simbolo referencia;
@@ -799,6 +815,7 @@ ref returns [int variable, tipoLiteral tipo, String trad, String getDato, boolea
 			    referencia = tS.getSimbolo($ID.text);
 			    $variable= referencia.posicion_locals; 
 			    $tipo = referencia.tipo.getTipo();
+			    $tipo_simbolo = referencia.getTipoSimbolo();
 			    $trad = "";
 			    $getDato = "";
 			    $indice = referencia.tipo.isIndice();

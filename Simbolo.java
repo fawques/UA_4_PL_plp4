@@ -23,6 +23,10 @@ public class Simbolo {
     public Tipo getTipo(){
 		return tipo;
 	}
+
+	public TipoSimbolo getTipoSimbolo(){
+		return tipo_simb;
+	}
     
     public tipoLiteral getTipoFinal(){
 		tipoLiteral aux = tipo.getTipo();
