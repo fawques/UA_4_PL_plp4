@@ -99,7 +99,7 @@ visibilidad returns [Visibilidad vis]
 metodo returns [String trad]
 @init{
 		numVariable = 1;
-		tS = tSMetodo = new tablaSimbolos(tSClase,tSClase.getNombre());
+		tS = tSMetodo = new tablaSimbolos(tSClase);
 	}
 	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]
 		{
