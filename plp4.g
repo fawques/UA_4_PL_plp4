@@ -121,11 +121,17 @@ metodo returns [String trad]
 				$trad += tipo + " ";
 			}
 			else{
-				$trad += "void ";
+				// Constructor
+				$trad += "specialname rtspecialname instance void ";
+
 			}
 		} ID PARI args PARD bloque[-1,-1,true]
 		{
-			$trad += $ID.text + "(" + $args.trad + ")" +  " cil managed \n{\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
+			if(tipo != null){
+				$trad += $ID.text + "(" + $args.trad + ")" +  " cil managed \n{\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
+			}else{
+				$trad += ".ctor(" + $args.trad + ") cil managed\n{\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
+			}
 			tS = tS.pop();
 		};
 
