@@ -58,6 +58,15 @@ public class Simbolo {
 	@Override
     public boolean equals(Object simb){
         Simbolo s = (Simbolo)simb;
-        return (nombre == null ? s.nombre == null : nombre.equals(s.nombre));
+        if(tipo_simb != TipoSimbolo.metodo && tipo_simb != TipoSimbolo.constructor)
+        	return (nombre == null ? s.nombre == null : nombre.equals(s.nombre));
+        else{
+        	if(nombre == s.nombre){
+        		if(getDimension() == s.getDimension())
+        			return true;
+        	}
+        	return false;
+
+        }
     }
 }

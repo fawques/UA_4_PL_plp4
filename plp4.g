@@ -948,20 +948,20 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 			}
 		};
 
-args returns[String trad, int numArgs]
+args returns[String trad, int dimension]
 	:	{
-			$numArgs = 0;
+			$dimension = 0;
 			$trad = "";
 		}
 		(DOUBLE primerid=ID 
 		{
 			$trad += "float64 '" + $primerid.text + "'";
-			$numArgs ++;
+			$dimension ++;
 		}
 		(COMA DOUBLE nuevoid=ID
 		{
 			$trad += ", float64 '" + $nuevoid.text + "'";
-			$numArgs ++;
+			$dimension ++;
 		}
 		)*)?;
 

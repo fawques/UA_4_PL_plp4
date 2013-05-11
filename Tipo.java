@@ -20,7 +20,7 @@ public class Tipo {
     public Tipo(TipoLiteral _tipo){
 
         tipo = _tipo;
-        dimension = 0;
+        dimension = 1;
         tipobase = null;
         tS = null;
         array = false;
@@ -39,7 +39,7 @@ public class Tipo {
     
     public Tipo(TipoLiteral _tipo, boolean _indice){
         tipo = _tipo;
-        dimension = 0;
+        dimension = 1;
         tipobase = null;
         indice = true;
     }
@@ -90,7 +90,7 @@ public class Tipo {
 		if(array){
 			return dimension*tipobase.getDimensionTotal();
 		}else{
-			return 1;
+			return dimension;
 		}
 	}
 	
