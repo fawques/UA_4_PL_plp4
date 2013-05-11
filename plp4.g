@@ -138,16 +138,13 @@ metodo returns [String trad,boolean constrDefecto]
 
 			if(!constructor){
 				if(tipo == null){
-					//throw Error 32
-					System.err.println("======================= ERROR 32 ===================");
+					throw new Error_32($ID.line,$ID.pos);
 				}
 				$trad += tipo + "  " + $ID.text ;
 				tS.add($ID.text, new Tipo(tipo,$args.dimension), 0, Visibilidad.publico, TipoSimbolo.metodo);
 			}else{
 				if(tipo != null){
-					//throw Error 31
-					System.err.println("======================= ERROR 31 ===================");
-
+					throw new Error_31($ID.line,$ID.pos);
 				}
 				$trad += "specialname rtspecialname instance void .ctor";
 				if($args.dimension != 0){
