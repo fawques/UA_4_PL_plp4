@@ -35,8 +35,8 @@ public class tablaSimbolos {
         return nombre;
     }
     
-    public void add(String nombre, Tipo tipo, int posicion_max, TipoSimbolo tipoSimb) throws Error_1{
-        Simbolo item = new Simbolo(nombre,posicion_max, tipo, tipoSimb);
+    public void add(String nombre, Tipo tipo, int posicion_max, Visibilidad _vis, TipoSimbolo tipoSimb) throws Error_1{
+        Simbolo item = new Simbolo(nombre,posicion_max, tipo,_vis, tipoSimb);
         if (!contiene(item)) {
             lista.add(item);
         }else{

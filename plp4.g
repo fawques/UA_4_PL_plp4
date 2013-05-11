@@ -66,7 +66,23 @@ s[String archivo] returns [String resultado]
 		)+;
 
 clase returns [String trad]
-	:	CLASS ID LLAVEI {$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";numCampo = 0;tS = tSClase = new tablaSimbolos(tSGlobal,$ID.text);} (miembro {$trad+=$miembro.trad + "\n";})+ LLAVED {$trad +="\n}";};
+	:	CLASS ID LLAVEI 
+		{
+			$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";
+			numCampo = 0;
+			tS.add($ID.text, new Tipo(tipoLiteral.clase), 0, Visibilidad.publico, TipoSimbolo.clase);
+			tS = tSClase = new tablaSimbolos(tSGlobal,$ID.text);
+			tS.add($ID.text, new Tipo(tipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
+		}
+		(miembro 
+		{
+			$trad+=$miembro.trad + "\n";
+		}
+		)+ LLAVED 
+		{
+			$trad +="\n}";
+			tS=tS.pop();
+		};
 
 miembro returns [String trad]
 	:	campo {$trad = $campo.trad;}
@@ -85,7 +101,11 @@ metodo returns [String trad]
 		numVariable = 1;
 		tS = tSMetodo = new tablaSimbolos(tSClase,tSClase.getNombre());
 	}
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]{$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";}
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]
+		{
+			$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
+			tS = tS.pop();
+		}
 	|	PUBLIC 
 		{
 			$trad = ".method public ";
@@ -106,6 +126,7 @@ metodo returns [String trad]
 		} ID PARI args PARD bloque[-1,-1,true]
 		{
 			$trad += $ID.text + "(" + $args.trad + ")" +  " cil managed \n{\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
+			tS = tS.pop();
 		};
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
@@ -168,7 +189,7 @@ varid[tipoLiteral tipo,Visibilidad vis] returns [Tipo resultado, String ident]
 			//TODO: añadirlo a la tabla como un campo
 			if(vis == Visibilidad.none){
 				try{
-					tS.add($ID.text,$resultado,numVariable,TipoSimbolo.local);
+					tS.add($ID.text,$resultado,numVariable,vis,TipoSimbolo.local);
 					numVariable++;
 				}catch(Error_1 ex){
 					ex.setFilaColumna($ID.line,$ID.pos);
@@ -176,7 +197,7 @@ varid[tipoLiteral tipo,Visibilidad vis] returns [Tipo resultado, String ident]
 				}
 			}else{
 				try{
-					tS.add($ID.text,$resultado,numCampo,TipoSimbolo.campo);
+					tS.add($ID.text,$resultado,numCampo,vis,TipoSimbolo.campo);
 					numCampo++;
 				}catch(Error_1 ex){
 					ex.setFilaColumna($ID.line,$ID.pos);
@@ -280,7 +301,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 				Tipo tipoIterador = new Tipo(tFinal,true);
 				int posicion = numVariable;
 
-				tS.add($iterador.text,tipoIterador,numVariable,TipoSimbolo.local);
+				tS.add($iterador.text,tipoIterador,numVariable,Visibilidad.publico, TipoSimbolo.local);
 				numVariable++;
 				iteradorInt = numVariable;
 				numVariable++;
@@ -325,7 +346,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			$trad = ".locals(int32)\n";
 			Tipo tipoIterador = new Tipo(tipoLiteral.int32, true);
 			int posicion =numVariable;
-			tS.add($ID.text,tipoIterador,numVariable,TipoSimbolo.local);
+			tS.add($ID.text,tipoIterador,numVariable,Visibilidad.publico, TipoSimbolo.local);
 				numVariable++;
 			$trad += $inicializacion.trad;
 			if($inicializacion.tipo == tipoLiteral.float64)
@@ -826,7 +847,7 @@ base returns [String trad, tipoLiteral tipo, int maxstack]
 	|	subref PARI params PARD;
 
 ref returns [int variable, tipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo, String nombre]
-	:	ID 
+	:	ID // esto será un subref
 		{
 			Simbolo referencia;
 			try{
@@ -910,17 +931,20 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 			}
 		};
 
-args returns[String trad]
+args returns[String trad, int numArgs]
 	:	{
+			$numArgs = 0;
 			$trad = "";
 		}
 		(DOUBLE primerid=ID 
 		{
 			$trad += "float64 '" + $primerid.text + "'";
+			$numArgs ++;
 		}
 		(COMA DOUBLE nuevoid=ID
 		{
 			$trad += ", float64 '" + $nuevoid.text + "'";
+			$numArgs ++;
 		}
 		)*)?;
 

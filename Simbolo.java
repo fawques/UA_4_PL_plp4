@@ -13,10 +13,11 @@ public class Simbolo {
     TipoSimbolo tipo_simb;
     
     
-    public Simbolo(String _nombre, int _pos, Tipo _tipo, TipoSimbolo _tipoSimb) {
+    public Simbolo(String _nombre, int _pos, Tipo _tipo, Visibilidad _vis, TipoSimbolo _tipoSimb) {
         nombre = _nombre;
         posicion_locals = _pos;
         tipo = _tipo;
+        visibilidad = _vis;
         tipo_simb = _tipoSimb;
     }
     
