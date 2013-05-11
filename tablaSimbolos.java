@@ -92,6 +92,10 @@ public class tablaSimbolos {
 		
 	}
 
+    public ArrayList<Simbolo> getListaSimbolos(){
+        return lista;
+    }
+
     
     public tablaSimbolos pop(){
         return anterior;
