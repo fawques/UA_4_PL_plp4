@@ -113,4 +113,13 @@ public class tablaSimbolos {
         return lista.contains(item);
     }
 
+    @Override
+    public String toString(){
+        String salida = "tabla de símbolos: " + "\n";
+        for (Simbolo s : lista) {
+            salida += s + "\n";
+        }
+        return salida;
+    }
+
 }

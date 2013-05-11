@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 public class Tipo {
     
-    tipoLiteral tipo;
+    TipoLiteral tipo;
     int dimension;
     Tipo tipobase;
     tablaSimbolos tS;
@@ -17,7 +17,7 @@ public class Tipo {
     boolean array;
     boolean indice;
     
-    public Tipo(tipoLiteral _tipo){
+    public Tipo(TipoLiteral _tipo){
 
         tipo = _tipo;
         dimension = 0;
@@ -27,8 +27,17 @@ public class Tipo {
         indice = false;
 		
     }
+
+    public Tipo(TipoLiteral _tipo, int _dimension){
+    	tipo = _tipo;
+    	dimension = _dimension;
+    	tipobase = null;
+    	tS = null;
+    	array = false;
+    	indice = false;
+    }
     
-    public Tipo(tipoLiteral _tipo, boolean _indice){
+    public Tipo(TipoLiteral _tipo, boolean _indice){
         tipo = _tipo;
         dimension = 0;
         tipobase = null;
@@ -36,8 +45,8 @@ public class Tipo {
     }
     
     
-    public Tipo(tipoLiteral _tipo, Tipo _tipobase){
-        tipo = tipoLiteral.array;
+    public Tipo(TipoLiteral _tipo, Tipo _tipobase){
+        tipo = TipoLiteral.array;
         dimension = -1;
         tipobase = _tipobase;
         array = true;
@@ -49,7 +58,7 @@ public class Tipo {
         tipobase = _anterior.tipobase;
     }
     
-    public tipoLiteral getTipo(){
+    public TipoLiteral getTipo(){
 		return tipo;
 	} 
 	
@@ -58,14 +67,14 @@ public class Tipo {
 	}
 
 	public boolean esArray(){
-		return(tipo == tipoLiteral.array);
+		return(tipo == TipoLiteral.array);
 	}
 	
     public Tipo getTipoBase(){
 		return tipobase;
 	}
 	
-	public tipoLiteral getTipoFinal(){
+	public TipoLiteral getTipoFinal(){
 		if(array){
 			return tipobase.getTipoFinal();
 		} else{

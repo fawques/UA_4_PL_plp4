@@ -33,9 +33,9 @@ public class Simbolo {
 		return nombre;
 	}
     
-    public tipoLiteral getTipoFinal(){
-		tipoLiteral aux = tipo.getTipo();
-		if(aux == tipoLiteral.array){
+    public TipoLiteral getTipoFinal(){
+		TipoLiteral aux = tipo.getTipo();
+		if(aux == TipoLiteral.array){
 			return tipo.getTipoFinal();
 		} else{
 			return aux;
@@ -52,7 +52,7 @@ public class Simbolo {
     
     @Override
     public String toString(){
-		return nombre + ":" + tipo + "@" + posicion_locals;
+		return visibilidad + " " + nombre + ":" + tipo + " @ " + posicion_locals + " (" + tipo_simb + ")";
 	}
 	
 	@Override
