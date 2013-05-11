@@ -177,28 +177,37 @@ tipoSimple returns [TipoLiteral trad, int line, int pos]
 // Cambiamos la gramática de tipo a tipopl para no colisionar con la clase Tipo que ya teníamos
 tipopl returns [TipoLiteral trad, int line, int pos, String ident]
 	:	ID {$trad = TipoLiteral.clase; $ident = $ID.text; $line = $ID.line; $pos = $ID.pos;}
-	|	tipoSimple {$trad = $tipoSimple.trad; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
+	|	tipoSimple {$trad = $tipoSimple.trad; $ident = ""; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
 
 
 decl[Visibilidad vis] returns [String trad]
 	:	tipopl primervarid = varid[$tipopl.trad,vis]
 		{
+			String tipo = $primervarid.resultado.toString();
 			$trad = "";
 			if(vis == Visibilidad.none)
 			{
-				$trad += ".locals(" + $primervarid.resultado.toString() + " '" + $primervarid.ident + "'";
+				$trad += ".locals(" + tipo + " '" + $primervarid.ident + "'";
 			}
 			else{
-				$trad += ".field " + vis + " " + $primervarid.resultado.toString() + " '" + $primervarid.ident + "'\n";
+				if($primervarid.resultado.getTipo() == TipoLiteral.clase){
+					tipo = $tipopl.ident;
+				}
+				
+				$trad += ".field " + vis + " " + tipo + " '" + $primervarid.ident + "'\n";
 			}
 			
 		}
 		(COMA nuevovarid = varid[$tipopl.trad,vis]
 		{
+			tipo = $nuevovarid.resultado.toString();
 			if(vis == Visibilidad.none)
-				$trad+=", " + $nuevovarid.resultado.toString();
+				$trad+=", " + tipo;
 			else{
-				$trad += ".field " + vis + " " + $nuevovarid.resultado.toString() + " '" + $nuevovarid.ident + "'\n";
+				if($nuevovarid.resultado.getTipo() == TipoLiteral.clase){
+					tipo = $tipopl.ident;
+				}
+				$trad += ".field " + vis + " " + tipo + " '" + $nuevovarid.ident + "'\n";
 			}
 		}
 		)* PYC
@@ -224,7 +233,6 @@ varid[TipoLiteral tipo,Visibilidad vis] returns [Tipo resultado, String ident]
 		}
 		)* CORD)?
 		{
-			//TODO: añadirlo a la tabla como un campo
 			if(vis == Visibilidad.none){
 				try{
 					tS.add($ID.text,$resultado,numVariable,vis,TipoSimbolo.local);
