@@ -43,6 +43,7 @@ grammar plp4;
 	tablaSimbolos tSGlobal = null;
 	tablaSimbolos tSClase = null;
 	tablaSimbolos tSMetodo = null;
+	String claseActual = "";
 	int numEtiqueta = 0;
 	int numVariable = 1;
 	int numCampo = 0;
@@ -68,25 +69,35 @@ s[String archivo] returns [String resultado]
 clase returns [String trad]
 	:	CLASS ID LLAVEI 
 		{
+			boolean constrDefecto = false;
 			$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";
 			numCampo = 0;
-			tS.add($ID.text, new Tipo(TipoLiteral.clase), 0, Visibilidad.publico, TipoSimbolo.clase);
-			tS = tSClase = new tablaSimbolos(tSGlobal,$ID.text);
-			tS.add($ID.text, new Tipo(TipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
+			claseActual = $ID.text;
+			tS.add(claseActual, new Tipo(TipoLiteral.clase), 0, Visibilidad.publico, TipoSimbolo.clase);
+			tS = tSClase = new tablaSimbolos(tSGlobal,claseActual);
+			tS.add(claseActual, new Tipo(TipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
 		}
 		(miembro 
 		{
 			$trad+=$miembro.trad + "\n";
+			if($miembro.constrDefecto == true)
+				constrDefecto = true;
 		}
 		)+ LLAVED 
 		{
-			$trad +="\n}";
+			if(!constrDefecto){
+				$trad += ".method public specialname rtspecialname instance void .ctor() cil managed\n{\n";
+				//TODO: añadir la inicialización de los campos de la clase
+				$trad += ".maxstack 1\nldarg 0\ncall instance void [mscorlib]System.Object::.ctor()\nret\n";
+				$trad += "}\n";
+			}
+			$trad +="}";
 			tS=tS.pop();
 		};
 
-miembro returns [String trad]
-	:	campo {$trad = $campo.trad;}
-	|	metodo {$trad = $metodo.trad;};
+miembro returns [String trad, boolean constrDefecto]
+	:	campo {$trad = $campo.trad;$constrDefecto = false;}
+	|	metodo {$trad = $metodo.trad;$constrDefecto = $metodo.constrDefecto;};
 campo returns [String trad]
 	:	visibilidad decl[$visibilidad.vis] {$trad = $decl.trad;}; 
 
@@ -96,9 +107,10 @@ visibilidad returns [Visibilidad vis]
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
-metodo returns [String trad]
+metodo returns [String trad,boolean constrDefecto]
 @init{
 		numVariable = 1;
+		$constrDefecto = false;
 	}
 	:	{
 			tS = tSMetodo = new tablaSimbolos(tSClase);
@@ -110,6 +122,7 @@ metodo returns [String trad]
 		}
 	|	PUBLIC 
 		{
+			boolean constructor = false;
 			$trad = ".method public ";
 			TipoLiteral tipo = null;
 		}
@@ -117,31 +130,42 @@ metodo returns [String trad]
 		{
 			tipo = $tipoSimple.trad;
 		}
-		)?
+		)? ID PARI args PARD 
 		{
-			if(tipo != null){
-				$trad += tipo + " ";
+			if($ID.text.equals(claseActual)){
+				constructor = true;
 			}
-			else{
-				// Constructor
-				$trad += "specialname rtspecialname instance void ";
 
-			}
-		} ID PARI args PARD 
-		{
-			if(tipo != null){
-				$trad += $ID.text ;
-				tS.add($ID.text, new Tipo(), int posicion_max, Visibilidad _vis, TipoSimbolo tipoSimb);
+			if(!constructor){
+				if(tipo == null){
+					//throw Error 32
+					System.err.println("======================= ERROR 32 ===================");
+				}
+				$trad += tipo + "  " + $ID.text ;
+				tS.add($ID.text, new Tipo(tipo,$args.dimension), 0, Visibilidad.publico, TipoSimbolo.metodo);
 			}else{
-				$trad += ".ctor(";
-				tS.add();
+				if(tipo != null){
+					//throw Error 31
+					System.err.println("======================= ERROR 31 ===================");
+
+				}
+				$trad += "specialname rtspecialname instance void .ctor";
+				if($args.dimension != 0){
+					tS.add($ID.text, new Tipo(TipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
+				}else{
+					$constrDefecto = true;
+				}
 			}
 			
 			tS = tSMetodo = new tablaSimbolos(tSClase);
 		}
 		bloque[-1,-1,true]
 		{
-			$trad += "(" + $args.trad + ")" +  " cil managed \n\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
+			$trad += "(" + $args.trad + ")" +  " cil managed \n{\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad;
+			if(tipo == null){
+				$trad += "ldarg 0\ncall instance void [mscorlib]System.Object::.ctor()";
+			}
+			$trad += "\n ret\n}";
 			tS = tS.pop();
 			System.err.println(tS);
 		};
