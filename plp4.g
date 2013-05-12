@@ -43,7 +43,10 @@ grammar plp4;
 	tablaSimbolos tSGlobal = null;
 	tablaSimbolos tSClase = null;
 	tablaSimbolos tSMetodo = null;
+	
 	String claseActual = "";
+	boolean estoyEnMain = false;
+
 	int numEtiqueta = 0;
 	int numVariable = 1;
 	int numCampo = 0;
@@ -115,10 +118,14 @@ metodo returns [String trad,boolean constrDefecto]
 		$constrDefecto = false;
 		tS = tSMetodo = new tablaSimbolos(tSClase);
 	}
-	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]
+	:	{
+			estoyEnMain = true;			
+		}
+		PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]
 		{
 			$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
 			tS = tS.pop();
+			estoyEnMain = false;
 		}
 	|	PUBLIC 
 		{
@@ -477,8 +484,10 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			Tipo tipoCompleto = simb.getTipo();
 			TipoSimbolo tipo_simbolo = simb.getTipoSimbolo();
 			$trad = "";
-			if(tipo_simbolo == TipoSimbolo.campo){
+			if(tipo_simbolo == TipoSimbolo.campo && !estoyEnMain){
 				$trad = "ldarg 0\n";
+			}else if(tipo_simbolo == TipoSimbolo.campo && estoyEnMain){
+				throw new Error_27($ID.text,$ID.line,$ID.pos);
 			}
 			if(!simb.esArray()){
 				throw new Error_11($ID.text,$ID.line,$ID.pos);
@@ -533,8 +542,10 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		{
 			$trad = "";
 			Simbolo simb = tS.getSimbolo($variable.text);
-			if(simb.getTipoSimbolo() == TipoSimbolo.campo){
-				$trad += "ldarg 0\n";
+			if(simb.getTipoSimbolo() == TipoSimbolo.campo && !estoyEnMain){
+				$trad = "ldarg 0\n";
+			}else if(simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
+				throw new Error_27($variable.text,$variable.line,$variable.pos);
 			}
 			$trad += $params.trad;
 			$trad += "newobj instance void '" + $tipoClase.text + "'::.ctor(";
@@ -591,8 +602,10 @@ cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, Tipo
 	:	ASIG expr PYC
 		{
 			String expresion = "";
-			if(tipo_simbolo == TipoSimbolo.campo){
-				expresion += "ldarg 0\n";
+			if($tipo_simbolo == TipoSimbolo.campo && !estoyEnMain){
+				expresion = "ldarg 0\n";
+			}else if($tipo_simbolo == TipoSimbolo.campo && estoyEnMain){
+				throw new Error_27("TODO: ESTO HAY QUE CAMBIARLO",0,0);
 			}
 			expresion += $expr.trad;
 			if($indice){
