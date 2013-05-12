@@ -465,7 +465,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}
 			$maxstack = 0;
 		}
-	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo,$ref.tipo_simbolo]{$trad = $cambio.trad;$maxstack = Math.max($ref.maxstack,$cambio.maxstack);}
+	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo,$ref.tipo_simbolo,$ref.referencia]{$trad = $cambio.trad;$maxstack = Math.max($ref.maxstack,$cambio.maxstack);}
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
@@ -559,7 +559,7 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		)*
 		{$tipoFinal = $tipo;};
-cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, TipoSimbolo tipo_simbolo] returns [String trad, int maxstack]
+cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, TipoSimbolo tipo_simbolo, Simbolo simb] returns [String trad, int maxstack]
 	:	ASIG expr PYC
 		{
 			String expresion = "";
@@ -596,8 +596,7 @@ cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, Tipo
 				if(tipo_simbolo == TipoSimbolo.local){
 					$trad = expresion + "stloc " + $variable + "\n";
 				}else if(tipo_simbolo == TipoSimbolo.campo){
-					// TODO: poner esto bien
-					$trad = expresion + "stfld " + tipoExpr + " " + tS.getNombre() + "::"+"nombre_hay_que_ponerlo_bien" + "\n";
+					$trad = expresion + "stfld " + tipoExpr + " " + tS.getNombre() + "::"+$simb.getNombre()+ "\n";
 				}
 				$maxstack = $expr.maxstack;				
 			}else{
@@ -902,19 +901,18 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 		}
 	|	subref PARI params PARD;
 
-ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo, String nombre]
+ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo, String nombre, Simbolo referencia]
 	:	ID // esto será un subref
 		{
-			Simbolo referencia;
 			try{
-			    referencia = tS.getSimbolo($ID.text);
-			    $variable= referencia.posicion_locals; 
-			    $tipo = referencia.tipo.getTipo();
-			    $tipo_simbolo = referencia.getTipoSimbolo();
-			    $nombre = referencia.getNombre();
+			    $referencia = tS.getSimbolo($ID.text);
+			    $variable= $referencia.posicion_locals; 
+			    $tipo = $referencia.tipo.getTipo();
+			    $tipo_simbolo = $referencia.getTipoSimbolo();
+			    $nombre = $referencia.getNombre();
 			    $trad = "";
 			    $getDato = "";
-			    $indice = referencia.tipo.isIndice();
+			    $indice = $referencia.tipo.isIndice();
 			    $maxstack = 0;
 			}catch(Error_2 e){
 			    e.setFilaColumna($ID.line,$ID.pos);
@@ -923,9 +921,9 @@ ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolea
 
 
 		} 
-		(CORI indices[referencia, $ID, $CORI] CORD
+		(CORI indices[$referencia, $ID, $CORI] CORD
 		{
-			$tipo = referencia.tipo.getTipoFinal();
+			$tipo = $referencia.tipo.getTipoFinal();
 			$trad += "\n" + $indices.trad ;
 			$getDato = "ldelem.";
 			if($tipo == TipoLiteral.int32 || $tipo == TipoLiteral.bool){
@@ -937,7 +935,7 @@ ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolea
 		}
 		)?
 		{
-			if(referencia.esArray() && $getDato.equals("")){
+			if($referencia.esArray() && $getDato.equals("")){
 				throw new Error_9($ID.text,$ID.line,$ID.pos);
 			}
 		};
