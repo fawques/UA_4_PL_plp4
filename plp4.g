@@ -187,6 +187,10 @@ decl[Visibilidad vis] returns [String trad]
 			$trad = "";
 			if(vis == Visibilidad.none)
 			{
+				if($primervarid.resultado.getTipo() == TipoLiteral.clase){
+					tipo = $tipopl.ident;
+				}
+
 				$trad += ".locals(" + tipo + " '" + $primervarid.ident + "'";
 			}
 			else{
@@ -525,8 +529,32 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			$maxstack = $expr.maxstack;
 		}
 	|	RETURN expr PYC
-	|	ID ASIG NEW ID PARI params PARD PYC
-	|	subref PARI params PARD PYC;
+	|	variable=ID ASIG NEW tipoClase=ID params 
+		{
+			$trad = "";
+			Simbolo simb = tS.getSimbolo($variable.text);
+			if(simb.getTipoSimbolo() == TipoSimbolo.campo){
+				$trad += "ldarg 0\n";
+			}
+			$trad += $params.trad;
+			$trad += "newobj instance void '" + $tipoClase.text + "'::.ctor(";
+			if($params.dimension > 0){
+				$trad += "float64";
+			}
+			for(int i = 1; i < $params.dimension;i++){
+				$trad += ",float64";
+			}
+			$trad += ")\n";
+
+			
+			if(simb.getTipoSimbolo() == TipoSimbolo.local){
+				$trad += "stloc " + simb.posicion_locals + "\n";
+			}else if(simb.getTipoSimbolo() == TipoSimbolo.campo){
+				$trad += "stfld '" + $tipoClase.text + "' '" + $tipoClase.text + "'::'" + $variable.text + "'\n";
+			}
+		}
+		PYC
+	|	subref params PYC;
 
 dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 	:	primero=ENTERO
@@ -899,7 +927,7 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 			$tipo = $ref.tipo;
 			$maxstack = $ref.maxstack + 1;
 		}
-	|	subref PARI params PARD;
+	|	subref params;
 
 ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo, String nombre, Simbolo referencia]
 	:	ID // esto será un subref
@@ -1002,8 +1030,32 @@ args returns[String trad, int dimension]
 		}
 		)*)?;
 
-params
-	:	(expr (COMA expr)*)?;
+params returns[String trad,int dimension]
+	:	PARI
+		{
+			$dimension = 0;
+			$trad = "";
+		}
+		(primerexpr=expr
+		{
+			$trad += $primerexpr.trad;
+			if($primerexpr.tipo == TipoLiteral.int32){
+				$trad+="conv.r8\n";
+			}else if($primerexpr.tipo == TipoLiteral.bool){
+				throw new Error_24($PARI.line,$PARI.pos);
+			}
+			$dimension ++;
+		}
+		(COMA nuevoexpr=expr
+		{
+			if($nuevoexpr.tipo == TipoLiteral.int32){
+				$trad+="conv.r8\n";
+			}else if($nuevoexpr.tipo == TipoLiteral.bool){
+				throw new Error_24($COMA.line,$COMA.pos);
+			}
+			$dimension ++;
+		}
+		)*)? PARD;
 
 subref
 	:	ID (PUNTO ID)*;
