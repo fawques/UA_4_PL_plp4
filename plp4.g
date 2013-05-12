@@ -47,6 +47,7 @@ grammar plp4;
 	int numEtiqueta = 0;
 	int numVariable = 1;
 	int numCampo = 0;
+	int numArg = 1;
 	public void emitErrorMessage(String msg) {
 		System.err.println(msg);
 		System.exit(1);
@@ -110,12 +111,11 @@ visibilidad returns [Visibilidad vis]
 metodo returns [String trad,boolean constrDefecto]
 @init{
 		numVariable = 1;
+		numArg = 1;
 		$constrDefecto = false;
+		tS = tSMetodo = new tablaSimbolos(tSClase);
 	}
-	:	{
-			tS = tSMetodo = new tablaSimbolos(tSClase);
-		}
-		PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]
+	:	PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]
 		{
 			$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
 			tS = tS.pop();
@@ -130,31 +130,28 @@ metodo returns [String trad,boolean constrDefecto]
 		{
 			tipo = $tipoSimple.trad;
 		}
-		)? ID PARI args PARD 
+		)? ID PARI args PARD
 		{
 			if($ID.text.equals(claseActual)){
 				constructor = true;
 			}
-
 			if(!constructor){
 				if(tipo == null){
 					throw new Error_32($ID.line,$ID.pos);
 				}
 				$trad += tipo + "  " + $ID.text ;
-				tS.add($ID.text, new Tipo(tipo,$args.dimension), 0, Visibilidad.publico, TipoSimbolo.metodo);
+				tSClase.add($ID.text, new Tipo(tipo,$args.dimension), 0, Visibilidad.publico, TipoSimbolo.metodo);
 			}else{
 				if(tipo != null){
 					throw new Error_31($ID.line,$ID.pos);
 				}
 				$trad += "specialname rtspecialname instance void .ctor";
 				if($args.dimension != 0){
-					tS.add($ID.text, new Tipo(TipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
+					tSClase.add($ID.text, new Tipo(TipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
 				}else{
 					$constrDefecto = true;
 				}
 			}
-			
-			tS = tSMetodo = new tablaSimbolos(tSClase);
 		}
 		bloque[-1,-1,true]
 		{
@@ -205,6 +202,9 @@ decl[Visibilidad vis] returns [String trad]
 		(COMA nuevovarid = varid[$tipopl.trad,vis]
 		{
 			tipo = $nuevovarid.resultado.toString();
+			if($primervarid.resultado.getTipo() == TipoLiteral.clase){
+				tipo = $tipopl.ident;
+			}
 			if(vis == Visibilidad.none)
 				$trad+=", " + tipo;
 			else{
@@ -923,6 +923,8 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 				$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;
 			}else if($ref.tipo_simbolo == TipoSimbolo.campo){
 				$trad = "ldarg 0\nldfld " + $ref.tipo + " " + tS.getNombre() + "::"+$ref.nombre + "\n";
+			}else if($ref.tipo_simbolo == TipoSimbolo.argumento){
+				$trad = "ldarg " + $ref.variable + "\n" + $ref.trad + $ref.getDato;
 			}
 			$tipo = $ref.tipo;
 			$maxstack = $ref.maxstack + 1;
@@ -1022,11 +1024,17 @@ args returns[String trad, int dimension]
 		{
 			$trad += "float64 '" + $primerid.text + "'";
 			$dimension ++;
+			tS.add(new Simbolo($primerid.text, numArg, new Tipo(TipoLiteral.float64), Visibilidad.none, TipoSimbolo.argumento));
+			System.err.println("Creado el argumento " + $primerid.text + ":" + numArg);
+			numArg++;
 		}
 		(COMA DOUBLE nuevoid=ID
 		{
 			$trad += ", float64 '" + $nuevoid.text + "'";
 			$dimension ++;
+			tS.add(new Simbolo($nuevoid.text, numArg, new Tipo(TipoLiteral.float64), Visibilidad.none, TipoSimbolo.argumento));
+			System.err.println("Creado el argumento " + $nuevoid.text + ":" + numArg);
+			numArg++;
 		}
 		)*)?;
 
@@ -1048,6 +1056,7 @@ params returns[String trad,int dimension]
 		}
 		(COMA nuevoexpr=expr
 		{
+			$trad += $nuevoexpr.trad;
 			if($nuevoexpr.tipo == TipoLiteral.int32){
 				$trad+="conv.r8\n";
 			}else if($nuevoexpr.tipo == TipoLiteral.bool){
