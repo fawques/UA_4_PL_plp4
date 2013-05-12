@@ -470,7 +470,12 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
 			TipoLiteral tipo_final_simbolo = simb.getTipoFinal();
-			Tipo tipo_simbolo = simb.getTipo();
+			Tipo tipoCompleto = simb.getTipo();
+			TipoSimbolo tipo_simbolo = simb.getTipoSimbolo();
+			$trad = "";
+			if(tipo_simbolo == TipoSimbolo.campo){
+				$trad = "ldarg 0\n";
+			}
 			if(!simb.esArray()){
 				throw new Error_11($ID.text,$ID.line,$ID.pos);
 			}
@@ -491,7 +496,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			
 			
 		}
-		 CORI dims[tipo_simbolo] CORD
+		 CORI dims[tipoCompleto] CORD
 		 {
 		 	if($dims.tipoFinal.esArray()){
 		 		throw new Error_10( $CORD.line,$CORD.pos);
@@ -500,13 +505,18 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		 PYC
 		 {
 		 	String auxTipo;
-		 	$trad = "ldc.i4 " + $dims.dimension + "\n";
+		 	$trad += "ldc.i4 " + $dims.dimension + "\n";
 		 	if($tipoSimple.trad == TipoLiteral.int32 || $tipoSimple.trad == TipoLiteral.bool){
 		 		auxTipo = "[mscorlib]System.Int32";
 		 	}else{
 		 		auxTipo = "[mscorlib]System.Double";
 		 	}
-		 	$trad +="newarr " + auxTipo + "\n" + "stloc " + simb.posicion_locals + "\n";
+		 	$trad +="newarr " + auxTipo + "\n";
+		 	if(tipo_simbolo == TipoSimbolo.local){
+				$trad = "stloc " + simb.posicion_locals + "\n";
+			}else if(tipo_simbolo == TipoSimbolo.campo){
+				$trad += "stfld " + simb.getTipo() + " '" + tS.getNombre() + "'::'" + simb.getNombre() + "'\n";
+			}
 		 	$maxstack = 1;
 		 }
 	|	WRITELINE PARI expr PARD PYC{
