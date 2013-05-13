@@ -948,13 +948,14 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 	|	ref 
 		{
 			$trad = $ref.prefijo + "ld" + $ref.sufijo;
+			$tipo = $ref.simbolo.getTipo().getTipo();
 			/*$trad = DOLARref.trad;
 			$tipo = DOLARref.tipo;
 			//$maxstack = ref.maxstack + 1;*/
 		}
 	|	subref params;
 
-ref returns [String prefijo, String sufijo]
+ref returns [String prefijo, String sufijo, Simbolo simbolo]
 	:	subref
 		/*{
 			//try{
@@ -994,7 +995,11 @@ ref returns [String prefijo, String sufijo]
 				throw new Error_9($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 		}*/
-		{$prefijo = $subref.prefijo;$sufijo = $subref.sufijo;};
+		{
+			$prefijo = $subref.prefijo;
+			$sufijo = $subref.sufijo;
+			$simbolo = $subref.simboloFinal;
+		};
 
 indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxstack]
 	:	primero=expr
@@ -1126,6 +1131,7 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
 										break;
 			}
+			System.err.println("subref: " + trad);
 			
 
 		}
@@ -1155,14 +1161,21 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 			trad = "";
 			tablaSimbolos nuevotS = conjClases.get(simb.getNombreClase());
 			simb = nuevotS.getSimbolo($nuevoid.text);
+			String tipo;
+			if(simb.getTipo().getTipo() == TipoLiteral.clase){
+				tipo = simb.getNombreClase();
+			}else{
+				tipo = simb.getTipo().toString();
+			}
 			switch(simb.getTipoSimbolo()){
 				case local:	trad = "loc " + simb.posicion_locals + "\n";
 										break;
-				case campo:	trad = "fld " + simb.tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
+				case campo:	trad = "fld " + tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
 										break;
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
 										break;
 			}
+			System.err.println("subref: " + trad);
 
 		}
 		)*
