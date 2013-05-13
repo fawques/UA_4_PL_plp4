@@ -1105,21 +1105,12 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 	:	primerid=ID
 /*		{
 			
-			$simb = tS.getSimbolo($primerid.text);
 
-			if($simb.getTipoSimbolo() == TipoSimbolo.local){
-				$trad = "ldloc " + $simb.posicion_locals + "\n";
-				System.err.println("He puesto ldloc " + $simb.posicion_locals);
-			}else if($simb.getTipoSimbolo() == TipoSimbolo.campo){
-				$trad = "ldarg 0\nldfld " + $simb.tipo + " " + $simb.getNombreClase() + "::"+$simb.getNombre() + "\n";
-			}else if($simb.getTipoSimbolo() == TipoSimbolo.argumento){
-				$trad = "ldarg " + $simb.posicion_locals + "\n";
-			}
+			
 
 			if($simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
 				throw new Error_27($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
-			$id = $primerid;
 		}*/
 		{
 			$prefijo = $sufijo = "";
@@ -1130,41 +1121,31 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 			switch(simb.getTipoSimbolo()){
 				case local:	trad = "loc " + simb.posicion_locals + "\n";
 							break;
-				case campo:	$prefijo += "ldarg 0\n";
+				case campo:	if(estoyEnMain){
+								throw new Error_27($primerid.text,$primerid.line,$primerid.pos);
+							}
+							$prefijo += "ldarg 0\n";
 							trad = "fld " + simb.tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
 							break;
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
 								break;
 			}
-			System.err.println("subref: " + trad);
 			
 
 		}
 		(PUNTO nuevoid=ID
-		/*{
-			
-			Tipo tipo = $simb.getTipo();
-			if(tipo.getTipo() != TipoLiteral.clase){
+		{
+			Tipo tipoT = simb.getTipo();
+			if(tipoT.getTipo() != TipoLiteral.clase){
 				// algo habrá que devolver, que esto no debería estar bien...
 				System.err.println("Has puesto subref con punto cuando no es un objeto");
 			}
-			System.err.println("Tabla antigua");
-			System.err.println(tS);
-			// Cambiamos la tS a la del objeto que toque
-			String nombreClase = $simb.getNombreClase();
-			tablaSimbolos nuevotS = conjClases.get(nombreClase);
-			System.err.println("Tabla nueva, con la clase " + nombreClase);
-			System.err.println(nuevotS);
-			// cambiamos simb por el que nos devuelva $ID en la nueva tS
-			$simb = nuevotS.getSimbolo($nuevoid.text);
-			$id = $nuevoid;
-		}*/
-		{
 
 			trad = "ld" + trad;
 			$prefijo += trad;
 			trad = "";
 			tablaSimbolos nuevotS = conjClases.get(simb.getNombreClase());
+			System.err.println(nuevotS);
 			simb = nuevotS.getSimbolo($nuevoid.text);
 			String tipo;
 			if(simb.getTipo().getTipo() == TipoLiteral.clase){
@@ -1172,6 +1153,7 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 			}else{
 				tipo = simb.getTipo().toString();
 			}
+			System.err.println(tipo);
 			switch(simb.getTipoSimbolo()){
 				case local:	trad = "loc " + simb.posicion_locals + "\n";
 										break;
@@ -1180,7 +1162,6 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
 										break;
 			}
-			System.err.println("subref: " + trad);
 
 		}
 		)*
