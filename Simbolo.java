@@ -11,6 +11,7 @@ public class Simbolo {
     Tipo tipo;
     Visibilidad visibilidad;
     TipoSimbolo tipo_simb;
+    String nombreClase;
     
     
     public Simbolo(String _nombre, int _pos, Tipo _tipo, Visibilidad _vis, TipoSimbolo _tipoSimb) {
@@ -19,6 +20,16 @@ public class Simbolo {
         tipo = _tipo;
         visibilidad = _vis;
         tipo_simb = _tipoSimb;
+        nombreClase = null;
+    }
+
+    public Simbolo(String _nombre, int _pos, Tipo _tipo, Visibilidad _vis, TipoSimbolo _tipoSimb, String _nombreClase) {
+        nombre = _nombre;
+        posicion_locals = _pos;
+        tipo = _tipo;
+        visibilidad = _vis;
+        tipo_simb = _tipoSimb;
+        nombreClase = _nombreClase;
     }
     
     public Tipo getTipo(){
@@ -33,6 +44,10 @@ public class Simbolo {
 		return nombre;
 	}
     
+    public String getNombreClase(){
+        return nombreClase;
+    }
+
     public TipoLiteral getTipoFinal(){
 		TipoLiteral aux = tipo.getTipo();
 		if(aux == TipoLiteral.array){
@@ -52,7 +67,10 @@ public class Simbolo {
     
     @Override
     public String toString(){
-		return visibilidad + " " + nombre + ":" + tipo + " @ " + posicion_locals + " (" + tipo_simb + ")";
+        String aux = nombreClase;
+        if(aux == null)
+            aux = "NOCLASE";
+		return visibilidad + " " + aux + " " + nombre + ":" + tipo + " @ " + posicion_locals + " (" + tipo_simb + ")";
 	}
 	
 	@Override

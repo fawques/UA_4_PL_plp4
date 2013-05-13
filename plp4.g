@@ -6,6 +6,7 @@ grammar plp4;
 
 @header {
 	import java.util.ArrayList;
+	import java.util.HashMap;
 	import java.lang.String;
 	import java.lang.Math;
 }
@@ -43,6 +44,8 @@ grammar plp4;
 	tablaSimbolos tSGlobal = null;
 	tablaSimbolos tSClase = null;
 	tablaSimbolos tSMetodo = null;
+
+	HashMap<String,tablaSimbolos> conjClases = new HashMap<String,tablaSimbolos>();
 	
 	String claseActual = "";
 	boolean estoyEnMain = false;
@@ -80,6 +83,7 @@ clase returns [String trad]
 			tS.add(claseActual, new Tipo(TipoLiteral.clase), 0, Visibilidad.publico, TipoSimbolo.clase);
 			tS = tSClase = new tablaSimbolos(tSGlobal,claseActual);
 			tS.add(claseActual, new Tipo(TipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
+			conjClases.put(claseActual,tSClase);
 		}
 		(miembro 
 		{
@@ -185,7 +189,7 @@ tipopl returns [TipoLiteral trad, int line, int pos, String ident]
 
 
 decl[Visibilidad vis] returns [String trad]
-	:	tipopl primervarid = varid[$tipopl.trad,vis]
+	:	tipopl primervarid = varid[$tipopl.trad,vis,$tipopl.ident]
 		{
 			String tipo = $primervarid.resultado.toString();
 			$trad = "";
@@ -206,7 +210,7 @@ decl[Visibilidad vis] returns [String trad]
 			}
 			
 		}
-		(COMA nuevovarid = varid[$tipopl.trad,vis]
+		(COMA nuevovarid = varid[$tipopl.trad,vis,$tipopl.ident]
 		{
 			tipo = $nuevovarid.resultado.toString();
 			if($primervarid.resultado.getTipo() == TipoLiteral.clase){
@@ -228,7 +232,7 @@ decl[Visibilidad vis] returns [String trad]
 			$trad += "\n";
 		};	
 	
-varid[TipoLiteral tipo,Visibilidad vis] returns [Tipo resultado, String ident]
+varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resultado, String ident]
 	:	ID 
 		{
 			$resultado = new Tipo($tipo);
@@ -246,7 +250,16 @@ varid[TipoLiteral tipo,Visibilidad vis] returns [Tipo resultado, String ident]
 		{
 			if(vis == Visibilidad.none){
 				try{
-					tS.add($ID.text,$resultado,numVariable,vis,TipoSimbolo.local);
+					Simbolo nuevo;
+					if($tipo == TipoLiteral.clase){
+						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local,$nombreClase);
+						System.err.println("Estoy escribiendo un objeto de clase " + $nombreClase);
+
+					}else{
+						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local);
+					}
+					tS.add(nuevo);
+					System.err.println(tS);
 					numVariable++;
 				}catch(Error_1 ex){
 					ex.setFilaColumna($ID.line,$ID.pos);
@@ -254,7 +267,8 @@ varid[TipoLiteral tipo,Visibilidad vis] returns [Tipo resultado, String ident]
 				}
 			}else{
 				try{
-					tS.add($ID.text,$resultado,numCampo,vis,TipoSimbolo.campo);
+					Simbolo nuevo = new Simbolo($ID.text,numCampo,$resultado,vis,TipoSimbolo.campo,tSClase.getNombre());
+					tS.add(nuevo);
 					numCampo++;
 				}catch(Error_1 ex){
 					ex.setFilaColumna($ID.line,$ID.pos);
@@ -476,7 +490,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}
 			$maxstack = 0;
 		}
-	|	ref cambio[$ref.variable,$ref.trad,$ref.indice,$ref.tipo,$ref.tipo_simbolo,$ref.referencia]{$trad = $cambio.trad;$maxstack = Math.max($ref.maxstack,$cambio.maxstack);}
+	|	ref cambio[$ref.variable,$ref.array_pasado,$ref.indice,$ref.tipo,$ref.tipo_simbolo,$ref.referencia,$ref.trad]{$trad = $cambio.trad;$maxstack = Math.max($ref.maxstack,$cambio.maxstack);}
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
@@ -486,8 +500,6 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			$trad = "";
 			if(tipo_simbolo == TipoSimbolo.campo && !estoyEnMain){
 				$trad = "ldarg 0\n";
-			}else if(tipo_simbolo == TipoSimbolo.campo && estoyEnMain){
-				throw new Error_27($ID.text,$ID.line,$ID.pos);
 			}
 			if(!simb.esArray()){
 				throw new Error_11($ID.text,$ID.line,$ID.pos);
@@ -544,9 +556,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			Simbolo simb = tS.getSimbolo($variable.text);
 			if(simb.getTipoSimbolo() == TipoSimbolo.campo && !estoyEnMain){
 				$trad = "ldarg 0\n";
-			}else if(simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
+			}/*else if(simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
 				throw new Error_27($variable.text,$variable.line,$variable.pos);
-			}
+			}*/
 			$trad += $params.trad;
 			$trad += "newobj instance void '" + $tipoClase.text + "'::.ctor(";
 			if($params.dimension > 0){
@@ -598,15 +610,16 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		)*
 		{$tipoFinal = $tipo;};
-cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, TipoSimbolo tipo_simbolo, Simbolo simb] returns [String trad, int maxstack]
+cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, TipoSimbolo tipo_simbolo, Simbolo simb, String trad_acum] returns [String trad, int maxstack]
 	:	ASIG expr PYC
 		{
+			$trad = $trad_acum;
 			String expresion = "";
 			if($tipo_simbolo == TipoSimbolo.campo && !estoyEnMain){
 				expresion = "ldarg 0\n";
-			}else if($tipo_simbolo == TipoSimbolo.campo && estoyEnMain){
+			}/*else if($tipo_simbolo == TipoSimbolo.campo && estoyEnMain){
 				throw new Error_27("TODO: ESTO HAY QUE CAMBIARLO",0,0);
-			}
+			}*/
 			expresion += $expr.trad;
 			if($indice){
 				throw new Error_15($ASIG.line,$ASIG.pos);
@@ -635,14 +648,14 @@ cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, Tipo
 
 			if($array_pasado.equals("")){
 				if(tipo_simbolo == TipoSimbolo.local){
-					$trad = expresion + "stloc " + $variable + "\n";
+					$trad += expresion + "stloc " + $variable + "\n";
 				}else if(tipo_simbolo == TipoSimbolo.campo){
-					$trad = expresion + "stfld " + tipoExpr + " " + tS.getNombre() + "::"+$simb.getNombre()+ "\n";
+					$trad += expresion + "stfld " + tipoExpr + " " + simb.getNombreClase() + "::"+$simb.getNombre()+ "\n";
 				}
 				$maxstack = $expr.maxstack;				
 			}else{
 				
-				$trad = "ldloc " + $variable + "\n" + $array_pasado + expresion + "stelem.";		
+				$trad += "ldloc " + $variable + "\n" + $array_pasado + expresion + "stelem.";		
 				if(tipoExpr == TipoLiteral.int32 || tipoExpr == TipoLiteral.bool){
 					$trad += "i4\n";	
 				}else{
@@ -932,39 +945,35 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;$maxstack = $expr.maxstack;}
 	|	ref 
 		{
-			if($ref.tipo_simbolo == TipoSimbolo.local){
-				$trad = "ldloc " + $ref.variable + "\n" + $ref.trad + $ref.getDato;
-			}else if($ref.tipo_simbolo == TipoSimbolo.campo){
-				$trad = "ldarg 0\nldfld " + $ref.tipo + " " + tS.getNombre() + "::"+$ref.nombre + "\n";
-			}else if($ref.tipo_simbolo == TipoSimbolo.argumento){
-				$trad = "ldarg " + $ref.variable + "\n" + $ref.trad + $ref.getDato;
-			}
+			$trad = $ref.trad;
 			$tipo = $ref.tipo;
 			$maxstack = $ref.maxstack + 1;
 		}
 	|	subref params;
 
-ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo, String nombre, Simbolo referencia]
-	:	ID // esto será un subref
+ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo, String nombre, Simbolo referencia,String array_pasado]
+	:	subref
 		{
-			try{
-			    $referencia = tS.getSimbolo($ID.text);
+			//try{
+			    $referencia = $subref.simb;
 			    $variable= $referencia.posicion_locals; 
 			    $tipo = $referencia.tipo.getTipo();
 			    $tipo_simbolo = $referencia.getTipoSimbolo();
 			    $nombre = $referencia.getNombre();
-			    $trad = "";
+			    $trad = $subref.trad;
+			    $array_pasado = "";
 			    $getDato = "";
 			    $indice = $referencia.tipo.isIndice();
 			    $maxstack = 0;
-			}catch(Error_2 e){
-			    e.setFilaColumna($ID.line,$ID.pos);
+				
+			/*}catch(Error_2 e){
+			    e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
 			    throw e;
-			}
+			}*/
 
 
 		} 
-		(CORI indices[$referencia, $ID, $CORI] CORD
+		(CORI indices[$referencia, $subref.id, $CORI] CORD
 		{
 			$tipo = $referencia.tipo.getTipoFinal();
 			$trad += "\n" + $indices.trad ;
@@ -979,7 +988,7 @@ ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolea
 		)?
 		{
 			if($referencia.esArray() && $getDato.equals("")){
-				throw new Error_9($ID.text,$ID.line,$ID.pos);
+				throw new Error_9($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 		};
 
@@ -1079,8 +1088,51 @@ params returns[String trad,int dimension]
 		}
 		)*)? PARD;
 
-subref
-	:	ID (PUNTO ID)*;
+subref returns [Simbolo simb,Token id, String trad]
+	:	primerid=ID
+		{
+			
+			$simb = tS.getSimbolo($primerid.text);
+
+			if($simb.getTipoSimbolo() == TipoSimbolo.local){
+				$trad = "ldloc " + $simb.posicion_locals + "\n";
+				System.err.println("He puesto ldloc " + $simb.posicion_locals);
+			}else if($simb.getTipoSimbolo() == TipoSimbolo.campo){
+				$trad = "ldarg 0\nldfld " + $simb.tipo + " " + $simb.getNombreClase() + "::"+$simb.getNombre() + "\n";
+			}else if($simb.getTipoSimbolo() == TipoSimbolo.argumento){
+				$trad = "ldarg " + $simb.posicion_locals + "\n";
+			}
+
+			if($simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
+				throw new Error_27($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
+			}
+			$id = $primerid;
+		}
+		(PUNTO nuevoid=ID
+		{
+			Tipo tipo = $simb.getTipo();
+			if(tipo.getTipo() != TipoLiteral.clase){
+				// algo habrá que devolver, que esto no debería estar bien...
+				System.err.println("Has puesto subref con punto cuando no es un objeto");
+			}
+			System.err.println("Tabla antigua");
+			System.err.println(tS);
+			// Cambiamos la tS a la del objeto que toque
+			String nombreClase = $simb.getNombreClase();
+			tablaSimbolos nuevotS = conjClases.get(nombreClase);
+			System.err.println("Tabla nueva, con la clase " + nombreClase);
+			System.err.println(nuevotS);
+			// cambiamos simb por el que nos devuelva $ID en la nueva tS
+			$simb = nuevotS.getSimbolo($nuevoid.text);
+			$id = $nuevoid;
+
+		}
+		)*
+		{
+			// volvemos tS a la tS anterior
+			System.err.println("Vuelta a la tabla antigua");
+			System.err.println(tS);
+		};
 
 /* Analizador léxico: */
 
