@@ -993,7 +993,8 @@ ref returns [String prefijo, String sufijo]
 			if($referencia.esArray() && $getDato.equals("")){
 				throw new Error_9($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
-		}*/;
+		}*/
+		{$prefijo = $subref.prefijo;$sufijo = $subref.sufijo;};
 
 indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxstack]
 	:	primero=expr
