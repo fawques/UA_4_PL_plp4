@@ -490,7 +490,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}
 			$maxstack = 0;
 		}
-	|	ref cambio
+	|	ref cambio[$ref.simbolo.getTipo().getTipo()]
 		{
 			$trad = $ref.prefijo + $cambio.trad + "st" + $ref.sufijo;
 			/* //$maxstack = Math.max(ref.maxstack,$cambio.maxstack);*/
@@ -614,37 +614,18 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		)*
 		{$tipoFinal = $tipo;};
-cambio returns [String trad, int maxstack]
+cambio[TipoLiteral tipo] returns [String trad, int maxstack]
 	:	ASIG expr PYC
 		/*{
 			 $trad = trad_acum;
-			String expresion = "";
+			
 			
 			expresion += $expr.trad;
 			if($indice){
 				throw new Error_15($ASIG.line,$ASIG.pos);
 			}
 
-			TipoLiteral tipoExpr = $expr.tipo;
-			if($tipo != tipoExpr){
-				if($tipo == TipoLiteral.int32){
-					if(tipoExpr == TipoLiteral.float64){
-						expresion += "conv.i4\n";
-						tipoExpr = TipoLiteral.int32;
-					}else{
-						throw new Error_6($ASIG.line,$ASIG.pos);
-					}
-				}else if($tipo == TipoLiteral.bool){
-					throw new Error_6($ASIG.line,$ASIG.pos);
-				}else{ // tipo = float64
-					if(tipoExpr == TipoLiteral.int32){
-						expresion += "conv.r8\n";
-						tipoExpr = TipoLiteral.float64;
-					}else{
-						throw new Error_6($ASIG.line,$ASIG.pos);
-					}
-				}
-			}
+			
 
 			if($array_pasado.equals("")){
 				if(tipo_simbolo == TipoSimbolo.local){
@@ -666,7 +647,30 @@ cambio returns [String trad, int maxstack]
 			
 
 		}*/
-		{$trad = $expr.trad;}
+		{
+			String expresion = "";
+			TipoLiteral tipoExpr = $expr.tipo;
+			if($tipo != tipoExpr){
+				if($tipo == TipoLiteral.int32){
+					if(tipoExpr == TipoLiteral.float64){
+						expresion += "conv.i4\n";
+						tipoExpr = TipoLiteral.int32;
+					}else{
+						throw new Error_6($ASIG.line,$ASIG.pos);
+					}
+				}else if($tipo == TipoLiteral.bool){
+					throw new Error_6($ASIG.line,$ASIG.pos);
+				}else{ // tipo = float64
+					if(tipoExpr == TipoLiteral.int32){
+						expresion += "conv.r8\n";
+						tipoExpr = TipoLiteral.float64;
+					}else{
+						throw new Error_6($ASIG.line,$ASIG.pos);
+					}
+				}
+			}
+			$trad = $expr.trad + expresion;
+		}
 	|	PUNTO READLINEI PYC
 		/*{
 			if($indice){
@@ -1125,11 +1129,12 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 			String trad = "";
 			switch(simb.getTipoSimbolo()){
 				case local:	trad = "loc " + simb.posicion_locals + "\n";
-										break;
-				case campo:	trad = "fld " + simb.tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
-										break;
+							break;
+				case campo:	$prefijo += "ldarg 0\n";
+							trad = "fld " + simb.tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
+							break;
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
-										break;
+								break;
 			}
 			System.err.println("subref: " + trad);
 			
