@@ -172,7 +172,6 @@ metodo returns [String trad,boolean constrDefecto]
 			}
 			$trad += "\n ret\n}";
 			tS = tS.pop();
-			System.err.println(tS);
 		};
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
@@ -253,13 +252,10 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 					Simbolo nuevo;
 					if($tipo == TipoLiteral.clase){
 						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local,$nombreClase);
-						System.err.println("Estoy escribiendo un objeto de clase " + $nombreClase);
-
 					}else{
 						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local);
 					}
 					tS.add(nuevo);
-					System.err.println(tS);
 					numVariable++;
 				}catch(Error_1 ex){
 					ex.setFilaColumna($ID.line,$ID.pos);
@@ -490,7 +486,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}
 			$maxstack = 0;
 		}
-	|	ref cambio[$ref.simbolo.getTipo().getTipo()]
+	|	ref cambio[$ref.simbolo,$ref.tipoFinal]
 		{
 			$trad = $ref.prefijo + $cambio.trad + "st" + $ref.sufijo;
 			/* //$maxstack = Math.max(ref.maxstack,$cambio.maxstack);*/
@@ -614,40 +610,13 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		)*
 		{$tipoFinal = $tipo;};
-cambio[TipoLiteral tipo] returns [String trad, int maxstack]
+cambio[Simbolo elemento, TipoLiteral tipo] returns [String trad, int maxstack]
 	:	ASIG expr PYC
-		/*{
-			 $trad = trad_acum;
+		{
 			
-			
-			expresion += $expr.trad;
-			if($indice){
+			if($elemento.esIndice()){
 				throw new Error_15($ASIG.line,$ASIG.pos);
 			}
-
-			
-
-			if($array_pasado.equals("")){
-				if(tipo_simbolo == TipoSimbolo.local){
-					$trad += expresion + "stloc " + $variable + "\n";
-				}else if(tipo_simbolo == TipoSimbolo.campo){
-					$trad += expresion + "stfld " + tipoExpr + " " + simb.getNombreClase() + "::"+$simb.getNombre()+ "\n";
-				}
-				$maxstack = $expr.maxstack;				
-			}else{
-				
-				$trad += "ldloc " + $variable + "\n" + $array_pasado + expresion + "stelem.";		
-				if(tipoExpr == TipoLiteral.int32 || tipoExpr == TipoLiteral.bool){
-					$trad += "i4\n";	
-				}else{
-					$trad += "r8\n";
-				}
-				$maxstack = Math.max($expr.maxstack, 1); // TODO: añadir array_pasado
-			} 
-			
-
-		}*/
-		{
 			String expresion = "";
 			TipoLiteral tipoExpr = $expr.tipo;
 			if($tipo != tipoExpr){
@@ -660,7 +629,7 @@ cambio[TipoLiteral tipo] returns [String trad, int maxstack]
 					}
 				}else if($tipo == TipoLiteral.bool){
 					throw new Error_6($ASIG.line,$ASIG.pos);
-				}else{ // tipo = float64
+				}else if($tipo == TipoLiteral.float64){
 					if(tipoExpr == TipoLiteral.int32){
 						expresion += "conv.r8\n";
 						tipoExpr = TipoLiteral.float64;
@@ -672,59 +641,40 @@ cambio[TipoLiteral tipo] returns [String trad, int maxstack]
 			$trad = $expr.trad + expresion;
 		}
 	|	PUNTO READLINEI PYC
-		/*{
-			if($indice){
+		{
+			if($elemento.esIndice()){
 				throw new Error_15($READLINEI.line,$READLINEI.pos);
 			}
 			if($tipo == TipoLiteral.int32){
-				if($array_pasado.equals("")){
-					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n";
-					$trad += "stloc " + $variable +  "\n";
-				}else{
-					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n";
-					$trad += "stelem.i4 \n";
-				}
-				$maxstack = 1; // TODO: añadir array_pasado
+				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n";
 			}
 			else
 				throw new Error_7($READLINEI.line,$READLINEI.pos);
 		}
 	|	PUNTO READLINED PYC
 		{
-			if($indice){
+			if($elemento.esIndice()){
 				throw new Error_15($READLINED.line,$READLINED.pos);
 			}
 			if($tipo == TipoLiteral.float64){
-					if($array_pasado.equals("")){
-					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
-					$trad += "stloc " + $variable +  "\n";
-				}else{
-					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
-					$trad += "stelem.r8 \n";
-				}
-				$maxstack = 1; // TODO: añadir array_pasado
+				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
+				$maxstack = 1;
 			}
 			else
 				throw new Error_7($READLINED.line,$READLINED.pos);
 		}
 	|	PUNTO READLINEB PYC
 		{
-			if($indice){
+			if($elemento.esIndice()){
 				throw new Error_15($READLINEB.line,$READLINEB.pos);
 			}
 			if($tipo == TipoLiteral.bool){
-				if($array_pasado.equals("")){
-					$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n";
-					$trad += "stloc " + $variable +  "\n";
-				}else{
-					$trad = "ldloc " + $variable + "\n" + $array_pasado + "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n";
-					$trad += "stelem.i4 \n";
-				}
-				$maxstack = 1; // TODO: añadir array_pasado
+				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n";
+				$maxstack = 1;
 			}
 			else
 				throw new Error_7($READLINEB.line,$READLINEB.pos);
-		}*/
+		}
 		;
 
 expr returns [String trad, TipoLiteral tipo, int maxstack]
@@ -952,19 +902,30 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 	|	ref 
 		{
 			$trad = $ref.prefijo + "ld" + $ref.sufijo;
-			$tipo = $ref.simbolo.getTipo().getTipo();
+			$tipo = $ref.tipoFinal;
 			/*$trad = DOLARref.trad;
 			$tipo = DOLARref.tipo;
 			//$maxstack = ref.maxstack + 1;*/
 		}
 	|	subref params;
 
-ref returns [String prefijo, String sufijo, Simbolo simbolo]
+ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFinal]
 	:	subref
-		/*{
+		{
 			//try{
-			    $referencia = $subref.simb;
-			    $variable= $referencia.posicion_locals; 
+			    Simbolo referencia = $subref.simboloFinal;
+			    
+				
+			//}catch(Error_2 e){
+			//    e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
+			//    throw e;
+			//}
+			$prefijo = $subref.prefijo;
+			$sufijo = $subref.sufijo;
+			$simbolo = $subref.simboloFinal;
+			$tipoFinal = $simbolo.tipo.getTipo();
+		} 
+		/*$variable= $referencia.posicion_locals; 
 			    $tipo = $referencia.tipo.getTipo();
 			    $tipo_simbolo = $referencia.getTipoSimbolo();
 			    $nombre = $referencia.getNombre();
@@ -972,38 +933,28 @@ ref returns [String prefijo, String sufijo, Simbolo simbolo]
 			    $array_pasado = "";
 			    $getDato = "";
 			    $indice = $referencia.tipo.isIndice();
-			    $maxstack = 0;
-				
-			//}catch(Error_2 e){
-			//    e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
-			//    throw e;
-			//}
+			    $maxstack = 0;*/
+		(CORI indices[$subref.simboloFinal, $subref.id, $CORI] CORD
+		{
+			$prefijo += "ld" + $sufijo;
+			$sufijo = "";
+			$prefijo += $indices.trad;
 
-
-		} */
-		//(CORI indices[$referencia, $subref.id, $CORI] CORD
-/*		{
-			$tipo = $referencia.tipo.getTipoFinal();
-			$trad += "\n" + $indices.trad ;
-			$getDato = "ldelem.";
-			if($tipo == TipoLiteral.int32 || $tipo == TipoLiteral.bool){
-				$getDato += "i4\n";	
-			}else{
-				$getDato += "r8\n";
+			TipoLiteral tipo = referencia.tipo.getTipoFinal();
+			if(tipo == TipoLiteral.int32 || tipo == TipoLiteral.bool){
+				$sufijo += "elem.i4\n";	
+			}else if(tipo == TipoLiteral.float64){
+				$sufijo += "elem.r8\n";
 			}
-			$maxstack += $indices.maxstack + 1;
-		}*/
-		//)?
-		/*{
-			if($referencia.esArray() && $getDato.equals("")){
+			$tipoFinal = tipo;
+		}
+		)?
+		{
+			if(referencia.esArray() && $sufijo.equals("")){
 				throw new Error_9($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
-		}*/
-		{
-			$prefijo = $subref.prefijo;
-			$sufijo = $subref.sufijo;
-			$simbolo = $subref.simboloFinal;
-		};
+		}
+		;
 
 indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxstack]
 	:	primero=expr
@@ -1060,7 +1011,6 @@ args returns[String trad, int dimension]
 			$trad += "float64 '" + $primerid.text + "'";
 			$dimension ++;
 			tS.add(new Simbolo($primerid.text, numArg, new Tipo(TipoLiteral.float64), Visibilidad.none, TipoSimbolo.argumento));
-			System.err.println("Creado el argumento " + $primerid.text + ":" + numArg);
 			numArg++;
 		}
 		(COMA DOUBLE nuevoid=ID
@@ -1068,7 +1018,6 @@ args returns[String trad, int dimension]
 			$trad += ", float64 '" + $nuevoid.text + "'";
 			$dimension ++;
 			tS.add(new Simbolo($nuevoid.text, numArg, new Tipo(TipoLiteral.float64), Visibilidad.none, TipoSimbolo.argumento));
-			System.err.println("Creado el argumento " + $nuevoid.text + ":" + numArg);
 			numArg++;
 		}
 		)*)?;
@@ -1101,17 +1050,8 @@ params returns[String trad,int dimension]
 		}
 		)*)? PARD;
 
-subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
+subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 	:	primerid=ID
-/*		{
-			
-
-			
-
-			if($simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
-				throw new Error_27($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
-			}
-		}*/
 		{
 			$prefijo = $sufijo = "";
 
@@ -1125,11 +1065,12 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 								throw new Error_27($primerid.text,$primerid.line,$primerid.pos);
 							}
 							$prefijo += "ldarg 0\n";
-							trad = "fld " + simb.tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
+							trad = "fld " + simb.tipo + " '" + simb.getNombreClase() + "'::'"+simb.getNombre() + "'\n";
 							break;
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
 								break;
 			}
+			$id = $primerid;
 			
 
 		}
@@ -1145,7 +1086,6 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 			$prefijo += trad;
 			trad = "";
 			tablaSimbolos nuevotS = conjClases.get(simb.getNombreClase());
-			System.err.println(nuevotS);
 			simb = nuevotS.getSimbolo($nuevoid.text);
 			String tipo;
 			if(simb.getTipo().getTipo() == TipoLiteral.clase){
@@ -1153,16 +1093,15 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 			}else{
 				tipo = simb.getTipo().toString();
 			}
-			System.err.println(tipo);
 			switch(simb.getTipoSimbolo()){
 				case local:	trad = "loc " + simb.posicion_locals + "\n";
 										break;
-				case campo:	trad = "fld " + tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
+				case campo:	trad = "fld " + tipo + " '" + simb.getNombreClase() + "'::'"+simb.getNombre() + "'\n";
 										break;
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
 										break;
 			}
-
+			$id = $nuevoid;
 		}
 		)*
 		{

@@ -60,6 +60,10 @@ public class Simbolo {
 	public boolean esArray(){
 		return tipo.esArray();
 	}
+
+    public boolean esIndice(){
+        return tipo.esIndice();
+    }
 	
 	public int getDimension(){
 		return tipo.getDimensionTotal();

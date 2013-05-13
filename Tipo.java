@@ -62,7 +62,7 @@ public class Tipo {
 		return tipo;
 	} 
 	
-	public boolean isIndice(){
+	public boolean esIndice(){
 		return indice;
 	}
 
