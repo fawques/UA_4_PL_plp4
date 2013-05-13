@@ -490,7 +490,11 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}
 			$maxstack = 0;
 		}
-	|	ref cambio[$ref.variable,$ref.array_pasado,$ref.indice,$ref.tipo,$ref.tipo_simbolo,$ref.referencia,$ref.trad]{$trad = $cambio.trad;$maxstack = Math.max($ref.maxstack,$cambio.maxstack);}
+	|	ref cambio
+		{
+			$trad = $ref.prefijo + $cambio.trad + "st" + $ref.sufijo;
+			/* //$maxstack = Math.max(ref.maxstack,$cambio.maxstack);*/
+		}
 	|	ID 
 		{
 			Simbolo simb = tS.getSimbolo($ID.text);
@@ -610,16 +614,12 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		}
 		)*
 		{$tipoFinal = $tipo;};
-cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, TipoSimbolo tipo_simbolo, Simbolo simb, String trad_acum] returns [String trad, int maxstack]
+cambio returns [String trad, int maxstack]
 	:	ASIG expr PYC
-		{
-			$trad = $trad_acum;
+		/*{
+			 $trad = trad_acum;
 			String expresion = "";
-			if($tipo_simbolo == TipoSimbolo.campo && !estoyEnMain){
-				expresion = "ldarg 0\n";
-			}/*else if($tipo_simbolo == TipoSimbolo.campo && estoyEnMain){
-				throw new Error_27("TODO: ESTO HAY QUE CAMBIARLO",0,0);
-			}*/
+			
 			expresion += $expr.trad;
 			if($indice){
 				throw new Error_15($ASIG.line,$ASIG.pos);
@@ -662,11 +662,13 @@ cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, Tipo
 					$trad += "r8\n";
 				}
 				$maxstack = Math.max($expr.maxstack, 1); // TODO: añadir array_pasado
-			}
+			} 
+			
 
-		}
+		}*/
+		{$trad = $expr.trad;}
 	|	PUNTO READLINEI PYC
-		{
+		/*{
 			if($indice){
 				throw new Error_15($READLINEI.line,$READLINEI.pos);
 			}
@@ -718,8 +720,8 @@ cambio[int variable, String array_pasado, boolean indice, TipoLiteral tipo, Tipo
 			}
 			else
 				throw new Error_7($READLINEB.line,$READLINEB.pos);
-			
-		};
+		}*/
+		;
 
 expr returns [String trad, TipoLiteral tipo, int maxstack]
 	:	primero = eand 
@@ -945,15 +947,16 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 	|	PARI expr PARD{$trad = $expr.trad; $tipo = $expr.tipo;$maxstack = $expr.maxstack;}
 	|	ref 
 		{
-			$trad = $ref.trad;
-			$tipo = $ref.tipo;
-			$maxstack = $ref.maxstack + 1;
+			$trad = $ref.prefijo + "ld" + $ref.sufijo;
+			/*$trad = DOLARref.trad;
+			$tipo = DOLARref.tipo;
+			//$maxstack = ref.maxstack + 1;*/
 		}
 	|	subref params;
 
-ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolean indice, int maxstack, TipoSimbolo tipo_simbolo, String nombre, Simbolo referencia,String array_pasado]
+ref returns [String prefijo, String sufijo]
 	:	subref
-		{
+		/*{
 			//try{
 			    $referencia = $subref.simb;
 			    $variable= $referencia.posicion_locals; 
@@ -966,15 +969,15 @@ ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolea
 			    $indice = $referencia.tipo.isIndice();
 			    $maxstack = 0;
 				
-			/*}catch(Error_2 e){
-			    e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
-			    throw e;
-			}*/
+			//}catch(Error_2 e){
+			//    e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
+			//    throw e;
+			//}
 
 
-		} 
-		(CORI indices[$referencia, $subref.id, $CORI] CORD
-		{
+		} */
+		//(CORI indices[$referencia, $subref.id, $CORI] CORD
+/*		{
 			$tipo = $referencia.tipo.getTipoFinal();
 			$trad += "\n" + $indices.trad ;
 			$getDato = "ldelem.";
@@ -984,13 +987,13 @@ ref returns [int variable, TipoLiteral tipo, String trad, String getDato, boolea
 				$getDato += "r8\n";
 			}
 			$maxstack += $indices.maxstack + 1;
-		}
-		)?
-		{
+		}*/
+		//)?
+		/*{
 			if($referencia.esArray() && $getDato.equals("")){
 				throw new Error_9($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
-		};
+		}*/;
 
 indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxstack]
 	:	primero=expr
@@ -1088,9 +1091,9 @@ params returns[String trad,int dimension]
 		}
 		)*)? PARD;
 
-subref returns [Simbolo simb,Token id, String trad]
+subref returns [String prefijo, String sufijo, Simbolo simboloFinal]
 	:	primerid=ID
-		{
+/*		{
 			
 			$simb = tS.getSimbolo($primerid.text);
 
@@ -1107,9 +1110,27 @@ subref returns [Simbolo simb,Token id, String trad]
 				throw new Error_27($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 			$id = $primerid;
+		}*/
+		{
+			$prefijo = $sufijo = "";
+
+
+			Simbolo simb = tS.getSimbolo($primerid.text);
+			String trad = "";
+			switch(simb.getTipoSimbolo()){
+				case local:	trad = "loc " + simb.posicion_locals + "\n";
+										break;
+				case campo:	trad = "fld " + simb.tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
+										break;
+				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
+										break;
+			}
+			
+
 		}
 		(PUNTO nuevoid=ID
-		{
+		/*{
+			
 			Tipo tipo = $simb.getTipo();
 			if(tipo.getTipo() != TipoLiteral.clase){
 				// algo habrá que devolver, que esto no debería estar bien...
@@ -1125,13 +1146,28 @@ subref returns [Simbolo simb,Token id, String trad]
 			// cambiamos simb por el que nos devuelva $ID en la nueva tS
 			$simb = nuevotS.getSimbolo($nuevoid.text);
 			$id = $nuevoid;
+		}*/
+		{
+
+			trad = "ld" + trad;
+			$prefijo += trad;
+			trad = "";
+			tablaSimbolos nuevotS = conjClases.get(simb.getNombreClase());
+			simb = nuevotS.getSimbolo($nuevoid.text);
+			switch(simb.getTipoSimbolo()){
+				case local:	trad = "loc " + simb.posicion_locals + "\n";
+										break;
+				case campo:	trad = "fld " + simb.tipo + " " + simb.getNombreClase() + "::"+simb.getNombre() + "\n";
+										break;
+				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
+										break;
+			}
 
 		}
 		)*
 		{
-			// volvemos tS a la tS anterior
-			System.err.println("Vuelta a la tabla antigua");
-			System.err.println(tS);
+			$sufijo = trad;
+			$simboloFinal = simb;
 		};
 
 /* Analizador léxico: */
