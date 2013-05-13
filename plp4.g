@@ -49,6 +49,7 @@ grammar plp4;
 	
 	String claseActual = "";
 	boolean estoyEnMain = false;
+	boolean hayMain = false;
 
 	int numEtiqueta = 0;
 	int numVariable = 1;
@@ -123,7 +124,12 @@ metodo returns [String trad,boolean constrDefecto]
 		tS = tSMetodo = new tablaSimbolos(tSClase);
 	}
 	:	{
-			estoyEnMain = true;			
+			estoyEnMain = true;	
+			if(hayMain){
+				throw new Error_18();
+			}else{
+				hayMain = true;
+			}
 		}
 		PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]
 		{
@@ -1078,8 +1084,7 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 		{
 			Tipo tipoT = simb.getTipo();
 			if(tipoT.getTipo() != TipoLiteral.clase){
-				// algo habrá que devolver, que esto no debería estar bien...
-				System.err.println("Has puesto subref con punto cuando no es un objeto");
+				throw new Error_19($primerid.text,$primerid.line,$primerid.pos);
 			}
 
 			trad = "ld" + trad;
