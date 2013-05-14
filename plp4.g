@@ -39,7 +39,7 @@ grammar plp4;
 
 
 @parser::members {
-	final boolean DEBUG = true;
+	final boolean DEBUG = false;
 
 
 	ArrayList<tablaSimbolos> listatS = new ArrayList<tablaSimbolos>();
@@ -66,11 +66,9 @@ grammar plp4;
 }
 
 /* Analizador sintáctico: */
+sAux returns [String resultado]
+: s["lala.fnt"]{$resultado = $s.resultado;};
 s[String archivo] returns [String resultado]
-@init{
-	if(DEBUG)
-		System.err.println("[s]");
-}
 	:	{
 			tS = tSGlobal = new tablaSimbolos(); 
 			listatS.add(tSGlobal);
@@ -87,10 +85,6 @@ s[String archivo] returns [String resultado]
 		};
 
 clase returns [String trad]
-@init{
-	if(DEBUG)
-		System.err.println("[clase]");
-}
 	:	CLASS ID LLAVEI 
 		{
 			boolean constrDefecto = false;
@@ -121,24 +115,12 @@ clase returns [String trad]
 		};
 
 miembro[boolean constr] returns [String trad, boolean constrDefecto]
-@init{
-	if(DEBUG)
-		System.err.println("[miembro]");
-}
 	:	campo {$trad = $campo.trad;$constrDefecto = false;}
 	|	metodo[$constr] {$trad = $metodo.trad;$constrDefecto = $metodo.constrDefecto;};
 campo returns [String trad]
-@init{
-	if(DEBUG)
-		System.err.println("[campo]");
-}
 	:	visibilidad decl[$visibilidad.vis] {$trad = $decl.trad;}; 
 
 visibilidad returns [Visibilidad vis]
-@init{
-	if(DEBUG)
-		System.err.println("[visibilidad]");
-}
 	:	PRIVATE {$vis = Visibilidad.privado;}
 	|	PUBLIC {$vis = Visibilidad.publico;};
 
@@ -146,8 +128,6 @@ visibilidad returns [Visibilidad vis]
 
 metodo[boolean constr] returns [String trad,boolean constrDefecto]
 @init{
-		if(DEBUG)
-			System.err.println("[s]");
 		numVariable = 1;
 		numArg = 1;
 		$constrDefecto = $constr;
@@ -230,29 +210,17 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
 tipoSimple returns [TipoLiteral trad, int line, int pos]
-@init{
-	if(DEBUG)
-		System.err.println("[tipoSimple]");
-}
 	:	INT {$trad = TipoLiteral.convertir("int32");$line = $INT.line; $pos = $INT.pos;}
 	|	DOUBLE {$trad = TipoLiteral.convertir("float64");$line = $DOUBLE.line; $pos = $DOUBLE.pos;}
 	|	BOOL {$trad=TipoLiteral.convertir("bool");$line = $BOOL.line; $pos = $BOOL.pos;};
 	
 // Cambiamos la gramática de tipo a tipopl para no colisionar con la clase Tipo que ya teníamos
 tipopl returns [TipoLiteral trad, int line, int pos, String ident]
-@init{
-	if(DEBUG)
-		System.err.println("[tipopl]");
-}
 	:	ID {$trad = TipoLiteral.clase; $ident = $ID.text; $line = $ID.line; $pos = $ID.pos;}
 	|	tipoSimple {$trad = $tipoSimple.trad; $ident = ""; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
 
 
 decl[Visibilidad vis] returns [String trad]
-@init{
-	if(DEBUG)
-		System.err.println("[decl]");
-}
 	:	tipopl primervarid = varid[$tipopl.trad,vis,$tipopl.ident]
 		{
 			String tipo = $primervarid.resultado.toString();
@@ -297,10 +265,6 @@ decl[Visibilidad vis] returns [String trad]
 		};	
 	
 varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resultado, String ident]
-@init{
-	if(DEBUG)
-		System.err.println("[varid]");
-}
 	:	ID 
 		{
 			$resultado = new Tipo($tipo);
@@ -343,10 +307,6 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 		};
 
 declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad, int maxstack,boolean retorno]
-@init{
-	if(DEBUG)
-		System.err.println("[declins]");
-}
 	:	{
 			$retorno = false;
 			$trad = "";
@@ -365,10 +325,6 @@ declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad,
 		})*;
 
 bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack, boolean retorno]
-@init{
-	if(DEBUG)
-		System.err.println("[bloque]");
-}
 	:	{
 
 			if($creaAmbito){
@@ -385,10 +341,8 @@ bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] re
 			$retorno = $declins.retorno;
 		};
 
-instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack,boolean retorno]
+instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, TipoLiteral tipo] returns [String trad, int maxstack,boolean retorno]
 @init{
-		if(DEBUG)
-			System.err.println("[instr]");
 		int etiqFin = -1;
 		int etiqIni = -1;
 		int etiqContinue = -1;
@@ -639,12 +593,27 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			if(constructor || estoyEnMain)
 				throw new Error_22($RETURN.line,$RETURN.pos);
 			$trad = $expr.trad;
+			if($expr.tipo == TipoLiteral.int32 && $tipo == TipoLiteral.float64){
+				$trad += "conv.i8\n";
+			}else if($expr.tipo == TipoLiteral.float64 && $tipo == TipoLiteral.int32){
+				$trad += "conv.i4\n";
+			}else if($expr.tipo == $tipo){
+				// no hacemos nada
+			}
+			
 			$retorno = true;
+
 		}
 	|	variable=ID ASIG NEW tipoClase=ID params 
 		{
 			$trad = "";
-			Simbolo simb = tS.getSimbolo($variable.text);
+			Simbolo simb;
+			try{
+				simb = tS.getSimbolo($variable.text);
+			}catch(Error_2 e){
+				e.setFilaColumna($variable.line,$variable.pos);
+				throw e;
+			}
 			if(simb.getTipoSimbolo() == TipoSimbolo.campo && !estoyEnMain){
 				$trad = "ldarg 0\n";
 			}/*else if(simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
@@ -652,6 +621,20 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}*/
 			$trad += $params.trad;
 			$trad += "newobj instance void '" + $tipoClase.text + "'::.ctor(";
+			Simbolo simboloClase;
+			try{
+				simboloClase = tS.getSimbolo($tipoClase.text);
+			}catch(Error_2 e){
+				e.setFilaColumna($tipoClase.line,$tipoClase.pos);
+				throw e;
+			}
+			if($params.dimension != simboloClase.tipo.getDimension()){
+				String tipo = "" + simboloClase.tipo.getTipo();
+				if(simboloClase.tipo.getTipo() == TipoLiteral.clase){
+					tipo = simboloClase.getNombreClase();
+				}
+				throw new Error_21(tipo,simboloClase.getNombre(),$params.dimension,$variable.line,$variable.pos);
+			}
 			if($params.dimension > 0){
 				$trad += "float64";
 			}
@@ -675,6 +658,14 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		params
 		{
 			$trad += $params.trad + "call instance " + $subref.sufijo + "(";
+			if($params.dimension != $subref.simboloFinal.tipo.getDimension()){
+				String tipo = "" + $subref.simboloFinal.tipo.getTipo();
+				if($subref.simboloFinal.tipo.getTipo() == TipoLiteral.clase){
+					tipo = $subref.simboloFinal.getNombreClase();
+				}
+				throw new Error_21(tipo,$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
+			}
+
 			if($params.dimension > 0){
 				$trad += "float64";
 			}
@@ -823,10 +814,6 @@ expr returns [String trad, TipoLiteral tipo, int maxstack]
 		)*;
 
 eand returns [String trad, TipoLiteral tipo, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[eand]");
-}
 	:	primero = erel 
 		{
 			$trad = $primero.trad; 
@@ -854,10 +841,6 @@ eand returns [String trad, TipoLiteral tipo, int maxstack]
 
 
 esum returns [String trad, TipoLiteral tipo, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[esum]");
-}
 	:	primero = term {
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
@@ -993,10 +976,6 @@ term returns [String trad, TipoLiteral tipo, int maxstack]
 		})*;
 
 factor returns [String trad, TipoLiteral tipo, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[factor]");
-}
 	:	base{$trad = $base.trad; $tipo = $base.tipo;$maxstack = $base.maxstack;}
 	|	NOT otro = factor{if($otro.tipo == TipoLiteral.bool){
 				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
@@ -1025,10 +1004,6 @@ factor returns [String trad, TipoLiteral tipo, int maxstack]
 		};
 
 base returns [String trad, TipoLiteral tipo, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[base]");
-}
 	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = TipoLiteral.int32;$maxstack = 1;}
 	|	REAL
 		{
@@ -1058,6 +1033,13 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 		params
 		{
 			$trad += $params.trad + "call instance " + $subref.sufijo + "(";
+			if($params.dimension != $subref.simboloFinal.tipo.getDimension()){
+				String tipo = "" + $subref.simboloFinal.tipo.getTipo();
+				if($subref.simboloFinal.tipo.getTipo() == TipoLiteral.clase){
+					tipo = $subref.simboloFinal.getNombreClase();
+				}
+				throw new Error_21(tipo,$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
+			}
 			if($params.dimension > 0){
 				$trad += "float64";
 			}
@@ -1121,10 +1103,6 @@ ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFin
 		;
 
 indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[indices]");
-}
 	:	primero=expr
 		{
 			$trad = $primero.trad;
@@ -1170,10 +1148,6 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 		};
 
 args returns[String trad, int dimension]
-@init{
-	if(DEBUG)
-		System.err.println("[args]");
-}
 	:	{
 			$dimension = 0;
 			$trad = "";
@@ -1195,10 +1169,6 @@ args returns[String trad, int dimension]
 		)*)?;
 
 params returns[String trad,int dimension]
-@init{
-	if(DEBUG)
-		System.err.println("[params]");
-}
 	:	PARI
 		{
 			$dimension = 0;
@@ -1227,16 +1197,17 @@ params returns[String trad,int dimension]
 		)*)? PARD;
 
 subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
-@init{
-	if(DEBUG)
-		System.err.println("[subref]");
-}
 	:	primerid=ID
 		{
 			$prefijo = $sufijo = "";
 
-
-			Simbolo simb = tS.getSimbolo($primerid.text);
+			Simbolo simb;
+			try{
+				simb = tS.getSimbolo($primerid.text);
+			}catch(Error_2 e){
+				e.setFilaColumna($primerid.line,$primerid.pos);
+				throw e;
+			}
 			String trad = "";
 			switch(simb.getTipoSimbolo()){
 				case local:	trad = "loc " + simb.posicion_locals + "\n";
@@ -1265,7 +1236,14 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 			$prefijo += trad;
 			trad = "";
 			tablaSimbolos nuevotS = conjClases.get(simb.getNombreClase());
-			simb = nuevotS.getSimbolo($nuevoid.text);
+
+			try{
+				simb = nuevotS.getSimbolo($nuevoid.text);
+			}catch(Error_2 e){
+				e.setFilaColumna($nuevoid.line,$nuevoid.pos);
+				throw e;
+			}
+			
 			String tipo;
 			if(simb.getTipo().getTipo() == TipoLiteral.clase){
 				tipo = simb.getNombreClase();
