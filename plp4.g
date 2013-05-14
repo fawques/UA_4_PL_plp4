@@ -16,7 +16,7 @@ grammar plp4;
 		reportError(re);
 		System.exit(1);
 	}catch (Exception e) {
-//		e.printStackTrace();
+		//e.printStackTrace();
 		System.err.println(e);
 		System.exit(1);
 	}
@@ -170,7 +170,7 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 				try{
 					tSClase.add(new Simbolo($ID.text, 0, new Tipo(tipo,$args.dimension), Visibilidad.publico, TipoSimbolo.metodo,claseActual));
 				}catch(Error_1 e){
-					throw new Error_20("" + tipo,$ID.text,$args.dimension,$ID.line,$ID.pos);
+					throw new Error_20(tSClase.getNombre(),$ID.text,$args.dimension,$ID.line,$ID.pos);
 				}
 			}else{
 				if(tipo != null){
@@ -591,6 +591,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 		 }
 	|	WRITELINE PARI expr PARD PYC{
 			$trad = $expr.trad;
+			if($expr.tipo == TipoLiteral.clase){
+				throw new Error_28($WRITELINE.line,$WRITELINE.pos);
+			}
 			$trad += "call void [mscorlib]System.Console::WriteLine(" + $expr.tipo + ")\n";
 			$maxstack = $expr.maxstack;
 		}
@@ -624,14 +627,20 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			}
 			if(simb.getTipoSimbolo() == TipoSimbolo.campo && !estoyEnMain){
 				$trad = "ldarg 0\n";
-			}/*else if(simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
-				throw new Error_27($variable.text,$variable.line,$variable.pos);
-			}*/
+			}
+
+
+
 			$trad += $params.trad;
 			$trad += "newobj instance void '" + $tipoClase.text + "'::.ctor(";
 			Simbolo simboloClase;
 			try{
-				simboloClase = tS.getSimbolo($tipoClase.text);
+				tablaSimbolos tablaClase = conjClases.get($tipoClase.text);
+				if(tablaClase != null){
+					simboloClase = tablaClase.getSimbolo($tipoClase.text);
+				}else{
+					throw new Error_2($tipoClase.text,$tipoClase.line,$tipoClase.pos);
+				}
 			}catch(Error_2 e){
 				e.setFilaColumna($tipoClase.line,$tipoClase.pos);
 				throw e;
@@ -643,6 +652,19 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				}
 				throw new Error_21(tipoAux,simboloClase.getNombre(),$params.dimension,$variable.line,$variable.pos);
 			}
+
+			if(simb.tipo.getTipo() != TipoLiteral.clase){
+				throw new Error_19(simb.getNombre(),$variable.line,$variable.pos);
+			}
+			if(simboloClase.tipo.getTipo() != TipoLiteral.clase){
+				throw new Error_19(simboloClase.getNombre(),$tipoClase.line,$tipoClase.pos);
+			}
+			//System.err.println(simb.getNombreClase());
+			//System.err.println(simboloClase.getNombre());
+			if(!simb.getNombreClase().equals(simboloClase.getNombre())){
+				throw new Error_26(simb.getNombre(),simboloClase.getNombre(),$variable.line,$variable.pos);
+			}
+
 			if($params.dimension > 0){
 				$trad += "float64";
 			}
@@ -687,10 +709,6 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 		{$trad += "pop\n";};
 
 dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
-@init{
-	if(DEBUG)
-		System.err.println("[dims]");
-}
 	:	primero=ENTERO
 		{
 			try{
@@ -722,15 +740,13 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		)*
 		{$tipoFinal = $tipo;};
 cambio[Simbolo elemento, TipoLiteral tipo] returns [String trad, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[cambio]");
-}
 	:	ASIG expr PYC
 		{
-			
 			if($elemento.esIndice()){
 				throw new Error_15($ASIG.line,$ASIG.pos);
+			}
+			if($elemento.tipo.getTipo() == TipoLiteral.clase && !$expr.nombreClase.equals($elemento.getNombreClase())){
+				throw new Error_6($ASIG.line,$ASIG.pos);
 			}
 			String expresion = "";
 			TipoLiteral tipoExpr = $expr.tipo;
@@ -763,7 +779,9 @@ cambio[Simbolo elemento, TipoLiteral tipo] returns [String trad, int maxstack]
 			if($tipo == TipoLiteral.int32){
 				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call int32 [mscorlib]System.Int32::Parse(string)\n";
 			}
-			else
+			else if($tipo == TipoLiteral.clase){
+				throw new Error_28($READLINEI.line,$READLINEI.pos);
+			}else
 				throw new Error_7($READLINEI.line,$READLINEI.pos);
 		}
 	|	PUNTO READLINED PYC
@@ -775,7 +793,9 @@ cambio[Simbolo elemento, TipoLiteral tipo] returns [String trad, int maxstack]
 				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call float64 [mscorlib]System.Double::Parse(string)\n";
 				$maxstack = 1;
 			}
-			else
+			else if($tipo == TipoLiteral.clase){
+				throw new Error_28($READLINED.line,$READLINED.pos);
+			}else
 				throw new Error_7($READLINED.line,$READLINED.pos);
 		}
 	|	PUNTO READLINEB PYC
@@ -787,21 +807,20 @@ cambio[Simbolo elemento, TipoLiteral tipo] returns [String trad, int maxstack]
 				$trad = "call string [mscorlib]System.Console::ReadLine()\n" + "call bool [mscorlib]System.Boolean::Parse(string)\n";
 				$maxstack = 1;
 			}
-			else
+			else if($tipo == TipoLiteral.clase){
+				throw new Error_28($READLINEB.line,$READLINEB.pos);
+			}else
 				throw new Error_7($READLINEB.line,$READLINEB.pos);
 		}
 		;
 
-expr returns [String trad, TipoLiteral tipo, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[expr]");
-}
+expr returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 	:	primero = eand 
 		{
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
+			$nombreClase = $primero.nombreClase;
 		}
 		(OR 
 		{
@@ -818,15 +837,17 @@ expr returns [String trad, TipoLiteral tipo, int maxstack]
 			$tipo = TipoLiteral.bool;
 			$trad += "or\n";
 			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
+			$nombreClase = "";
 		}
 		)*;
 
-eand returns [String trad, TipoLiteral tipo, int maxstack]
+eand returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 	:	primero = erel 
 		{
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
+			$nombreClase = $primero.nombreClase;
 		}
 		(AND
 		{
@@ -844,25 +865,27 @@ eand returns [String trad, TipoLiteral tipo, int maxstack]
 			$tipo = TipoLiteral.bool;
 			$trad += "and\n";
 			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
+			$nombreClase = "";
 		}
 		)*;
 
 
-esum returns [String trad, TipoLiteral tipo, int maxstack]
+esum returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 	:	primero = term {
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
+			$nombreClase = $primero.nombreClase;
 		}
 		(ADDOP 
 		{
-			if($tipo == TipoLiteral.bool){
+			if($tipo == TipoLiteral.bool || $tipo == TipoLiteral.clase){
 				throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 			}
 		}
 		siguiente = term
 		{
-			if($siguiente.tipo == TipoLiteral.bool|| $tipo == TipoLiteral.bool){
+			if($siguiente.tipo == TipoLiteral.bool  || $siguiente.tipo == TipoLiteral.clase){
 				throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 			}
 			boolean convertirSiguiente = false;
@@ -888,20 +911,27 @@ esum returns [String trad, TipoLiteral tipo, int maxstack]
 			    $trad += "sub\n";
 			}
 			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
+			$nombreClase = "";
 		})*;
-erel returns [String trad, TipoLiteral tipo, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[erel]");
-}
+erel returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 	:	primero = esum 
 		{
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
+			$nombreClase = $primero.nombreClase;
 		}
-		(RELOP siguiente = esum
+		(RELOP 
 		{
+			if($tipo == TipoLiteral.clase){
+				throw new Error_29($RELOP.text,$RELOP.line,$RELOP.pos);
+			}
+		}
+		siguiente = esum
+		{
+			if($siguiente.tipo == TipoLiteral.clase){
+				throw new Error_29($RELOP.text,$RELOP.line,$RELOP.pos);
+			}
 			boolean convertirSiguiente = false;
 			if (($tipo == TipoLiteral.int32 || $tipo == TipoLiteral.bool) && ($siguiente.tipo == TipoLiteral.int32 || $siguiente.tipo == TipoLiteral.bool)) {
 			} else if ($tipo == TipoLiteral.int32 || $tipo == TipoLiteral.bool) { // $siguiente.tipo == TipoLiteral.float64
@@ -931,31 +961,28 @@ erel returns [String trad, TipoLiteral tipo, int maxstack]
 			}
 			$maxstack = Math.max($siguiente.maxstack +1,$maxstack);
 			
-			
+			$nombreClase = "";
 		})*;
 
 
 
-term returns [String trad, TipoLiteral tipo, int maxstack]
-@init{
-	if(DEBUG)
-		System.err.println("[term]");
-}
+term returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 	:	primero = factor 
 		{
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
 			$maxstack = $primero.maxstack;
+			$nombreClase = $primero.nombreClase;
 		}
 		(MULOP
 		{
-			if($tipo == TipoLiteral.bool){
+			if($tipo == TipoLiteral.bool || $tipo == TipoLiteral.clase){
 				throw new  Error_3($MULOP.text,$MULOP.line,$MULOP.pos);
 			}
 		}
 		siguiente = factor
 		{
-			if($siguiente.tipo == TipoLiteral.bool){
+			if($siguiente.tipo == TipoLiteral.bool || $siguiente.tipo == TipoLiteral.clase){
 				throw new  Error_3($MULOP.text,$MULOP.line,$MULOP.pos);
 			}
 			boolean convertirSiguiente = false;
@@ -980,28 +1007,34 @@ term returns [String trad, TipoLiteral tipo, int maxstack]
 			}else{
 			    $trad += "div\n"; 
 			}
-			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
+			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);$nombreClase = "";
 		})*;
 
-factor returns [String trad, TipoLiteral tipo, int maxstack]
-	:	base{$trad = $base.trad; $tipo = $base.tipo;$maxstack = $base.maxstack;}
-	|	NOT otro = factor{if($otro.tipo == TipoLiteral.bool){
+factor returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
+@init{
+	$nombreClase = "";
+}
+	:	base{$trad = $base.trad; $tipo = $base.tipo;$maxstack = $base.maxstack;$nombreClase = $base.nombreClase;}
+	|	NOT otro = factor
+		{
+			if($otro.tipo == TipoLiteral.bool){
 				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
 				$tipo = TipoLiteral.bool;
 				$maxstack = Math.max($otro.maxstack,2);
 			}else{
 				throw new  Error_4($NOT.text,$NOT.line,$NOT.pos);
-			}}
+			}
+		}
 	|	PARI ADDOP otro = factor PARD
 		{
 			if($ADDOP.text.equals("-")){
-				if($otro.tipo == TipoLiteral.bool){
+				if($otro.tipo == TipoLiteral.bool || $otro.tipo == TipoLiteral.clase){
 					throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 				}else{
 					$trad = $otro.trad + "neg\n";
 				}
 			}else{
-				if($otro.tipo == TipoLiteral.bool){
+				if($otro.tipo == TipoLiteral.bool || $otro.tipo == TipoLiteral.clase){
 					throw new  Error_3($ADDOP.text,$ADDOP.line,$ADDOP.pos);
 				}else{
 					$trad = $otro.trad;
@@ -1011,7 +1044,10 @@ factor returns [String trad, TipoLiteral tipo, int maxstack]
 			$maxstack = $otro.maxstack;
 		};
 
-base returns [String trad, TipoLiteral tipo, int maxstack]
+base returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
+@init{
+	$nombreClase = "";
+}
 	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = TipoLiteral.int32;$maxstack = 1;}
 	|	REAL
 		{
@@ -1030,6 +1066,7 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 		{
 			$trad = $ref.prefijo + "ld" + $ref.sufijo;
 			$tipo = $ref.tipoFinal;
+			$nombreClase = $ref.simbolo.getNombreClase();
 			/*$trad = DOLARref.trad;
 			$tipo = DOLARref.tipo;
 			//$maxstack = ref.maxstack + 1;*/
@@ -1040,6 +1077,9 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 		}
 		params
 		{
+			if($subref.simboloFinal.getTipoSimbolo() == TipoSimbolo.constructor){
+				throw new Error_30($subref.id.getLine(),$subref.id.getCharPositionInLine());
+			}
 			$trad += $params.trad + "call instance " + $subref.sufijo + "(";
 			if($params.dimension != $subref.simboloFinal.tipo.getDimension()){
 				String tipo = "" + $subref.simboloFinal.tipo.getTipo();
@@ -1060,34 +1100,14 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 		};
 
 ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFinal]
-@init{
-	if(DEBUG)
-		System.err.println("[ref]");
-}
 	:	subref
 		{
-			//try{
-			    Simbolo referencia = $subref.simboloFinal;
-			    
-				
-			//}catch(Error_2 e){
-			//    e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
-			//    throw e;
-			//}
+		    Simbolo referencia = $subref.simboloFinal;
 			$prefijo = $subref.prefijo;
 			$sufijo = $subref.sufijo;
 			$simbolo = $subref.simboloFinal;
 			$tipoFinal = $simbolo.tipo.getTipo();
 		} 
-		/*$variable= $referencia.posicion_locals; 
-			    $tipo = $referencia.tipo.getTipo();
-			    $tipo_simbolo = $referencia.getTipoSimbolo();
-			    $nombre = $referencia.getNombre();
-			    $trad = $subref.trad;
-			    $array_pasado = "";
-			    $getDato = "";
-			    $indice = $referencia.tipo.isIndice();
-			    $maxstack = 0;*/
 		(CORI indices[$subref.simboloFinal, $subref.id, $CORI] CORD
 		{
 			$prefijo += "ld" + $sufijo;
@@ -1251,6 +1271,10 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 				e.setFilaColumna($nuevoid.line,$nuevoid.pos);
 				throw e;
 			}
+
+			if(simb.visibilidad == Visibilidad.privado){
+				throw new Error_2(simb.getNombre(),$nuevoid.line,$nuevoid.pos);
+			}
 			
 			String tipo;
 			if(simb.getTipo().getTipo() == TipoLiteral.clase){
@@ -1269,6 +1293,9 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 								break;
 			}
 			$id = $nuevoid;
+			if(simb.getTipoSimbolo() == TipoSimbolo.constructor){
+				throw new Error_30($nuevoid.line,$nuevoid.pos);
+			}
 		}
 		)*
 		{
