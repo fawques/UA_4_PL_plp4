@@ -140,6 +140,7 @@ metodo returns [String trad,boolean constrDefecto]
 	|	PUBLIC 
 		{
 			boolean constructor = false;
+			boolean retorno = false;
 			$trad = ".method public ";
 			TipoLiteral tipo = null;
 		}
@@ -157,14 +158,14 @@ metodo returns [String trad,boolean constrDefecto]
 					throw new Error_32($ID.line,$ID.pos);
 				}
 				$trad += tipo + "  " + $ID.text ;
-				tSClase.add($ID.text, new Tipo(tipo,$args.dimension), 0, Visibilidad.publico, TipoSimbolo.metodo);
+				tSClase.add(new Simbolo($ID.text, 0, new Tipo(tipo,$args.dimension), Visibilidad.publico, TipoSimbolo.metodo,claseActual));
 			}else{
 				if(tipo != null){
 					throw new Error_31($ID.line,$ID.pos);
 				}
 				$trad += "specialname rtspecialname instance void .ctor";
 				if($args.dimension != 0){
-					tSClase.add($ID.text, new Tipo(TipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
+					tSClase.add(new Simbolo($ID.text,0, new Tipo(TipoLiteral.clase),Visibilidad.publico, TipoSimbolo.constructor,claseActual));
 				}else{
 					$constrDefecto = true;
 				}
@@ -172,6 +173,13 @@ metodo returns [String trad,boolean constrDefecto]
 		}
 		bloque[-1,-1,true]
 		{
+			if(!constructor && !$bloque.retorno){
+				//throw Error_X -- El de que debe haber un return
+				System.err.println("Error debe haber un return");
+			}else if(constructor && $bloque.retorno){
+				//throw Error_X -- El de que NO debe haber un return
+				System.err.println("Error NO debe haber un return");
+			}
 			$trad += "(" + $args.trad + ")" +  " cil managed \n{\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad;
 			if(tipo == null){
 				$trad += "ldarg 0\ncall instance void [mscorlib]System.Object::.ctor()";
@@ -279,8 +287,9 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 			}
 		};
 
-declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad, int maxstack]
+declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad, int maxstack,boolean retorno]
 	:	{
+			$retorno = false;
 			$trad = "";
 			$maxstack = 0;
 		}
@@ -288,14 +297,17 @@ declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad,
 		{
 			$trad += $instr.trad;
 			$maxstack = Math.max($maxstack,$instr.maxstack);
+			$retorno = $retorno || $instr.retorno;
 		}
 		| decl[Visibilidad.none]
 		{
 			$trad += $decl.trad;
+			$retorno = $retorno || false;
 		})*;
 
-bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack]
+bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack, boolean retorno]
 	:	{
+
 			if($creaAmbito){
 				tS = new tablaSimbolos(tS);
 			}
@@ -307,13 +319,15 @@ bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] re
 			if($creaAmbito){
 				tS = tS.pop();
 			}
+			$retorno = $declins.retorno;
 		};
 
-instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack]
+instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack,boolean retorno]
 @init{
 		int etiqFin = -1;
 		int etiqIni = -1;
 		int etiqContinue = -1;
+		$retorno = false;
 	}
 	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle, $creaAmbito]{$trad = $bloque.trad;$maxstack = $bloque.maxstack;}
 	|	IF PARI expr 
@@ -556,6 +570,10 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			$maxstack = $expr.maxstack;
 		}
 	|	RETURN expr PYC
+		{
+			$trad = $expr.trad;
+			$retorno = true;
+		}
 	|	variable=ID ASIG NEW tipoClase=ID params 
 		{
 			$trad = "";
@@ -583,7 +601,25 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 			}
 		}
 		PYC
-	|	subref params PYC;
+	|	subref
+		{
+			System.err.println("pref=" + $subref.prefijo + " - suf=" + $subref.sufijo);
+			$trad = $subref.prefijo;
+		}
+		params
+		{
+			$trad += $params.trad + "call instance " + $subref.sufijo + "(";
+			if($params.dimension > 0){
+				$trad += "float64";
+			}
+			for(int i = 1; i < $params.dimension;i++){
+				$trad += ",float64";
+			}
+			$trad += ")\n";
+
+		}
+		PYC
+		{$trad += "pop\n";};
 
 dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 	:	primero=ENTERO
@@ -913,7 +949,24 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 			$tipo = DOLARref.tipo;
 			//$maxstack = ref.maxstack + 1;*/
 		}
-	|	subref params;
+	|	subref
+		{
+			System.err.println("pref=" + $subref.prefijo + " - suf=" + $subref.sufijo);
+			$trad = $subref.prefijo;
+		}
+		params
+		{
+			$trad += $params.trad + "call instance " + $subref.sufijo + "(";
+			if($params.dimension > 0){
+				$trad += "float64";
+			}
+			for(int i = 1; i < $params.dimension;i++){
+				$trad += ",float64";
+			}
+			$trad += ")\n";
+			$tipo = $subref.simboloFinal.tipo.getTipo();
+
+		};
 
 ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFinal]
 	:	subref
@@ -1105,6 +1158,8 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 										break;
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
 										break;
+				case metodo:	trad = tipo + " '" + simb.getNombreClase() + "'::'"+simb.getNombre() + "'";
+								break;
 			}
 			$id = $nuevoid;
 		}
