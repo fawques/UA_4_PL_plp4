@@ -49,6 +49,7 @@ grammar plp4;
 	
 	String claseActual = "";
 	boolean estoyEnMain = false;
+	boolean constructor = false;
 	boolean hayMain = false;
 
 	int numEtiqueta = 0;
@@ -83,10 +84,10 @@ clase returns [String trad]
 			claseActual = $ID.text;
 			tS.add(claseActual, new Tipo(TipoLiteral.clase), 0, Visibilidad.publico, TipoSimbolo.clase);
 			tS = tSClase = new tablaSimbolos(tSGlobal,claseActual);
-			tS.add(claseActual, new Tipo(TipoLiteral.clase),0,Visibilidad.publico, TipoSimbolo.constructor);
+			tS.add(new Simbolo(claseActual,0, new Tipo(TipoLiteral.clase,0),Visibilidad.publico, TipoSimbolo.constructor, claseActual));
 			conjClases.put(claseActual,tSClase);
 		}
-		(miembro 
+		(miembro[constrDefecto] 
 		{
 			$trad+=$miembro.trad + "\n";
 			if($miembro.constrDefecto == true)
@@ -104,9 +105,9 @@ clase returns [String trad]
 			tS=tS.pop();
 		};
 
-miembro returns [String trad, boolean constrDefecto]
+miembro[boolean constr] returns [String trad, boolean constrDefecto]
 	:	campo {$trad = $campo.trad;$constrDefecto = false;}
-	|	metodo {$trad = $metodo.trad;$constrDefecto = $metodo.constrDefecto;};
+	|	metodo[$constr] {$trad = $metodo.trad;$constrDefecto = $metodo.constrDefecto;};
 campo returns [String trad]
 	:	visibilidad decl[$visibilidad.vis] {$trad = $decl.trad;}; 
 
@@ -116,11 +117,11 @@ visibilidad returns [Visibilidad vis]
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
-metodo returns [String trad,boolean constrDefecto]
+metodo[boolean constr] returns [String trad,boolean constrDefecto]
 @init{
 		numVariable = 1;
 		numArg = 1;
-		$constrDefecto = false;
+		$constrDefecto = $constr;
 		tS = tSMetodo = new tablaSimbolos(tSClase);
 	}
 	:	{
@@ -139,7 +140,6 @@ metodo returns [String trad,boolean constrDefecto]
 		}
 	|	PUBLIC 
 		{
-			boolean constructor = false;
 			boolean retorno = false;
 			$trad = ".method public ";
 			TipoLiteral tipo = null;
@@ -157,15 +157,24 @@ metodo returns [String trad,boolean constrDefecto]
 				if(tipo == null){
 					throw new Error_32($ID.line,$ID.pos);
 				}
-				$trad += tipo + "  " + $ID.text ;
-				tSClase.add(new Simbolo($ID.text, 0, new Tipo(tipo,$args.dimension), Visibilidad.publico, TipoSimbolo.metodo,claseActual));
+				$trad += tipo + "  " + $ID.text;
+				try{
+					tSClase.add(new Simbolo($ID.text, 0, new Tipo(tipo,$args.dimension), Visibilidad.publico, TipoSimbolo.metodo,claseActual));
+				}catch(Error_1 e){
+					throw new Error_20("" + tipo,$ID.text,$args.dimension,$ID.line,$ID.pos);
+				}
 			}else{
 				if(tipo != null){
 					throw new Error_31($ID.line,$ID.pos);
 				}
 				$trad += "specialname rtspecialname instance void .ctor";
-				if($args.dimension != 0){
-					tSClase.add(new Simbolo($ID.text,0, new Tipo(TipoLiteral.clase),Visibilidad.publico, TipoSimbolo.constructor,claseActual));
+				if($args.dimension != 0 || $constrDefecto == true){
+					try{
+						tSClase.add(new Simbolo($ID.text,0, new Tipo(TipoLiteral.clase,$args.dimension),Visibilidad.publico, TipoSimbolo.constructor,claseActual));
+					}catch(Error_1 e){
+						
+						throw new Error_20(claseActual,$ID.text,$args.dimension,$ID.line,$ID.pos);
+					}
 				}else{
 					$constrDefecto = true;
 				}
@@ -173,10 +182,7 @@ metodo returns [String trad,boolean constrDefecto]
 		}
 		bloque[-1,-1,true]
 		{
-			if(!constructor && !$bloque.retorno){
-				//throw Error_X -- El de que debe haber un return
-				System.err.println("Error debe haber un return");
-			}else if(constructor && $bloque.retorno){
+			if(constructor && $bloque.retorno){
 				//throw Error_X -- El de que NO debe haber un return
 				System.err.println("Error NO debe haber un return");
 			}
@@ -184,8 +190,12 @@ metodo returns [String trad,boolean constrDefecto]
 			if(tipo == null){
 				$trad += "ldarg 0\ncall instance void [mscorlib]System.Object::.ctor()";
 			}
+			if(!constructor && !$bloque.retorno){
+				// TODO: autogenerar el return del tipo que toque
+			}
 			$trad += "\n ret\n}";
 			tS = tS.pop();
+			constructor = false;
 		};
 
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
@@ -571,6 +581,8 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		}
 	|	RETURN expr PYC
 		{
+			if(constructor || estoyEnMain)
+				throw new Error_22($RETURN.line,$RETURN.pos);
 			$trad = $expr.trad;
 			$retorno = true;
 		}
@@ -603,7 +615,6 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		PYC
 	|	subref
 		{
-			System.err.println("pref=" + $subref.prefijo + " - suf=" + $subref.sufijo);
 			$trad = $subref.prefijo;
 		}
 		params
@@ -951,7 +962,6 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 		}
 	|	subref
 		{
-			System.err.println("pref=" + $subref.prefijo + " - suf=" + $subref.sufijo);
 			$trad = $subref.prefijo;
 		}
 		params

@@ -74,16 +74,17 @@ public class Simbolo {
         String aux = nombreClase;
         if(aux == null)
             aux = "NOCLASE";
-		return visibilidad + " " + aux + " " + nombre + ":" + tipo + " @ " + posicion_locals + " (" + tipo_simb + ")";
+		return visibilidad + " " + aux + " " + nombre + "(" + getDimension() + "):" + tipo + " @ " + posicion_locals + " (" + tipo_simb + ")";
 	}
 	
 	@Override
     public boolean equals(Object simb){
         Simbolo s = (Simbolo)simb;
-        if(tipo_simb != TipoSimbolo.metodo && tipo_simb != TipoSimbolo.constructor)
-        	return (nombre == null ? s.nombre == null : nombre.equals(s.nombre));
+        boolean iguales = (nombre == null ? s.nombre == null : nombre.equals(s.nombre));
+        if((tipo_simb != TipoSimbolo.metodo && tipo_simb != TipoSimbolo.constructor)&&(s.getTipoSimbolo() != TipoSimbolo.metodo && s.getTipoSimbolo() != TipoSimbolo.constructor))
+        	return iguales;
         else{
-        	if(nombre == s.nombre){
+        	if(nombre.equals(s.nombre)){
         		if(getDimension() == s.getDimension())
         			return true;
         	}
