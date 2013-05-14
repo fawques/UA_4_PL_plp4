@@ -141,7 +141,7 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 				hayMain = true;
 			}
 		}
-		PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true]
+		PUBLIC STATIC VOID MAIN PARI PARD bloque[-1, -1,true, null]
 		{
 			$trad = ".method static public void main () cil managed \n{\n.entrypoint\n.maxstack 1000"/*+$bloque.maxstack*/+"\n.locals(int32)\n"+$bloque.trad+"\n ret\n}";
 			tS = tS.pop();
@@ -189,7 +189,7 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 				}
 			}
 		}
-		bloque[-1,-1,true]
+		bloque[-1,-1,true, tipo]
 		{
 			if(constructor && $bloque.retorno){
 				//throw Error_X -- El de que NO debe haber un return
@@ -306,13 +306,13 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 			}
 		};
 
-declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad, int maxstack,boolean retorno]
+declins[int etiquetaBreakBucle, int etiquetaContinueBucle,TipoLiteral tipo] returns [String trad, int maxstack,boolean retorno]
 	:	{
 			$retorno = false;
 			$trad = "";
 			$maxstack = 0;
 		}
-		(instr[$etiquetaBreakBucle, $etiquetaContinueBucle,true] 
+		(instr[$etiquetaBreakBucle, $etiquetaContinueBucle,true,$tipo] 
 		{
 			$trad += $instr.trad;
 			$maxstack = Math.max($maxstack,$instr.maxstack);
@@ -324,14 +324,14 @@ declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad,
 			$retorno = $retorno || false;
 		})*;
 
-bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack, boolean retorno]
+bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, TipoLiteral tipo] returns [String trad, int maxstack, boolean retorno]
 	:	{
 
 			if($creaAmbito){
 				tS = new tablaSimbolos(tS);
 			}
 		}
-		LLAVEI declins[$etiquetaBreakBucle, $etiquetaContinueBucle] LLAVED
+		LLAVEI declins[$etiquetaBreakBucle, $etiquetaContinueBucle, $tipo] LLAVED
 		{
 			$trad = $declins.trad;
 			$maxstack = $declins.maxstack;
@@ -348,7 +348,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 		int etiqContinue = -1;
 		$retorno = false;
 	}
-	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle, $creaAmbito]{$trad = $bloque.trad;$maxstack = $bloque.maxstack;}
+	:	bloque[$etiquetaBreakBucle, $etiquetaContinueBucle, $creaAmbito, $tipo]{$trad = $bloque.trad;$maxstack = $bloque.maxstack;}
 	|	IF PARI expr 
 		{
 			int etiqElse = -1;
@@ -366,13 +366,13 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			}
 			
 		}
-		PARD insif=instr[$etiquetaBreakBucle,$etiquetaContinueBucle,true]
+		PARD insif=instr[$etiquetaBreakBucle,$etiquetaContinueBucle,true,$tipo]
 		{
 			$trad += $insif.trad + "br et"+etiqFin + "\n";
 			$trad += "et" + etiqElse + ": ";
 			$maxstack = Math.max($insif.maxstack,$maxstack);
 		}
-		(ELSE inselse=instr[$etiquetaBreakBucle,$etiquetaContinueBucle,true]
+		(ELSE inselse=instr[$etiquetaBreakBucle,$etiquetaContinueBucle,true,$tipo]
 		{
 			$trad += $inselse.trad;
 			$maxstack = Math.max($inselse.maxstack,$maxstack);
@@ -389,7 +389,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				throw new Error_5($WHILE.text,$WHILE.line,$WHILE.pos);
 			}
 		}
-		PARD contenido=instr[etiqFin,etiqIni,true]
+		PARD contenido=instr[etiqFin,etiqIni,true,$tipo]
 		{
 				$trad = "et" + etiqIni + ": " + $expr.trad + "ldc.i4 0\n" + "beq et" + etiqFin + "\n";
 				$trad += $contenido.trad + "br et" + etiqIni + "\n" + "et" + etiqFin + ": ";
@@ -438,7 +438,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				throw new Error_11($idArray.text,$idArray.line,$idArray.pos);
 			}
 		}
-		PARD contenido=instr[etiqFin,etiqContinue,false]
+		PARD contenido=instr[etiqFin,etiqContinue,false,$tipo]
 		{
 			$trad += $contenido.trad;
 			$trad += "et" + etiqContinue + ": ldloc " + iteradorInt + "\n" + "ldc.i4 1\n" + "add\n" + "stloc " + iteradorInt + "\n" + "br et" + etiqIni + "\n";
@@ -481,7 +481,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			$maxstack = Math.max($limite.maxstack,$maxstack);
 
 		}
-		STEP (ADDOP)? ENTERO PARD contenido=instr[etiqFin,etiqContinue,false]
+		STEP (ADDOP)? ENTERO PARD contenido=instr[etiqFin,etiqContinue,false,$tipo]
 		{
 			$trad+= "et" + etiqIni + ": " + "ldloc " + posicion + "\n" + "ldloc " + (posicion+1) + "\n";
 			if($ADDOP == null || $ADDOP.text.equals("+")){
@@ -590,7 +590,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 		}
 	|	RETURN expr PYC
 		{
-			if(constructor || estoyEnMain)
+			if(constructor || $tipo == null)
 				throw new Error_22($RETURN.line,$RETURN.pos);
 			$trad = $expr.trad;
 			if($expr.tipo == TipoLiteral.int32 && $tipo == TipoLiteral.float64){
@@ -599,6 +599,8 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				$trad += "conv.i4\n";
 			}else if($expr.tipo == $tipo){
 				// no hacemos nada
+			}else{
+				throw new Error_23($RETURN.line,$RETURN.pos);
 			}
 			
 			$retorno = true;
@@ -629,11 +631,11 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				throw e;
 			}
 			if($params.dimension != simboloClase.tipo.getDimension()){
-				String tipo = "" + simboloClase.tipo.getTipo();
+				String tipoAux = "" + simboloClase.tipo.getTipo();
 				if(simboloClase.tipo.getTipo() == TipoLiteral.clase){
-					tipo = simboloClase.getNombreClase();
+					tipoAux = simboloClase.getNombreClase();
 				}
-				throw new Error_21(tipo,simboloClase.getNombre(),$params.dimension,$variable.line,$variable.pos);
+				throw new Error_21(tipoAux,simboloClase.getNombre(),$params.dimension,$variable.line,$variable.pos);
 			}
 			if($params.dimension > 0){
 				$trad += "float64";
@@ -659,11 +661,11 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 		{
 			$trad += $params.trad + "call instance " + $subref.sufijo + "(";
 			if($params.dimension != $subref.simboloFinal.tipo.getDimension()){
-				String tipo = "" + $subref.simboloFinal.tipo.getTipo();
+				String tipoAux = "" + $subref.simboloFinal.tipo.getTipo();
 				if($subref.simboloFinal.tipo.getTipo() == TipoLiteral.clase){
-					tipo = $subref.simboloFinal.getNombreClase();
+					tipoAux = $subref.simboloFinal.getNombreClase();
 				}
-				throw new Error_21(tipo,$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw new Error_21(tipoAux,$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 
 			if($params.dimension > 0){
