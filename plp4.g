@@ -269,9 +269,11 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 		{
 			$resultado = new Tipo($tipo);
 			$ident = $ID.text;
+			boolean corchetes = false;
 		} 
 		(CORI 
 		{
+			corchetes = true;
 			$resultado = new Tipo($tipo,$resultado);
 		}
 		(COMA
@@ -285,6 +287,8 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 					Simbolo nuevo;
 					if($tipo == TipoLiteral.clase){
 						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local,$nombreClase);
+						if(corchetes)
+							throw new Error_25($CORI.line,$CORI.pos);
 					}else{
 						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local);
 					}
@@ -297,6 +301,8 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 			}else{
 				try{
 					Simbolo nuevo = new Simbolo($ID.text,numCampo,$resultado,vis,TipoSimbolo.campo,tSClase.getNombre());
+					if(corchetes && $tipo == TipoLiteral.clase)
+							throw new Error_25($CORI.line,$CORI.pos);
 					tS.add(nuevo);
 					numCampo++;
 				}catch(Error_1 ex){
