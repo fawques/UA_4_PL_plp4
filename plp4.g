@@ -73,7 +73,11 @@ s[String archivo] returns [String resultado]
 		{
 			$resultado += $clase.trad + "\n";
 		}
-		)+;
+		)+
+		{
+			if(!hayMain)
+				throw new Error_18();
+		};
 
 clase returns [String trad]
 	:	CLASS ID LLAVEI 
