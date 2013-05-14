@@ -39,6 +39,9 @@ grammar plp4;
 
 
 @parser::members {
+	final boolean DEBUG = true;
+
+
 	ArrayList<tablaSimbolos> listatS = new ArrayList<tablaSimbolos>();
 	tablaSimbolos tS = null;
 	tablaSimbolos tSGlobal = null;
@@ -64,6 +67,10 @@ grammar plp4;
 
 /* Analizador sintáctico: */
 s[String archivo] returns [String resultado]
+@init{
+	if(DEBUG)
+		System.err.println("[s]");
+}
 	:	{
 			tS = tSGlobal = new tablaSimbolos(); 
 			listatS.add(tSGlobal);
@@ -80,6 +87,10 @@ s[String archivo] returns [String resultado]
 		};
 
 clase returns [String trad]
+@init{
+	if(DEBUG)
+		System.err.println("[clase]");
+}
 	:	CLASS ID LLAVEI 
 		{
 			boolean constrDefecto = false;
@@ -110,12 +121,24 @@ clase returns [String trad]
 		};
 
 miembro[boolean constr] returns [String trad, boolean constrDefecto]
+@init{
+	if(DEBUG)
+		System.err.println("[miembro]");
+}
 	:	campo {$trad = $campo.trad;$constrDefecto = false;}
 	|	metodo[$constr] {$trad = $metodo.trad;$constrDefecto = $metodo.constrDefecto;};
 campo returns [String trad]
+@init{
+	if(DEBUG)
+		System.err.println("[campo]");
+}
 	:	visibilidad decl[$visibilidad.vis] {$trad = $decl.trad;}; 
 
 visibilidad returns [Visibilidad vis]
+@init{
+	if(DEBUG)
+		System.err.println("[visibilidad]");
+}
 	:	PRIVATE {$vis = Visibilidad.privado;}
 	|	PUBLIC {$vis = Visibilidad.publico;};
 
@@ -123,6 +146,8 @@ visibilidad returns [Visibilidad vis]
 
 metodo[boolean constr] returns [String trad,boolean constrDefecto]
 @init{
+		if(DEBUG)
+			System.err.println("[s]");
 		numVariable = 1;
 		numArg = 1;
 		$constrDefecto = $constr;
@@ -205,17 +230,29 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 // ==================================================================================================================================================================================================================================================================================================================================================================================================================================  MAXSTACK  ================================================================================================================================================================================================================================================================================================================================================================================================================================================= //
 
 tipoSimple returns [TipoLiteral trad, int line, int pos]
+@init{
+	if(DEBUG)
+		System.err.println("[tipoSimple]");
+}
 	:	INT {$trad = TipoLiteral.convertir("int32");$line = $INT.line; $pos = $INT.pos;}
 	|	DOUBLE {$trad = TipoLiteral.convertir("float64");$line = $DOUBLE.line; $pos = $DOUBLE.pos;}
 	|	BOOL {$trad=TipoLiteral.convertir("bool");$line = $BOOL.line; $pos = $BOOL.pos;};
 	
 // Cambiamos la gramática de tipo a tipopl para no colisionar con la clase Tipo que ya teníamos
 tipopl returns [TipoLiteral trad, int line, int pos, String ident]
+@init{
+	if(DEBUG)
+		System.err.println("[tipopl]");
+}
 	:	ID {$trad = TipoLiteral.clase; $ident = $ID.text; $line = $ID.line; $pos = $ID.pos;}
 	|	tipoSimple {$trad = $tipoSimple.trad; $ident = ""; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
 
 
 decl[Visibilidad vis] returns [String trad]
+@init{
+	if(DEBUG)
+		System.err.println("[decl]");
+}
 	:	tipopl primervarid = varid[$tipopl.trad,vis,$tipopl.ident]
 		{
 			String tipo = $primervarid.resultado.toString();
@@ -260,6 +297,10 @@ decl[Visibilidad vis] returns [String trad]
 		};	
 	
 varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resultado, String ident]
+@init{
+	if(DEBUG)
+		System.err.println("[varid]");
+}
 	:	ID 
 		{
 			$resultado = new Tipo($tipo);
@@ -302,6 +343,10 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 		};
 
 declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad, int maxstack,boolean retorno]
+@init{
+	if(DEBUG)
+		System.err.println("[declins]");
+}
 	:	{
 			$retorno = false;
 			$trad = "";
@@ -320,6 +365,10 @@ declins[int etiquetaBreakBucle, int etiquetaContinueBucle] returns [String trad,
 		})*;
 
 bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack, boolean retorno]
+@init{
+	if(DEBUG)
+		System.err.println("[bloque]");
+}
 	:	{
 
 			if($creaAmbito){
@@ -338,6 +387,8 @@ bloque[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] re
 
 instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] returns [String trad, int maxstack,boolean retorno]
 @init{
+		if(DEBUG)
+			System.err.println("[instr]");
 		int etiqFin = -1;
 		int etiqIni = -1;
 		int etiqContinue = -1;
@@ -637,6 +688,10 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito] ret
 		{$trad += "pop\n";};
 
 dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
+@init{
+	if(DEBUG)
+		System.err.println("[dims]");
+}
 	:	primero=ENTERO
 		{
 			try{
@@ -668,6 +723,10 @@ dims[Tipo tipo] returns [int dimension, Tipo tipoFinal]
 		)*
 		{$tipoFinal = $tipo;};
 cambio[Simbolo elemento, TipoLiteral tipo] returns [String trad, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[cambio]");
+}
 	:	ASIG expr PYC
 		{
 			
@@ -735,6 +794,10 @@ cambio[Simbolo elemento, TipoLiteral tipo] returns [String trad, int maxstack]
 		;
 
 expr returns [String trad, TipoLiteral tipo, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[expr]");
+}
 	:	primero = eand 
 		{
 			$trad = $primero.trad; 
@@ -760,6 +823,10 @@ expr returns [String trad, TipoLiteral tipo, int maxstack]
 		)*;
 
 eand returns [String trad, TipoLiteral tipo, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[eand]");
+}
 	:	primero = erel 
 		{
 			$trad = $primero.trad; 
@@ -787,6 +854,10 @@ eand returns [String trad, TipoLiteral tipo, int maxstack]
 
 
 esum returns [String trad, TipoLiteral tipo, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[esum]");
+}
 	:	primero = term {
 			$trad = $primero.trad; 
 			$tipo = $primero.tipo;
@@ -828,6 +899,10 @@ esum returns [String trad, TipoLiteral tipo, int maxstack]
 			$maxstack = Math.max($siguiente.maxstack+1,$maxstack);
 		})*;
 erel returns [String trad, TipoLiteral tipo, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[erel]");
+}
 	:	primero = esum 
 		{
 			$trad = $primero.trad; 
@@ -871,6 +946,10 @@ erel returns [String trad, TipoLiteral tipo, int maxstack]
 
 
 term returns [String trad, TipoLiteral tipo, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[term]");
+}
 	:	primero = factor 
 		{
 			$trad = $primero.trad; 
@@ -914,6 +993,10 @@ term returns [String trad, TipoLiteral tipo, int maxstack]
 		})*;
 
 factor returns [String trad, TipoLiteral tipo, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[factor]");
+}
 	:	base{$trad = $base.trad; $tipo = $base.tipo;$maxstack = $base.maxstack;}
 	|	NOT otro = factor{if($otro.tipo == TipoLiteral.bool){
 				$trad = $otro.trad  + "ldc.i4 1\n" + "xor\n";
@@ -942,6 +1025,10 @@ factor returns [String trad, TipoLiteral tipo, int maxstack]
 		};
 
 base returns [String trad, TipoLiteral tipo, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[base]");
+}
 	:	ENTERO{$trad = "ldc.i4 " + $ENTERO.text + "\n"; $tipo = TipoLiteral.int32;$maxstack = 1;}
 	|	REAL
 		{
@@ -983,6 +1070,10 @@ base returns [String trad, TipoLiteral tipo, int maxstack]
 		};
 
 ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFinal]
+@init{
+	if(DEBUG)
+		System.err.println("[ref]");
+}
 	:	subref
 		{
 			//try{
@@ -1030,6 +1121,10 @@ ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFin
 		;
 
 indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxstack]
+@init{
+	if(DEBUG)
+		System.err.println("[indices]");
+}
 	:	primero=expr
 		{
 			$trad = $primero.trad;
@@ -1075,6 +1170,10 @@ indices[Simbolo elemento, Token id, Token cori] returns [String trad, int maxsta
 		};
 
 args returns[String trad, int dimension]
+@init{
+	if(DEBUG)
+		System.err.println("[args]");
+}
 	:	{
 			$dimension = 0;
 			$trad = "";
@@ -1096,6 +1195,10 @@ args returns[String trad, int dimension]
 		)*)?;
 
 params returns[String trad,int dimension]
+@init{
+	if(DEBUG)
+		System.err.println("[params]");
+}
 	:	PARI
 		{
 			$dimension = 0;
@@ -1124,6 +1227,10 @@ params returns[String trad,int dimension]
 		)*)? PARD;
 
 subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
+@init{
+	if(DEBUG)
+		System.err.println("[subref]");
+}
 	:	primerid=ID
 		{
 			$prefijo = $sufijo = "";
