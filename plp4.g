@@ -91,7 +91,12 @@ clase returns [String trad]
 			$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";
 			numCampo = 0;
 			claseActual = $ID.text;
-			tS.add(claseActual, new Tipo(TipoLiteral.clase,claseActual), 0, Visibilidad.publico, TipoSimbolo.clase);
+			try{
+				tS.add(claseActual, new Tipo(TipoLiteral.clase,claseActual), 0, Visibilidad.publico, TipoSimbolo.clase);
+			}catch(Error_1 e){
+				e.setFilaColumna($ID.line,$ID.pos);
+				throw e;
+			}
 			tS = tSClase = new tablaSimbolos(tSGlobal,claseActual);
 			tS.add(new Simbolo(claseActual,0, new Tipo(TipoLiteral.clase,claseActual,0),Visibilidad.publico, TipoSimbolo.constructor, claseActual));
 			conjClases.put(claseActual,tSClase);
