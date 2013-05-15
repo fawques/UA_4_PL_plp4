@@ -717,7 +717,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			if(simb.getTipoSimbolo() == TipoSimbolo.local){
 				$trad += "stloc " + simb.posicion_locals + "\n";
 			}else if(simb.getTipoSimbolo() == TipoSimbolo.campo){
-				$trad += "stfld '" + $tipoClase.text + "' '" + $tipoClase.text + "'::'" + $variable.text + "'\n";
+				$trad += "stfld '" + $tipoClase.text + "' '" + simb.getNombreClase() + "'::'" + $variable.text + "'\n";
 			}
 		}
 		PYC
@@ -1302,6 +1302,11 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 								}
 								trad = simb.tipo + " '" + simb.getNombreClase() + "'::'"+simb.getNombre() + "'";
 								break;
+				case constructor:	if(estoyEnMain){
+										throw new Error_27($primerid.text,$primerid.line,$primerid.pos);
+									}else{
+										throw new Error_30($primerid.line,$primerid.pos);
+									}
 			}
 			$id = $primerid;
 
