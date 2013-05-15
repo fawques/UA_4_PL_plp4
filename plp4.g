@@ -221,7 +221,19 @@ tipoSimple returns [TipoLiteral trad, int line, int pos]
 	
 // Cambiamos la gramática de tipo a tipopl para no colisionar con la clase Tipo que ya teníamos
 tipopl returns [TipoLiteral trad, int line, int pos, String ident]
-	:	ID {$trad = TipoLiteral.clase; $ident = $ID.text; $line = $ID.line; $pos = $ID.pos;}
+	:	ID 
+	{
+		$trad = TipoLiteral.clase;
+		$ident = $ID.text;
+		$line = $ID.line;
+		$pos = $ID.pos;
+		try{
+			tSGlobal.getSimbolo($ID.text,1);
+		}catch(Error_2 e){
+			e.setFilaColumna($ID.line,$ID.pos);
+			throw e;
+		}
+	}
 	|	tipoSimple {$trad = $tipoSimple.trad; $ident = ""; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
 
 
@@ -241,6 +253,7 @@ decl[Visibilidad vis] returns [String trad]
 			else{
 				if($primervarid.resultado.getTipo() == TipoLiteral.clase){
 					tipo = $tipopl.ident;
+					
 				}
 				
 				$trad += ".field " + vis + " " + tipo + " '" + $primervarid.ident + "'\n";
@@ -546,7 +559,16 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 		}
 	|	ID 
 		{
-			Simbolo simb = tS.getSimbolo($ID.text);
+			Simbolo simb;
+			try{
+				simb = tS.getSimbolo($ID.text,1);
+			}catch(Error_2 e){
+				e.setFilaColumna($ID.line,$ID.pos);
+				throw e;
+			}catch(Error_21 e){
+				e.setFilaColumna($ID.line,$ID.pos);
+				throw e;
+			}
 			TipoLiteral tipo_final_simbolo = simb.getTipoFinal();
 			Tipo tipoCompleto = simb.getTipo();
 			TipoSimbolo tipo_simbolo = simb.getTipoSimbolo();
@@ -628,7 +650,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			$trad = "";
 			Simbolo simb;
 			try{
-				simb = tS.getSimbolo($variable.text);
+				simb = tS.getSimbolo($variable.text,1);
 			}catch(Error_2 e){
 				e.setFilaColumna($variable.line,$variable.pos);
 				throw e;
@@ -645,9 +667,10 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			$trad += "newobj instance void '" + $tipoClase.text + "'::.ctor(";
 			Simbolo simboloClase;
 			try{
+				//System.err.println("=========");
 				tablaSimbolos tablaClase = conjClases.get($tipoClase.text);
 				if(tablaClase != null){
-					simboloClase = tablaClase.getSimbolo($tipoClase.text);
+					simboloClase = tablaClase.getSimbolo($tipoClase.text, $params.dimension);
 				}else{
 					throw new Error_2($tipoClase.text,$tipoClase.line,$tipoClase.pos);
 				}
@@ -1118,12 +1141,14 @@ ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFin
 			$simbolo = $subref.simboloFinal;
 			$tipoFinal = $simbolo.tipo.getTipo();
 			$id = $subref.id;
+			boolean corchetes = false;
 		} 
 		(CORI indices[$subref.simboloFinal, $subref.id, $CORI] CORD
 		{
 			$prefijo += "ld" + $sufijo;
 			$sufijo = "";
 			$prefijo += $indices.trad;
+			corchetes = true;
 
 			TipoLiteral tipo = referencia.tipo.getTipoFinal();
 			if(tipo == TipoLiteral.int32 || tipo == TipoLiteral.bool){
@@ -1135,7 +1160,7 @@ ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFin
 		}
 		)?
 		{
-			if(referencia.esArray() && $sufijo.equals("")){
+			if(referencia.esArray() && !corchetes){
 				throw new Error_9($subref.id.getText(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 		}
