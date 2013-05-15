@@ -205,7 +205,14 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 				$trad += "ldarg 0\ncall instance void [mscorlib]System.Object::.ctor()";
 			}
 			if(!constructor && !$bloque.retorno){
-				// TODO: autogenerar el return del tipo que toque
+				$trad+="ldc.";
+				switch(tipo){
+					case bool:
+					case int32:	$trad+="i4 0\n";
+								break;
+					case float64:	$trad+="r8 0,0\n";
+								break;
+				}
 			}
 			$trad += "\n ret\n}";
 			tS = tS.pop();
