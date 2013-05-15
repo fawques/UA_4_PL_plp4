@@ -427,9 +427,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				$maxstack = Math.max($expr.maxstack,$contenido.maxstack);
 			
 		}
-	|	FOREACH PARI VAR iterador=ID IN idArray=ID
+	|	FOREACH PARI VAR iterador=ID IN idArray=subref
 		{
-			Simbolo array = tS.getSimbolo($idArray.text);
+			Simbolo array = $subref.simboloFinal;
 			int iteradorInt = -1;
 			if(array.esArray()){
 				tS = new tablaSimbolos(tS);
@@ -438,7 +438,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				Tipo tipoIterador = new Tipo(tFinal,true);
 				int posicion = numVariable;
 
-				tS.add($iterador.text,tipoIterador,numVariable,Visibilidad.publico, TipoSimbolo.local);
+				tS.add($iterador.text,tipoIterador,numVariable,Visibilidad.none, TipoSimbolo.local);
 				numVariable++;
 				iteradorInt = numVariable;
 				numVariable++;
@@ -455,7 +455,27 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				$trad += "ldc.i4 0\n" + "stloc " + iteradorInt + "\n";
 				$trad += "et" + etiqIni + ": ";
 				$trad += "ldloc " + iteradorInt + "\n" + "ldc.i4 " + (array.getDimension()-1) + "\n" + "bgt et" + etiqFin + "\n";
-				$trad += "ldloc " + array.posicion_locals + "\n";
+				switch(array.getTipoSimbolo()){
+					case local:	$trad += "ldloc " + array.posicion_locals + "\n";
+								break;
+					case campo:	if(estoyEnMain){
+									throw new Error_27(array.getNombre(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
+								}
+								$trad += "ldarg 0\n";
+								String tipoAux;
+								if(array.tipo.getTipo() == TipoLiteral.clase)
+								{
+									tipoAux = array.tipo.getTipoClase();
+								}else{
+									tipoAux = array.tipo.toString();
+								}
+								$trad += "ldfld " + tipoAux + " '" + array.getNombreClase() + "'::'"+array.getNombre() + "'\n";
+								break;
+					case argumento:	$trad += "ldarg " + array.posicion_locals + "\n";
+									break;
+					case metodo:	
+					case constructor:	throw new Error_19(array.getNombre(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
+				}
 				$trad += "ldloc " + iteradorInt + "\n" + "ldelem.";
 				if(tipoIterador.tipo == TipoLiteral.int32 || tipoIterador.tipo == TipoLiteral.bool){
 					$trad += "i4\n";	
@@ -466,7 +486,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				$maxstack = 2;
 
 			}else{
-				throw new Error_11($idArray.text,$idArray.line,$idArray.pos);
+				throw new Error_11($idArray.id.getText(),$idArray.id.getLine(),$idArray.id.getCharPositionInLine());
 			}
 		}
 		PARD contenido=instr[etiqFin,etiqContinue,false,$tipo]
