@@ -12,27 +12,33 @@ public class Tipo {
     TipoLiteral tipo;
     int dimension;
     Tipo tipobase;
-    tablaSimbolos tS;
+    String tipoClase;
     int numParam;
     boolean array;
     boolean indice;
     
-    public Tipo(TipoLiteral _tipo){
+    public Tipo(TipoLiteral _tipo, String _clase){
 
         tipo = _tipo;
         dimension = 1;
         tipobase = null;
-        tS = null;
+        if(tipo == TipoLiteral.clase)
+        	tipoClase = _clase;
+        else
+        	tipoClase = null;
         array = false;
         indice = false;
 		
     }
 
-    public Tipo(TipoLiteral _tipo, int _dimension){
+    public Tipo(TipoLiteral _tipo, String _clase, int _dimension){
     	tipo = _tipo;
     	dimension = _dimension;
     	tipobase = null;
-    	tS = null;
+    	if(tipo == TipoLiteral.clase)
+        	tipoClase = _clase;
+        else
+        	tipoClase = null;
     	array = false;
     	indice = false;
     }
@@ -74,6 +80,10 @@ public class Tipo {
 		return tipobase;
 	}
 	
+	public String getTipoClase(){
+		return tipoClase;
+	}
+
 	public TipoLiteral getTipoFinal(){
 		if(array){
 			return tipobase.getTipoFinal();

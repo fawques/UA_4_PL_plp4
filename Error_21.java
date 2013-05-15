@@ -13,10 +13,10 @@ public class Error_21 extends Exception{
     public Error_21(String tipo, String nombre, int args, int _fila, int _columna){
         lexema= tipo + "." + nombre+"(";
         if(args > 0){
-            lexema += "float64";
+            lexema += "double";
         }
         for(int i = 1; i < args;i++){
-            lexema += ",float64";
+            lexema += ",double";
         }
         lexema += ")";
         fila = _fila;

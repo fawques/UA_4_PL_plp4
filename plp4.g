@@ -16,7 +16,7 @@ grammar plp4;
 		reportError(re);
 		System.exit(1);
 	}catch (Exception e) {
-		//e.printStackTrace();
+//		e.printStackTrace();
 		System.err.println(e);
 		System.exit(1);
 	}
@@ -91,9 +91,9 @@ clase returns [String trad]
 			$trad=".class '" + $ID.text + "' extends [mscorlib]System.Object \n{\n";
 			numCampo = 0;
 			claseActual = $ID.text;
-			tS.add(claseActual, new Tipo(TipoLiteral.clase), 0, Visibilidad.publico, TipoSimbolo.clase);
+			tS.add(claseActual, new Tipo(TipoLiteral.clase,claseActual), 0, Visibilidad.publico, TipoSimbolo.clase);
 			tS = tSClase = new tablaSimbolos(tSGlobal,claseActual);
-			tS.add(new Simbolo(claseActual,0, new Tipo(TipoLiteral.clase,0),Visibilidad.publico, TipoSimbolo.constructor, claseActual));
+			tS.add(new Simbolo(claseActual,0, new Tipo(TipoLiteral.clase,claseActual,0),Visibilidad.publico, TipoSimbolo.constructor, claseActual));
 			conjClases.put(claseActual,tSClase);
 		}
 		(miembro[constrDefecto] 
@@ -168,7 +168,7 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 				}
 				$trad += tipo + "  " + $ID.text;
 				try{
-					tSClase.add(new Simbolo($ID.text, 0, new Tipo(tipo,$args.dimension), Visibilidad.publico, TipoSimbolo.metodo,claseActual));
+					tSClase.add(new Simbolo($ID.text, 0, new Tipo(tipo,null,$args.dimension), Visibilidad.publico, TipoSimbolo.metodo,claseActual));
 				}catch(Error_1 e){
 					throw new Error_20(tSClase.getNombre(),$ID.text,$args.dimension,$ID.line,$ID.pos);
 				}
@@ -179,7 +179,7 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 				$trad += "specialname rtspecialname instance void .ctor";
 				if($args.dimension != 0 || $constrDefecto == true){
 					try{
-						tSClase.add(new Simbolo($ID.text,0, new Tipo(TipoLiteral.clase,$args.dimension),Visibilidad.publico, TipoSimbolo.constructor,claseActual));
+						tSClase.add(new Simbolo($ID.text,0, new Tipo(TipoLiteral.clase,claseActual,$args.dimension),Visibilidad.publico, TipoSimbolo.constructor,claseActual));
 					}catch(Error_1 e){
 						
 						throw new Error_20(claseActual,$ID.text,$args.dimension,$ID.line,$ID.pos);
@@ -267,7 +267,7 @@ decl[Visibilidad vis] returns [String trad]
 varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resultado, String ident]
 	:	ID 
 		{
-			$resultado = new Tipo($tipo);
+			$resultado = new Tipo($tipo, $nombreClase);
 			$ident = $ID.text;
 			boolean corchetes = false;
 		} 
@@ -286,11 +286,11 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 				try{
 					Simbolo nuevo;
 					if($tipo == TipoLiteral.clase){
-						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local,$nombreClase);
+						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local,claseActual);
 						if(corchetes)
 							throw new Error_25($CORI.line,$CORI.pos);
 					}else{
-						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local);
+						nuevo = new Simbolo($ID.text,numVariable,$resultado,vis,TipoSimbolo.local,claseActual);
 					}
 					tS.add(nuevo);
 					numVariable++;
@@ -300,7 +300,7 @@ varid[TipoLiteral tipo,Visibilidad vis,String nombreClase] returns [Tipo resulta
 				}
 			}else{
 				try{
-					Simbolo nuevo = new Simbolo($ID.text,numCampo,$resultado,vis,TipoSimbolo.campo,tSClase.getNombre());
+					Simbolo nuevo = new Simbolo($ID.text,numCampo,$resultado,vis,TipoSimbolo.campo,claseActual);
 					if(corchetes && $tipo == TipoLiteral.clase)
 							throw new Error_25($CORI.line,$CORI.pos);
 					tS.add(nuevo);
@@ -533,6 +533,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 		}
 	|	ref cambio[$ref.simbolo,$ref.tipoFinal]
 		{
+			if($ref.simbolo.getTipoSimbolo() == TipoSimbolo.metodo || $ref.simbolo.getTipoSimbolo() == TipoSimbolo.constructor){
+				throw new Error_19($ref.simbolo.getNombre(),$ref.id.getLine(),$ref.id.getCharPositionInLine());
+			}
 			$trad = $ref.prefijo + $cambio.trad + "st" + $ref.sufijo;
 			/* //$maxstack = Math.max(ref.maxstack,$cambio.maxstack);*/
 		}
@@ -627,6 +630,8 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			}
 			if(simb.getTipoSimbolo() == TipoSimbolo.campo && !estoyEnMain){
 				$trad = "ldarg 0\n";
+			}else if(simb.getTipoSimbolo() == TipoSimbolo.campo && estoyEnMain){
+				throw new Error_27($variable.text,$variable.line,$variable.pos);
 			}
 
 
@@ -650,7 +655,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				if(simboloClase.tipo.getTipo() == TipoLiteral.clase){
 					tipoAux = simboloClase.getNombreClase();
 				}
-				throw new Error_21(tipoAux,simboloClase.getNombre(),$params.dimension,$variable.line,$variable.pos);
+				throw new Error_21(simboloClase.getNombreClase(),simboloClase.getNombre(),$params.dimension,$variable.line,$variable.pos);
 			}
 
 			if(simb.tipo.getTipo() != TipoLiteral.clase){
@@ -659,9 +664,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			if(simboloClase.tipo.getTipo() != TipoLiteral.clase){
 				throw new Error_19(simboloClase.getNombre(),$tipoClase.line,$tipoClase.pos);
 			}
-			//System.err.println(simb.getNombreClase());
+			//System.err.println(simb.tipo.getTipoClase());
 			//System.err.println(simboloClase.getNombre());
-			if(!simb.getNombreClase().equals(simboloClase.getNombre())){
+			if(!simboloClase.getNombre().equals(simb.tipo.getTipoClase())){
 				throw new Error_26(simb.getNombre(),simboloClase.getNombre(),$variable.line,$variable.pos);
 			}
 
@@ -693,7 +698,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				if($subref.simboloFinal.tipo.getTipo() == TipoLiteral.clase){
 					tipoAux = $subref.simboloFinal.getNombreClase();
 				}
-				throw new Error_21(tipoAux,$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw new Error_21($subref.simboloFinal.getNombreClase(),$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 
 			if($params.dimension > 0){
@@ -745,7 +750,7 @@ cambio[Simbolo elemento, TipoLiteral tipo] returns [String trad, int maxstack]
 			if($elemento.esIndice()){
 				throw new Error_15($ASIG.line,$ASIG.pos);
 			}
-			if($elemento.tipo.getTipo() == TipoLiteral.clase && !$expr.nombreClase.equals($elemento.getNombreClase())){
+			if($elemento.tipo.getTipo() == TipoLiteral.clase && !$expr.nombreClase.equals($elemento.tipo.getTipoClase())){
 				throw new Error_6($ASIG.line,$ASIG.pos);
 			}
 			String expresion = "";
@@ -1086,7 +1091,7 @@ base returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 				if($subref.simboloFinal.tipo.getTipo() == TipoLiteral.clase){
 					tipo = $subref.simboloFinal.getNombreClase();
 				}
-				throw new Error_21(tipo,$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw new Error_21($subref.simboloFinal.getNombreClase(),$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 			if($params.dimension > 0){
 				$trad += "float64";
@@ -1099,7 +1104,7 @@ base returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 
 		};
 
-ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFinal]
+ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFinal, Token id]
 	:	subref
 		{
 		    Simbolo referencia = $subref.simboloFinal;
@@ -1107,6 +1112,7 @@ ref returns [String prefijo, String sufijo, Simbolo simbolo, TipoLiteral tipoFin
 			$sufijo = $subref.sufijo;
 			$simbolo = $subref.simboloFinal;
 			$tipoFinal = $simbolo.tipo.getTipo();
+			$id = $subref.id;
 		} 
 		(CORI indices[$subref.simboloFinal, $subref.id, $CORI] CORD
 		{
@@ -1184,14 +1190,14 @@ args returns[String trad, int dimension]
 		{
 			$trad += "float64 '" + $primerid.text + "'";
 			$dimension ++;
-			tS.add(new Simbolo($primerid.text, numArg, new Tipo(TipoLiteral.float64), Visibilidad.none, TipoSimbolo.argumento));
+			tS.add(new Simbolo($primerid.text, numArg, new Tipo(TipoLiteral.float64,""), Visibilidad.none, TipoSimbolo.argumento));
 			numArg++;
 		}
 		(COMA DOUBLE nuevoid=ID
 		{
 			$trad += ", float64 '" + $nuevoid.text + "'";
 			$dimension ++;
-			tS.add(new Simbolo($nuevoid.text, numArg, new Tipo(TipoLiteral.float64), Visibilidad.none, TipoSimbolo.argumento));
+			tS.add(new Simbolo($nuevoid.text, numArg, new Tipo(TipoLiteral.float64,""), Visibilidad.none, TipoSimbolo.argumento));
 			numArg++;
 		}
 		)*)?;
@@ -1228,7 +1234,6 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 	:	primerid=ID
 		{
 			$prefijo = $sufijo = "";
-
 			Simbolo simb;
 			try{
 				simb = tS.getSimbolo($primerid.text);
@@ -1244,13 +1249,24 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 								throw new Error_27($primerid.text,$primerid.line,$primerid.pos);
 							}
 							$prefijo += "ldarg 0\n";
-							trad = "fld " + simb.tipo + " '" + simb.getNombreClase() + "'::'"+simb.getNombre() + "'\n";
+							String tipoAux;
+							if(simb.tipo.getTipo() == TipoLiteral.clase)
+							{
+								tipoAux = simb.tipo.getTipoClase();
+							}else{
+								tipoAux = simb.tipo.toString();
+							}
+							trad = "fld " + tipoAux + " '" + simb.getNombreClase() + "'::'"+simb.getNombre() + "'\n";
 							break;
 				case argumento:	trad = "arg " + simb.posicion_locals + "\n";
 								break;
+				case metodo:	if(estoyEnMain){
+									throw new Error_27($primerid.text,$primerid.line,$primerid.pos);
+								}
+								trad = simb.tipo + " '" + simb.getNombreClase() + "'::'"+simb.getNombre() + "'";
+								break;
 			}
 			$id = $primerid;
-			
 
 		}
 		(PUNTO nuevoid=ID
@@ -1263,22 +1279,21 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 			trad = "ld" + trad;
 			$prefijo += trad;
 			trad = "";
-			tablaSimbolos nuevotS = conjClases.get(simb.getNombreClase());
-
+			tablaSimbolos nuevotS = conjClases.get(simb.tipo.getTipoClase());
+			
 			try{
 				simb = nuevotS.getSimbolo($nuevoid.text);
 			}catch(Error_2 e){
 				e.setFilaColumna($nuevoid.line,$nuevoid.pos);
 				throw e;
 			}
-
 			if(simb.visibilidad == Visibilidad.privado){
 				throw new Error_2(simb.getNombre(),$nuevoid.line,$nuevoid.pos);
 			}
 			
 			String tipo;
 			if(simb.getTipo().getTipo() == TipoLiteral.clase){
-				tipo = simb.getNombreClase();
+				tipo = simb.tipo.getTipoClase();
 			}else{
 				tipo = simb.getTipo().toString();
 			}
