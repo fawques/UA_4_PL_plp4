@@ -668,6 +668,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			}catch(Error_2 e){
 				e.setFilaColumna($variable.line,$variable.pos);
 				throw e;
+			}catch(Error_21 e){
+				e.setFilaColumna($variable.line,$variable.pos);
+				throw e;
 			}
 			if(simb.getTipoSimbolo() == TipoSimbolo.campo && !estoyEnMain){
 				$trad = "ldarg 0\n";
@@ -690,6 +693,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 					throw new Error_19($tipoClase.text,$tipoClase.line,$tipoClase.pos);
 				}
 			}catch(Error_2 e){
+				e.setFilaColumna($tipoClase.line,$tipoClase.pos);
+				throw e;
+			}catch(Error_21 e){
 				e.setFilaColumna($tipoClase.line,$tipoClase.pos);
 				throw e;
 			}
