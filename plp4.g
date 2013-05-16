@@ -1131,16 +1131,32 @@ base returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 		}
 		params
 		{
-			if($subref.simboloFinal.getTipoSimbolo() == TipoSimbolo.constructor){
+			Simbolo simb;
+			String sufijo = $subref.sufijo;
+			try{
+				 simb = tS.getSimbolo($subref.simboloFinal.getNombre(),$params.dimension);
+			}catch(Error_2 e){
+				e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw e;
+			}catch(Error_21 e){
+				e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw e;
+			}
+			
+			if(simb.getTipoSimbolo() == TipoSimbolo.constructor){
 				throw new Error_30($subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
-			$trad += $params.trad + "call instance " + $subref.sufijo + "(";
-			if($params.dimension != $subref.simboloFinal.tipo.getDimension()){
-				String tipo = "" + $subref.simboloFinal.tipo.getTipo();
-				if($subref.simboloFinal.tipo.getTipo() == TipoLiteral.clase){
-					tipo = $subref.simboloFinal.getNombreClase();
+			if(!sufijo.contains(simb.tipo.toString())){
+				System.err.println("replace");
+				sufijo = sufijo.replaceFirst("float64|int32|bool",simb.tipo.toString());
+			}
+			$trad += $params.trad + "call instance " + sufijo + "(";
+			if($params.dimension != simb.tipo.getDimension()){
+				String tipo = "" + simb.tipo.getTipo();
+				if(simb.tipo.getTipo() == TipoLiteral.clase){
+					tipo = simb.getNombreClase();
 				}
-				throw new Error_21($subref.simboloFinal.getNombreClase(),$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw new Error_21(simb.getNombreClase(),simb.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 			if($params.dimension > 0){
 				$trad += "float64";
@@ -1149,7 +1165,7 @@ base returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 				$trad += ",float64";
 			}
 			$trad += ")\n";
-			$tipo = $subref.simboloFinal.tipo.getTipo();
+			$tipo = simb.tipo.getTipo();
 
 		};
 
@@ -1281,7 +1297,7 @@ params returns[String trad,int dimension]
 		}
 		)*)? PARD;
 
-subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
+subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id, String tipoSubRef]
 	:	primerid=ID
 		{
 			$prefijo = $sufijo = "";
