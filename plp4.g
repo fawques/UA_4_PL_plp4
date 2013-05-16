@@ -1330,7 +1330,7 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 				e.setFilaColumna($nuevoid.line,$nuevoid.pos);
 				throw e;
 			}
-			if(simb.visibilidad == Visibilidad.privado){
+			if(simb.visibilidad == Visibilidad.privado && !claseActual.equals(simb.getNombreClase())){
 				throw new Error_2(simb.getNombre(),$nuevoid.line,$nuevoid.pos);
 			}
 			
