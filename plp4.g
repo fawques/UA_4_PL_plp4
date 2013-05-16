@@ -744,13 +744,31 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 		}
 		params
 		{
-			$trad += $params.trad + "call instance " + $subref.sufijo + "(";
-			if($params.dimension != $subref.simboloFinal.tipo.getDimension()){
-				String tipoAux = "" + $subref.simboloFinal.tipo.getTipo();
-				if($subref.simboloFinal.tipo.getTipo() == TipoLiteral.clase){
-					tipoAux = $subref.simboloFinal.getNombreClase();
+			Simbolo simb;
+			String sufijo = $subref.sufijo;
+			try{
+				 simb = $subref.tabla.getSimbolo($subref.simboloFinal.getNombre(),$params.dimension);
+			}catch(Error_2 e){
+				e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw e;
+			}catch(Error_21 e2){
+				e2.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw e2;
+			}
+
+			if(simb.getTipoSimbolo() == TipoSimbolo.constructor){
+				throw new Error_30($subref.id.getLine(),$subref.id.getCharPositionInLine());
+			}
+			if(!sufijo.contains(simb.tipo.toString())){
+				sufijo = sufijo.replaceFirst("float64|int32|bool",simb.tipo.toString());
+			}
+			$trad += $params.trad + "call instance " + sufijo + "(";
+			if($params.dimension != simb.tipo.getDimension()){
+				String tipoAux = "" + simb.tipo.getTipo();
+				if(simb.tipo.getTipo() == TipoLiteral.clase){
+					tipoAux = simb.getNombreClase();
 				}
-				throw new Error_21($subref.simboloFinal.getNombreClase(),$subref.simboloFinal.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw new Error_21(simb.getNombreClase(),simb.getNombre(),$params.dimension,$subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 
 			if($params.dimension > 0){
