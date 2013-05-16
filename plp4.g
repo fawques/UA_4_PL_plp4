@@ -455,27 +455,7 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				$trad += "ldc.i4 0\n" + "stloc " + iteradorInt + "\n";
 				$trad += "et" + etiqIni + ": ";
 				$trad += "ldloc " + iteradorInt + "\n" + "ldc.i4 " + (array.getDimension()-1) + "\n" + "bgt et" + etiqFin + "\n";
-				switch(array.getTipoSimbolo()){
-					case local:	$trad += "ldloc " + array.posicion_locals + "\n";
-								break;
-					case campo:	if(estoyEnMain){
-									throw new Error_27(array.getNombre(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
-								}
-								$trad += "ldarg 0\n";
-								String tipoAux;
-								if(array.tipo.getTipo() == TipoLiteral.clase)
-								{
-									tipoAux = array.tipo.getTipoClase();
-								}else{
-									tipoAux = array.tipo.toString();
-								}
-								$trad += "ldfld " + tipoAux + " '" + array.getNombreClase() + "'::'"+array.getNombre() + "'\n";
-								break;
-					case argumento:	$trad += "ldarg " + array.posicion_locals + "\n";
-									break;
-					case metodo:	
-					case constructor:	throw new Error_19(array.getNombre(),$subref.id.getLine(),$subref.id.getCharPositionInLine());
-				}
+				$trad += $idArray.prefijo + "ld" + $idArray.sufijo;
 				$trad += "ldloc " + iteradorInt + "\n" + "ldelem.";
 				if(tipoIterador.tipo == TipoLiteral.int32 || tipoIterador.tipo == TipoLiteral.bool){
 					$trad += "i4\n";	
@@ -1320,6 +1300,7 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id]
 				case metodo:	if(estoyEnMain){
 									throw new Error_27($primerid.text,$primerid.line,$primerid.pos);
 								}
+								$prefijo += "ldarg 0\n";
 								trad = simb.tipo + " '" + simb.getNombreClase() + "'::'"+simb.getNombre() + "'";
 								break;
 				case constructor:	if(estoyEnMain){
