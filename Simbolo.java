@@ -81,18 +81,6 @@ public class Simbolo {
     public boolean equals(Object simb){
         Simbolo s = (Simbolo)simb;
         boolean iguales = (nombre.equals(s.nombre));
-        if(iguales && tipo_simb != s.getTipoSimbolo()){
-            return true;
-        }
-        if((tipo_simb != TipoSimbolo.metodo && tipo_simb != TipoSimbolo.constructor))
-        	return iguales;
-        else{
-        	if(iguales){
-        		if(getDimension() == s.getDimension())
-        			return true;
-        	}
-        	return false;
-
-        }
+        return iguales;
     }
 }

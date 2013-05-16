@@ -37,7 +37,7 @@ public class tablaSimbolos {
     
     public void add(String nombre, Tipo tipo, int posicion_max, Visibilidad _vis, TipoSimbolo tipoSimb) throws Error_1{
         Simbolo item = new Simbolo(nombre,posicion_max, tipo,_vis, tipoSimb);
-        if (!contiene(item)) {
+        if (!contiene(item,item.tipo.dimension)) {
             lista.add(item);
         }else{
             throw new Error_1(item.nombre, 0, 0);
@@ -45,7 +45,7 @@ public class tablaSimbolos {
     }
     
     public int add(Simbolo item) throws Error_1{
-        if (!contiene(item)) {
+        if (!contiene(item,item.tipo.dimension)) {
             lista.add(item);
             return item.posicion_locals;
         }else{
@@ -130,15 +130,37 @@ public class tablaSimbolos {
            return lista.contains(item); 
         }else{
             if(!lista.contains(item)) {
-                return anterior.contiene(item);
+                return anterior.contiene(item,-1);
             }else{
                 return true;
             }
         }
     }
     
-    private boolean contiene(Simbolo item) {
-        return lista.contains(item);
+    private boolean contiene(Simbolo item, int dimension) {
+      /*  if(dimension == -1)// add
+            return lista.contains(item);
+*/
+            // get
+        for (Simbolo simb : lista) {
+            if(simb.getNombre().equals(item.getNombre())){
+                // el nombre coincide y ambos son metodo/constructor
+                if((simb.getTipoSimbolo() == TipoSimbolo.metodo || simb.getTipoSimbolo() == TipoSimbolo.constructor)
+                     && (item.getTipoSimbolo() == TipoSimbolo.metodo || item.getTipoSimbolo() == TipoSimbolo.constructor)){
+                        // si coinciden los parametros, true
+                    if(item.tipo.dimension == simb.tipo.dimension)
+                        return true;
+                } // el nombre coincide y ninguno es metodo/constructor
+                else if((simb.getTipoSimbolo() != TipoSimbolo.metodo && simb.getTipoSimbolo() != TipoSimbolo.constructor)
+                     && (item.getTipoSimbolo() != TipoSimbolo.metodo && item.getTipoSimbolo() != TipoSimbolo.constructor)){
+                    return true;
+                } // el nombre coincide y uno es metodo/constructor y el otro no
+                else{
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
