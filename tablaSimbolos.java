@@ -96,7 +96,7 @@ public class tablaSimbolos {
             }
         }
         if(encontrado)
-             throw new Error_21(getNombre(),nombre,dimension,0,99);
+             throw new Error_21(getNombre(),nombre,dimension,0,0);
         // ha terminado la lista y no lo ha encontrado, llamamos a la lista anterior.
         if (anterior != null) {
             return anterior.getSimbolo(nombre,dimension);

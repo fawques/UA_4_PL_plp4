@@ -246,7 +246,10 @@ tipopl returns [TipoLiteral trad, int line, int pos, String ident]
 		}catch(Error_2 e){
 			e.setFilaColumna($ID.line,$ID.pos);
 			throw e;
-		}
+		}catch(Error_21 e5){
+				e5.setFilaColumna($ID.line,$ID.pos);
+				throw e5;
+			}
 	}
 	|	tipoSimple {$trad = $tipoSimple.trad; $ident = ""; $line = $tipoSimple.line; $pos = $tipoSimple.pos;};
 
@@ -579,9 +582,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			}catch(Error_2 e){
 				e.setFilaColumna($ID.line,$ID.pos);
 				throw e;
-			}catch(Error_21 e){
-				e.setFilaColumna($ID.line,$ID.pos);
-				throw e;
+			}catch(Error_21 e6){
+				e6.setFilaColumna($ID.line,$ID.pos);
+				throw e6;
 			}
 			TipoLiteral tipo_final_simbolo = simb.getTipoFinal();
 			Tipo tipoCompleto = simb.getTipo();
@@ -668,9 +671,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			}catch(Error_2 e){
 				e.setFilaColumna($variable.line,$variable.pos);
 				throw e;
-			}catch(Error_21 e){
-				e.setFilaColumna($variable.line,$variable.pos);
-				throw e;
+			}catch(Error_21 e7){
+				e7.setFilaColumna($variable.line,$variable.pos);
+				throw e7;
 			}
 			if(simb.getTipoSimbolo() == TipoSimbolo.campo && !estoyEnMain){
 				$trad = "ldarg 0\n";
@@ -695,9 +698,9 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 			}catch(Error_2 e){
 				e.setFilaColumna($tipoClase.line,$tipoClase.pos);
 				throw e;
-			}catch(Error_21 e){
-				e.setFilaColumna($tipoClase.line,$tipoClase.pos);
-				throw e;
+			}catch(Error_21 e1){
+				e1.setFilaColumna($tipoClase.line,$tipoClase.pos);
+				throw e1;
 			}
 			if($params.dimension != simboloClase.tipo.getDimension()){
 				String tipoAux = "" + simboloClase.tipo.getTipo();
@@ -1134,20 +1137,19 @@ base returns [String trad, TipoLiteral tipo, int maxstack, String nombreClase]
 			Simbolo simb;
 			String sufijo = $subref.sufijo;
 			try{
-				 simb = tS.getSimbolo($subref.simboloFinal.getNombre(),$params.dimension);
+				 simb = $subref.tabla.getSimbolo($subref.simboloFinal.getNombre(),$params.dimension);
 			}catch(Error_2 e){
 				e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
 				throw e;
-			}catch(Error_21 e){
-				e.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
-				throw e;
+			}catch(Error_21 e2){
+				e2.setFilaColumna($subref.id.getLine(),$subref.id.getCharPositionInLine());
+				throw e2;
 			}
-			
+
 			if(simb.getTipoSimbolo() == TipoSimbolo.constructor){
 				throw new Error_30($subref.id.getLine(),$subref.id.getCharPositionInLine());
 			}
 			if(!sufijo.contains(simb.tipo.toString())){
-				System.err.println("replace");
 				sufijo = sufijo.replaceFirst("float64|int32|bool",simb.tipo.toString());
 			}
 			$trad += $params.trad + "call instance " + sufijo + "(";
@@ -1297,13 +1299,14 @@ params returns[String trad,int dimension]
 		}
 		)*)? PARD;
 
-subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id, String tipoSubRef]
+subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id, tablaSimbolos tabla]
 	:	primerid=ID
 		{
 			$prefijo = $sufijo = "";
 			Simbolo simb;
 			try{
 				simb = tS.getSimbolo($primerid.text);
+				$tabla = tS;
 			}catch(Error_2 e){
 				e.setFilaColumna($primerid.line,$primerid.pos);
 				throw e;
@@ -1353,6 +1356,7 @@ subref returns [String prefijo, String sufijo, Simbolo simboloFinal, Token id, S
 			$prefijo += trad;
 			trad = "";
 			tablaSimbolos nuevotS = conjClases.get(simb.tipo.getTipoClase());
+			$tabla = nuevotS;
 			
 			try{
 				simb = nuevotS.getSimbolo($nuevoid.text);
