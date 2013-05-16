@@ -679,7 +679,8 @@ instr[int etiquetaBreakBucle, int etiquetaContinueBucle, boolean creaAmbito, Tip
 				if(tablaClase != null){
 					simboloClase = tablaClase.getSimbolo($tipoClase.text, $params.dimension);
 				}else{
-					throw new Error_2($tipoClase.text,$tipoClase.line,$tipoClase.pos);
+					tS.getSimbolo($tipoClase.text);
+					throw new Error_19($tipoClase.text,$tipoClase.line,$tipoClase.pos);
 				}
 			}catch(Error_2 e){
 				e.setFilaColumna($tipoClase.line,$tipoClase.pos);
