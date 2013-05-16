@@ -1,0 +1,30 @@
+// accesos guapos guapos 1
+class A {
+	public int i;
+}
+class B {
+	public A a;
+	public B(){
+		a = new A();
+	}
+}
+class C {
+	public B b;
+	public C(){
+		b = new B();
+	}
+}
+class D {
+	public C c;
+	public D(){
+		c = new C();
+	}
+}
+class E {
+	public static void Main(){
+		D d;
+		d = new D();
+		d.c.b.a.i = 2;
+		System.Console.WriteLine(d.c.b.a.i);
+	}
+}

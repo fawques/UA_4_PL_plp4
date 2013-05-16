@@ -1,0 +1,17 @@
+class Single{
+public static void Main()
+{
+
+	int entero;
+	double real;
+	bool booleano;
+	
+	real = 2.5;
+	entero = 1;
+	booleano = False;
+	real = booleano | True;
+	booleano = real * entero;
+	System.Console.WriteLine(booleano);
+
+}
+}

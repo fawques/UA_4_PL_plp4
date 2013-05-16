@@ -1,0 +1,15 @@
+class Single{
+public static void Main()
+{
+
+	int j; 
+	j = 0;
+	
+	j.int.Parse(System.Console.ReadLine());
+	{
+		int i;
+	}
+	i.bool.Parse(System.Console.ReadLine());
+
+}
+}

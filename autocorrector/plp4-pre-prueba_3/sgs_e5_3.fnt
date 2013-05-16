@@ -1,0 +1,20 @@
+class Single{
+public static void Main()
+{
+
+	int i;
+	
+	if(4+3>3*3)
+	{
+		while(4*2 < 54)
+		{
+			if(3*2.5)
+			{
+				j = 0;
+			}
+		}
+	}
+	
+
+}
+}

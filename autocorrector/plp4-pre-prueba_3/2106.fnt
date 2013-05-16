@@ -1,0 +1,12 @@
+class Single{
+public static void Main()
+{
+  int x; x=0;
+
+     int a[];
+     foreach(var x in a) {
+       System.Console.WriteLine(x);
+        x.int.Parse(System.Console.ReadLine());
+     }
+
+}

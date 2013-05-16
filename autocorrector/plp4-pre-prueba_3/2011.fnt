@@ -1,0 +1,28 @@
+class Single{
+public static void Main()
+{
+ int vector[];
+
+ vector=new int[20];
+ for(int k=0 to 19 step 1) //for-to
+    vector[k].int.Parse(System.Console.ReadLine());
+
+ double primos[],c;
+ c=0;primos=new double[20];
+ foreach (var x in vector) //foreach
+  {
+   double coc,resto;
+   bool noprimo;
+   noprimo=False;
+   for(int i=2 to x-1 step 1) //for-to
+    {
+      coc=x/i;
+      resto=x-coc*i;
+      if (resto==0) noprimo=True;
+    }
+   if (!noprimo) {primos[c]=x;c=c+1;}
+  }
+ for(int k=0 to c-1 step 1) //for-to
+  System.Console.WriteLine(primos[k]);
+}
+}

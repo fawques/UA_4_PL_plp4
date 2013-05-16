@@ -1,0 +1,42 @@
+// accesos guapos guapos 1
+class A {
+	public int i[];
+	public A(){
+		i = new int[10];
+		i[0] = 7;
+		System.Console.WriteLine(i[0]);
+		System.Console.WriteLine(i[0]);
+	}
+}
+class B {
+	public A a;
+	public int j;
+	public B(){
+		a = new A();
+		System.Console.WriteLine(j);
+		System.Console.WriteLine(a.i[0]);
+	}
+	public int getCinco(){ return 5; }
+	public double getLoQueMePasas(double d){ return d; }
+}
+/*class C {
+	public B b;
+	public C(){
+		b = new B();
+	}
+}
+class D {
+	public C c;
+	public D(){
+		c = new C();
+	}
+}*/
+class E {
+	public static void Main(){
+		B b;
+		b = new B();
+		double c;
+		c = b.getCinco()*b.getLoQueMePasas(5);
+		System.Console.WriteLine(c);
+	}
+}

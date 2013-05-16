@@ -1,0 +1,12 @@
+// acceso a miembro no existente
+class A{
+	public int i;
+}
+class B{
+	public static void Main(){
+		A a;
+		a = new A();
+
+		a.j = 1;
+	}
+}

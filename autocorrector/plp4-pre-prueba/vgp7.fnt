@@ -1,0 +1,28 @@
+class Single{
+public int x;
+public double y;
+private double lala[,],lele[];
+public Single (){
+	x = 10;
+	y = 5.5;
+	lala = new double[10,15];
+}
+public Single (double x1, double x2){
+	x = 99;
+	int i;
+	i = 1;
+	y = 2.5*x*5+i;
+	lala = new double[10,10];
+	lele = new double[1];
+}
+public static void Main()
+{
+	int a;
+	a = 30;
+	if(a != 30){
+		  System.Console.WriteLine(1);
+	}else{
+		  System.Console.WriteLine(0);
+	}
+}
+}

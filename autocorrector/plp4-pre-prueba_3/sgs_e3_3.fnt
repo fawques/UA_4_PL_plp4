@@ -1,0 +1,9 @@
+class Single{
+public static void Main()
+{
+
+	bool j;
+	j = (4>5)+(1*True);
+
+}
+}

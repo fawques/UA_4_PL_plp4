@@ -1,0 +1,27 @@
+class Single{
+public static void Main()
+{
+int i;
+bool k;
+double x;
+double z[,];
+{int declaradaFuera; i = 1;}
+
+//i = k;
+//i = 2 + k;
+i = 2 + True;
+i = k + 2;
+i = True + 2;
+i = true;
+i = 2 + 2 *(false);
+i = false;
+
+i = 2 * k;
+i = 2 * false;
+i = k * 2;
+i = true * 2;
+i = 2 * 2 +(false);
+
+}
+}
+

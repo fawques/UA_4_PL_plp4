@@ -1,0 +1,16 @@
+class Clase{
+public int a,b;
+public int Single;
+public static void Main(){
+	int a;
+	a = 1;
+}
+public int coca(double m, double c, double d)
+{
+}
+public int main(double m)
+{
+	Clase a;
+	a = new a();
+}
+}

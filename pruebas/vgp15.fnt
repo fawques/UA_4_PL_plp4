@@ -1,0 +1,22 @@
+class A{
+	public A obj2;
+	public int x,y;
+
+	public A(double a){
+		obj2 = new A();
+		return 0;
+	}
+
+	public int noexistoasi(double a){
+		System.Console.WriteLine(1);
+	}
+}
+
+class B{
+	public static void Main(){
+		A obj1;
+		obj1 = new F(1.0);
+		obj1.noexistoasi();
+		System.Console.WriteLine(0);
+	}
+}

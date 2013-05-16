@@ -1,0 +1,36 @@
+class AA{
+public int m(double d){
+	System.Console.WriteLine(2);
+	return 1;
+}												
+}
+class Clase{
+public int a,b;
+public int Single;
+public Clase(){
+}
+public int coca(double m, double c, double d)
+{
+	System.Console.WriteLine(2);
+	return 1;
+}
+public int main(double m)
+{
+	int asdf;
+	double f;
+	f = m;
+	Clase a;
+	asdf = 1;
+	a = new Clase();
+	return 1;
+}
+public static void Main(){
+	int a;
+	a = 1;
+	System.Console.WriteLine(a);
+	AA cls;
+	double f;
+	cls = new AA();
+	cls.m(3.0);
+}
+}

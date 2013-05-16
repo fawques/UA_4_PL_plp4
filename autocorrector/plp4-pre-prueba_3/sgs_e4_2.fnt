@@ -1,0 +1,11 @@
+class Single{
+public static void Main()
+{
+
+	bool j;
+	j = True;
+	
+	j = !3 j | 3;
+
+}
+}

@@ -1,0 +1,17 @@
+class Single{
+public static void Main()
+{
+	
+}
+public int main(double m, double c)
+{
+}
+public int main(double m)
+{
+}
+}
+class Patata{
+public int main()
+{
+}
+}

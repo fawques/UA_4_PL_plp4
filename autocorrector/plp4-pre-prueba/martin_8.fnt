@@ -1,0 +1,16 @@
+// llamada ctor 1
+class A{
+	public int i;
+	public A(){
+		System.Console.WriteLine(1);
+	}
+}
+class C{
+	public int i;
+}
+class B{
+	public static void Main(){
+		A a;
+		a = new D();
+	}
+}

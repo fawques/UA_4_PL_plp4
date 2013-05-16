@@ -1,0 +1,38 @@
+class Single{
+public static void Main()
+{
+	bool pru;
+	pru.bool.Parse(System.Console.ReadLine());
+
+	System.Console.WriteLine(pru);
+	if(pru){
+		System.Console.WriteLine(1);
+		int pru;
+		pru = 50;
+		while(pru <= 25*2+10)
+		{
+			System.Console.WriteLine(pru);
+			int z;
+			z = 100;
+			while(z > 90)
+			{
+				if(z != 94)
+				{
+					System.Console.WriteLine(z);
+				}else{
+					z = z-1;
+					continue;
+				}
+				if(z == 93)
+					break;
+
+				z = z - 2;				
+			}
+			pru = pru + 1 + 10*5/5 - 10;
+		}
+	}else{
+		System.Console.WriteLine(False);
+	}
+}
+}
+

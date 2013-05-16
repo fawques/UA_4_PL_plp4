@@ -1,0 +1,16 @@
+class Single{
+public static void Main()
+{
+	int a;
+	a = 3;
+	double r;
+	r = 8.5;
+	bool k;
+	k = True;
+	System.Console.WriteLine(a+r);// 11,5
+	System.Console.WriteLine(a-r);// -5,5
+	System.Console.WriteLine(a*r);// 25,5
+	System.Console.WriteLine(a/r);// 0,352941176
+	System.Console.WriteLine(a+k);// ERROR
+}
+}

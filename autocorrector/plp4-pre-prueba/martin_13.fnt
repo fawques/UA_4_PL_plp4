@@ -1,0 +1,25 @@
+// accesos guapos guapos
+class A {
+	public int i;
+	public int setI(double newi){
+		i = newi;
+		return i;
+	}
+}
+class B {
+	public A a;
+	public B(){
+		a = new A();
+	}
+	public int printA(){
+		a.setI(7);
+		System.Console.WriteLine(a.i);
+	}
+}
+class C{
+	public static void Main(){
+		B b;
+		b = new B();
+		b.printA();
+	}
+}

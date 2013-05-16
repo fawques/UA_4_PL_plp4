@@ -1,0 +1,38 @@
+class A{
+	public double a;
+	public int b;
+	public A(double aa, double bb){
+	a = aa;
+	b = bb;
+	}
+}
+
+
+class Single{
+public int x;
+public A clase;
+public double y;
+private double lala[,],lele[];
+public int f(double a,double b,double c)
+{
+	int f;
+	f = 3;
+	y = 2;
+	x = f;
+	x = x + y;
+	A prueba;
+	prueba = new A(y,y);
+	clase = new A(y,x);
+	System.Console.WriteLine(x);
+}
+public static void Main()
+{
+	int a;
+	a = 30;
+	if(a != 30){
+		  System.Console.WriteLine(1);
+	}else{
+		  System.Console.WriteLine(0);
+	}
+}
+}

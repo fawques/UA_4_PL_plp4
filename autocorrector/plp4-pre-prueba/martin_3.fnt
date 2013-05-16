@@ -1,0 +1,12 @@
+// Sobrecarga falla 1
+class Prueba{
+  public static void Main(){
+    System.Console.WriteLine(5);
+  }
+  public int a(double a) {
+   System.Console.WriteLine(1); 
+  }
+  public int a(double a) {
+   System.Console.WriteLine(1); 
+  }
+}

@@ -1,0 +1,14 @@
+class Single{
+public static void Main()
+{
+
+	int entero;
+	double real;
+	bool booleano;
+	
+	real.double.Parse(System.Console.ReadLine());
+	entero = real;
+	System.Console.WriteLine(entero);
+
+}
+}

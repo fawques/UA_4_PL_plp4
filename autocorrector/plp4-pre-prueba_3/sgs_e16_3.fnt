@@ -1,0 +1,65 @@
+class Single{
+public static void Main()
+{
+	int i;
+	i = 3;
+	
+	bool booleanos[];
+	booleanos = new bool[3];
+	
+	booleanos[0] = True;
+	booleanos[1] = False;
+	booleanos[2] = True;
+	
+	for(int i = 0 to 10 step 1)
+	{
+		
+		if(i == 4)
+		{
+			break;
+		}
+		else
+		{
+			if(i == 2)
+			{
+				continue;
+			}
+		}
+		System.Console.WriteLine(i);
+	}
+	
+break;
+	a = 3;
+	foreach(var i in booleanos)
+	{
+	System.Console.WriteLine(i);	
+		if(i == False)
+		{
+			break;
+		}
+		else
+		{
+			continue;
+		}
+	}
+	
+	while(i < 10)
+	{
+		i = i + 1;
+		
+		if(i == 6)
+		{
+			break;
+		}
+		else
+		{
+			if(i == 3 | i == 5)
+			{
+				continue;
+			}
+		}
+		System.Console.WriteLine(i);
+	}
+	
+}
+}

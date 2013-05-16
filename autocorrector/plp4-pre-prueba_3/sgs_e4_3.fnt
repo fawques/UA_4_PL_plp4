@@ -1,0 +1,13 @@
+class Single{
+public static void Main()
+{
+
+	bool j;
+	j = True;
+	
+	j = j | (3<4);
+	int i;
+	j = (j & 3)>7;
+
+}
+}

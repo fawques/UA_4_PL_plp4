@@ -1,0 +1,13 @@
+/* ERR 20 : intento de redefinir un metodo sin argumentos en la misma clase */
+class A {
+  public int f() { return 0; }
+  public int f(double x) { return x; }
+  public int f(double x, double y) { return y+x; }
+  public double f() { return 0.0; } // ERR 20
+
+  public static void Main() {
+    A obj;
+    obj = new A();
+    obj.f(1,3);
+  }
+ }  

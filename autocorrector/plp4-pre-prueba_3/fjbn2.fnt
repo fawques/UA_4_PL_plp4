@@ -1,0 +1,10 @@
+class Single{
+public static void Main()
+{
+	for (int i=(-1) to (-3) step -1)  
+     {	
+        System.Console.WriteLine(i);
+        
+     }
+}
+}

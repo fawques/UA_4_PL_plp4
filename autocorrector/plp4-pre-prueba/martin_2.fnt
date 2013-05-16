@@ -1,0 +1,6 @@
+// Sin Main
+class Prueba{
+  public int patata(){
+    System.Console.WriteLine(5);
+  }
+}

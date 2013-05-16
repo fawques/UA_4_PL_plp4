@@ -1,0 +1,26 @@
+/* ERR 30 */
+
+class A {
+  public int x;
+  
+  public A(double a) { x=a; }
+
+  public A() {
+    x=10;
+  }
+
+  public int f() {
+    System.Console.WriteLine(A(10)); // ERR 30 en 'base'
+  }
+
+}  
+
+class B {
+  public static void  Main() { 
+    A obj;
+    obj = new A(1);
+    System.Console.WriteLine(obj.x);
+    obj.f();
+    System.Console.WriteLine(obj.x);
+  }
+}

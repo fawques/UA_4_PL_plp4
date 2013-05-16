@@ -1,0 +1,24 @@
+class Single{
+public static void Main()
+{
+
+	int a[,,],b[,,],c[,,,,,];
+	{
+		//ANTES ERA MAS FESTIVAL PERO ME QUEDE SIN MEMORIA :(
+		//UNA DE LAS INSTRUCCIONES QUE HE QUITADO:
+		/// System.Console.WriteLine(a[8,8,8,c[1,1,1,1],8,8,8,8,b[22,33,76,c[1,1,1,1],33,71,01]);		
+		double c[,,];
+		c = new double[2,2,2];
+		b = new int[4,4,4];
+		a = new int[8,8,8];
+
+		c[1,1,1] = 1;
+		b[2,2,c[1,1,1]] = 1;
+		a[1,1,b[2,2,c[1,1,1]]] = 1;
+
+		
+   		System.Console.WriteLine(a[1,1,b[2,2,c[1,1,1]]]);		
+	}
+}
+}
+

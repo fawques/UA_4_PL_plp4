@@ -1,0 +1,24 @@
+class A {
+    private int i;
+
+    public int asd(){
+        return 1;
+    }
+
+    public double asd(double i) {
+        return 2.3;
+    }
+
+    public bool asd(double i, double j) {
+        return False;
+    }
+
+    public static void Main() {
+        A a;
+        a = new A();
+
+        System.Console.WriteLine(a.asd());
+        System.Console.WriteLine(a.asd(1.0));
+        System.Console.WriteLine(a.asd(1.0, 2.0));
+    }
+}

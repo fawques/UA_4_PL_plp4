@@ -1,0 +1,42 @@
+class A {
+    private int i;
+
+    public int asd(){
+        return 1;
+    }
+
+    public double asd(double i) {
+        return 2.3;
+    }
+
+    public bool asd(double i, double j) {
+        return False;
+    }
+
+    public int mostrar(){
+	System.Console.WriteLine(asd());
+        System.Console.WriteLine(asd(1.0));
+        System.Console.WriteLine(asd(1.0, 2.0));
+	asd(1.0, 2.0);
+	return asd(1.0);
+    }
+    public int mostrar(double j){
+	System.Console.WriteLine(asd());
+        System.Console.WriteLine(asd(1.0));
+        System.Console.WriteLine(asd(1.0, 2.0));
+	asd(1.0, 2.0);
+    }
+
+    public static void Main() {
+        A a;
+        a = new A();
+
+        System.Console.WriteLine(a.asd());
+        System.Console.WriteLine(a.asd(1.0));
+        System.Console.WriteLine(a.asd(1.0, 2.0));
+
+	System.Console.WriteLine(a.mostrar());
+	System.Console.WriteLine(a.mostrar(3.0));
+
+    }
+}

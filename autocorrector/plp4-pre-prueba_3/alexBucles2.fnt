@@ -1,0 +1,40 @@
+class Single{
+public static void Main()
+{
+
+  bool cond;cond=True;
+  int i,j,k; i=0; 
+  while(i<8)
+  {
+    System.Console.WriteLine(i);
+      j=0;
+      while(j<8)
+      {
+        System.Console.WriteLine(j);
+
+       k=0;
+        while(k<=8)
+        {
+          System.Console.WriteLine(k);
+           k=k+1;
+          if(k>6)
+          {
+            continue;
+          }
+         
+        }
+
+        j=j+1;
+        if(3>j)
+        {
+          break;
+        }
+      }
+
+    i=i+1;
+  }
+  
+
+}
+}
+

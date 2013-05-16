@@ -1,0 +1,52 @@
+class Single{
+public static void Main()
+{
+
+	bool booleanos[,,,];
+	booleanos=new bool[1,2,3,4];
+	
+	if(2 > 3){
+		double booleanos;
+		booleanos = 4;
+		System.Console.WriteLine(booleanos);
+	}
+	else
+	{
+		int booleanos;
+		booleanos = 5;
+		System.Console.WriteLine(booleanos);
+	}
+	
+	int i;
+	i = 0;
+	while(i < 3)
+	{
+		int booleanos;
+		booleanos = 4;
+		i = i + 1;
+		System.Console.WriteLine(booleanos);
+	}
+	
+	for(int i = 0 to 3 step +1)
+	{
+		int booleanos;
+		booleanos = i;
+		System.Console.WriteLine(booleanos);
+	}
+	
+	int enteros[];
+	enteros = new int[4];
+	
+	enteros[0] = 1;
+	enteros[1] = 2;
+	enteros[2] = 3;
+	enteros[3] = 4;
+	
+	foreach(var i in enteros)
+	{
+		int booleanos;
+		booleanos = i;
+		System.Console.WriteLine(booleanos);
+	}
+}
+}

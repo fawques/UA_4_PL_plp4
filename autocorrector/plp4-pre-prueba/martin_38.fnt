@@ -1,0 +1,10 @@
+// Devolver del tipo correcto
+class A{
+	public bool getInt(){
+		return 1.0;
+	}
+	public static void Main(){
+		A a;
+		a = new A();
+	}
+}

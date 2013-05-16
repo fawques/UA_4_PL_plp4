@@ -1,0 +1,36 @@
+class Single{
+public static void Main()
+{
+  int i[,,], b, c;
+	i = new int[3,3,3];
+  bool k;
+  double x;
+  {
+    double otra, k, x ;
+  }
+  k.bool.Parse(System.Console.ReadLine());
+  if (k)
+   {
+    x.double.Parse(System.Console.ReadLine());
+     
+     int j; j=0;
+     while (j<3)
+     /*for(int j=0;j<3;j++)*/
+     {
+      x=x+1;
+      
+      int k; k=0;
+      while (k<4)
+      /*for (int k=0;k<4;k++)*/     
+      {
+        i[1,1,1].int.Parse(System.Console.ReadLine());
+        System.Console.WriteLine(i[1,1,1]);
+        k=k+1;
+	System.Console.WriteLine(k);
+      }
+      j=j+1;
+     }
+   }
+  System.Console.WriteLine(x);
+}
+}

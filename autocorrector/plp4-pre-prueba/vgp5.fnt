@@ -1,0 +1,17 @@
+class aA{
+	public aA obj2;
+	public int x,y;
+
+	public aA(double a){
+		obj2 = new aA();
+	}
+}
+
+class B{
+	public static void Main(){
+		aA obj1;
+		obj1 = new aA(1.0);
+		obj1.obj2.x = obj1.obj2.y;
+		System.Console.WriteLine(0);
+	}
+}

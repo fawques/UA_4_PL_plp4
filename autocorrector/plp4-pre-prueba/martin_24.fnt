@@ -1,0 +1,15 @@
+// tipos me he cansado de contar
+class A {
+	private int i;
+	public int asd(){
+		i = 1;
+	}
+	public static void Main() {
+		A a;
+		a = new A();
+
+		if(!(1 * A)){
+			a.asd();
+		}
+	}
+}

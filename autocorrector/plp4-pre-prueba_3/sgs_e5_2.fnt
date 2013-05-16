@@ -1,0 +1,14 @@
+class Single{
+public static void Main()
+{
+
+	int i;
+	
+	while(i)
+	{
+		j = 0;
+	}
+	
+
+}
+}

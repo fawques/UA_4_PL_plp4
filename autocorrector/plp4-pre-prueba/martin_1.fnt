@@ -1,0 +1,9 @@
+// Varios Main
+class Prueba{
+  public static void Main(){
+    System.Console.WriteLine(5);
+  }
+  public static void Main(){
+    System.Console.WriteLine(5);
+  }
+}

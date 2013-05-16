@@ -1,0 +1,70 @@
+class Single{
+public static void Main()
+{
+int a,b;
+a = 3;
+b = 4;
+if (a > b){
+System.Console.WriteLine(False); 
+}
+if (a >= b){
+System.Console.WriteLine(False); 
+}
+if (a < b){
+System.Console.WriteLine(True); 
+}
+if (a <= b){
+System.Console.WriteLine(True); 
+}
+if (a == b){
+System.Console.WriteLine(False); 
+}
+if (a != b){
+System.Console.WriteLine(True); 
+}
+
+a = 4;
+b = 3;
+if (a > b){
+System.Console.WriteLine(True); 
+}
+if (a >= b){
+System.Console.WriteLine(True); 
+}
+if (a < b){
+System.Console.WriteLine(False); 
+}
+if (a <= b){
+System.Console.WriteLine(False); 
+}
+if (a == b){
+System.Console.WriteLine(False); 
+}
+if (a != b){
+System.Console.WriteLine(True); 
+}
+
+a = 3;
+b = 3;
+if (a > b){
+System.Console.WriteLine(False); 
+}
+if (a >= b){
+System.Console.WriteLine(True); 
+}
+if (a < b){
+System.Console.WriteLine(False); 
+}
+if (a <= b){
+System.Console.WriteLine(True); 
+}
+if (a == b){
+System.Console.WriteLine(True); 
+}
+if (a != b){
+System.Console.WriteLine(False); 
+}
+
+}
+}
+

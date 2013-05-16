@@ -1,0 +1,15 @@
+class Clase {
+  public int f() {
+    //return Clase();
+  }
+
+  public static void Main() {
+    System.Console.WriteLine(3);
+  }
+}
+
+class Clase  {
+  public static void Main() {
+    System.Console.WriteLine(Clase + 3);
+  }
+}

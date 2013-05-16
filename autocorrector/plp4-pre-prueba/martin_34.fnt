@@ -1,0 +1,30 @@
+/* ERR 20 : intento de redefinir un metodo sin argumentos en la misma clase */
+class A {
+  public int array[];
+
+  public A(){
+  	array = new int[5];
+  }
+
+  public int print(){
+  	foreach(var i in array){
+  		System.Console.WriteLine(i);
+  	}
+  }
+
+  public static void Main() {
+    A obj;
+    obj = new A();
+    
+    for(int i = 0 to 4 step 1){
+    	obj.array[i] = i;
+    }
+
+    obj.print();
+
+    foreach(var i in obj.array){
+  		System.Console.WriteLine(i);
+  	}
+
+  }
+ }  

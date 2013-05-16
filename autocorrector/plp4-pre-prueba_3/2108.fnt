@@ -1,0 +1,20 @@
+class Single{
+public static void Main()
+{
+  int x; x=0;
+
+     int a[];
+     foreach(var x in a) {
+       System.Console.WriteLine(x);
+     }
+
+     for (int i=0 to 10 step 1)
+       System.Console.WriteLine(i);
+
+     while (x<10) {
+       System.Console.WriteLine(x);
+       x=x+3;
+     }
+
+     continue;
+}

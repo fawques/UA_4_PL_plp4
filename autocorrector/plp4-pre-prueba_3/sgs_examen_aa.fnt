@@ -1,0 +1,92 @@
+class Single{
+public static void Main()
+{
+	//Total de nodos
+	int tam;
+	tam = 4;
+	
+	int inicio, fin;
+	
+	//Nodo inicial
+	inicio = 0;
+	
+	//Nodo final
+	fin = 3;
+	
+	//Matriz de velocidades
+	int datos[,];
+	datos = new int[4,4];
+	//Examen AA - Prueba: 
+	//0 3 2 0 
+	//3 0 2 1
+	//1 2 0 3
+	//0 1 3 0
+	datos[0,0] = 0;
+	datos[0,1] = 3;
+	datos[0,2] = 2;
+	datos[0,3] = 0;
+	
+	datos[1,0] = 3;
+	datos[1,1] = 0;
+	datos[1,2] = 2;
+	datos[1,3] = 1;
+	
+	datos[2,0] = 1;
+	datos[2,1] = 2;
+	datos[2,2] = 0;
+	datos[2,3] = 3;
+	
+	datos[3,0] = 0;
+	datos[3,1] = 1;
+	datos[3,2] = 3;
+	datos[3,3] = 0;
+	
+	//Array de me menores
+	int menores[];
+	menores = new int[4];
+	
+	//Inicializo
+	for(int i = 0 to (tam-1) step 1)
+	{
+		menores[i] = (-1);
+	}
+	
+	menores[inicio] = 1000;
+	
+	bool cambios;
+	cambios = True;
+	
+	while(cambios)
+	{
+		cambios = False;
+		for(int i = 0 to (tam-1) step +1)
+		{
+			for(int j = 0 to (tam-1) step 1)
+			{
+				if(datos[i,j] != 0)
+				{
+					int n1, n2, mi, vij;
+					n1 = menores[j];
+					mi = menores[i];
+					vij = datos[i,j];
+					
+					n2 = mi;
+					if(vij < n2)
+					{
+						n2 = vij;
+					}
+					
+					if(n2 > n1)
+					{
+						menores[j] = n2;
+						cambios = True;
+					}
+				}
+			}
+		}
+	}
+	
+	System.Console.WriteLine(menores[fin]);
+
+}
+}

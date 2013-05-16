@@ -1,0 +1,14 @@
+class Single{
+public static void Main()
+{
+
+	int i;
+	
+	if(i)
+	{
+		j = 0;
+	}
+	
+
+}
+}

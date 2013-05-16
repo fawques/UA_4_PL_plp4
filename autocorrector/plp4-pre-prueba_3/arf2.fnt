@@ -1,0 +1,10 @@
+class Single{
+	public static void Main()
+	{
+	  int i;	  
+	  double x[,];                               
+	  i=5+3;	  
+	  i=new int[2,5];	  
+	}
+
+}

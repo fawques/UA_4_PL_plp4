@@ -1,0 +1,13 @@
+class Single{
+public static void Main()
+{
+
+  bool cond;cond=True;
+  cond = cond<(2+1*4.6)*21/2-1*(-2)-(-2)*(21/94*100);
+  int a; a = (2+1*4.6)*21/2-1*(-2)-(-2)*(21/94*100);
+
+    System.Console.WriteLine(a);
+    System.Console.WriteLine(cond);
+}
+}
+

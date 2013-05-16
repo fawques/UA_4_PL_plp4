@@ -1,0 +1,9 @@
+class Clase {
+  public int f() {
+    return Clase();
+  }
+
+  public static void Main() {
+    System.Console.WriteLine(Clase + 3);
+  }
+}

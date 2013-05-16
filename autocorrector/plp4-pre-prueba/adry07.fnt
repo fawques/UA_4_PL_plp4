@@ -1,0 +1,30 @@
+class Clase {
+
+  private int b;
+  
+  public int g() {}
+
+  public int f() {
+    b = 0;
+  }
+  /*
+  public static void Main() {
+    Clase cl;
+    cl = new Clase();
+    cl.b = 0;
+
+    System.Console.WriteLine(3);
+  }
+  */
+}
+
+class Clase2 {
+  private int b;
+
+  public static void Main() {
+    Clase cl;
+    cl = new Clase();
+
+    cl.b = 1;
+  }
+}

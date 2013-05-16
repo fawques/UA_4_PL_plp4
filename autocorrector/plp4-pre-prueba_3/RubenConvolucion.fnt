@@ -1,0 +1,72 @@
+class Single{
+public static void Main()
+{
+int tam;
+tam = 20;
+double imgOrig[,];
+double dest[,];
+imgOrig = new double[20,20];
+dest = new double[20,20];
+
+for (int i = 0 to (tam-1) step 1){
+	for (int j = 0 to (tam-1) step 1){
+		imgOrig[i,j] = i*j;
+	}
+}
+
+foreach (var x in imgOrig){
+	System.Console.WriteLine(x);
+}
+System.Console.WriteLine(True);
+System.Console.WriteLine(True);
+double vectConv[,];
+int tamConv;
+tamConv = 3;
+vectConv = new double[3,3];
+for (int i = 0 to tamConv-1 step 1){
+	for (int j = 0 to (tamConv-1) step 1){
+		vectConv[i,j] = (1.0/9.0);
+	}
+}
+foreach (var x in vectConv){
+	System.Console.WriteLine(x);
+}
+System.Console.WriteLine(True);
+System.Console.WriteLine(False);
+System.Console.WriteLine(True);
+for (int i = (0+5) to (tam-1-tamConv) step 1){
+	for (int j = (0+5) to (tam-1-tamConv) step 1){
+		//convulucion
+		int iterI;iterI = 0;
+		int iterJ;iterJ = 0;
+		double sum;
+		sum = 0;
+		for (int k = (i-(tamConv/2)) to (i+(tamConv/2)) step 1){
+			
+			iterJ = 0;
+			for (int l = (j-(tamConv/2)) to (j+(tamConv/2)) step 1){
+				sum = sum + imgOrig[k,l]*vectConv[iterI,iterJ];
+				iterJ = iterJ +1;
+				System.Console.WriteLine(sum);
+			}
+			iterI = iterI+1;
+		}
+		
+		imgOrig[i,j] = sum;
+	}
+}
+
+foreach (var x in imgOrig){
+	System.Console.WriteLine(x);
+}
+
+/*int i;
+bool k;
+double x;
+double z[,];
+z[].int.Parse(System.Console.ReadLine());*/
+
+
+}
+}
+

@@ -1,0 +1,37 @@
+class Single{
+public static void Main()
+{
+
+	int entero;
+	double real;
+	bool booleano;
+	
+	real = 6.5;
+	entero = 6;
+	booleano = real == entero;
+	System.Console.WriteLine(booleano);
+	booleano = entero == real;
+	System.Console.WriteLine(booleano);
+	booleano = real >= entero;
+	System.Console.WriteLine(booleano);
+	booleano = entero >= real;
+	System.Console.WriteLine(booleano);
+	booleano = real <= entero;
+	System.Console.WriteLine(booleano);
+	booleano = entero <= real;
+	System.Console.WriteLine(booleano);
+	booleano = real > entero;
+	System.Console.WriteLine(booleano);
+	booleano = entero > real;
+	System.Console.WriteLine(booleano);
+	booleano = real < entero;
+	System.Console.WriteLine(booleano);
+	booleano = entero < real;
+	System.Console.WriteLine(booleano);
+	booleano = real != entero;
+	System.Console.WriteLine(booleano);
+	booleano = entero != real;
+	System.Console.WriteLine(booleano);
+
+}
+}

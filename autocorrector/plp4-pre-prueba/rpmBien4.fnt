@@ -1,0 +1,23 @@
+class AA{
+private int priv[,];
+public int pub;
+public AA(){
+	priv=new int [2,1];
+}
+public int m(double d){
+}												
+}
+class Clase{
+public int a,b;
+public int Single;
+public Clase(){
+}
+public int coca(double m, double c, double d)
+{
+}
+public int main(double m)
+{
+}
+public static void Main(){
+}
+}

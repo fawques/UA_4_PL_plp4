@@ -1,0 +1,31 @@
+class AA{
+private int priv;
+public int pub;
+public int m(double d){
+	int ent;
+	ent = priv;
+	ent = pub;
+	return 1;
+}												
+}
+class Clase{
+public int a,b;
+public int Single;
+public Clase(){
+}
+public int coca(double m, double c, double d)
+{
+	System.Console.WriteLine(2);
+	return 1;
+}
+public int main(double m)
+{
+}
+public static void Main(){
+	AA cls;
+	cls = new AA();
+	a = cls.pub;
+	cls.m(3.0);
+	a = cls.priv;
+}
+}

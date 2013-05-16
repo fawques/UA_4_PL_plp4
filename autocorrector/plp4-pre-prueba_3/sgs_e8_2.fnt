@@ -1,0 +1,10 @@
+class Single{
+public static void Main()
+{
+
+	double entero[,,,];
+
+entero=new double[0];
+
+}
+}

@@ -1,0 +1,55 @@
+class Single{
+public static void Main()
+{
+	/*int
+	*///muerte;
+	double muerte;
+	
+	muerte = /*9.6*/99999/*;*/;//
+	int array[];
+	array = new /*double*/int[5];
+
+	for(int i= 0 to 4 step +1){
+		array[i] = i;
+	}
+
+	foreach(var x in array){
+		System.Console.WriteLine(x);
+		foreach(var a in array){
+			System.Console.WriteLine(a);
+		}
+	}
+
+/* /* /* /*for(int i= 0 to 4 step +1){
+		array[i] = i;
+	}
+
+	foreach(var x in array){
+		System.Console.WriteLine(x);
+		foreach(var a in array){
+			System.Console.WriteLine(a);
+		}
+	}*/
+
+	int a/*,b*/,c//
+;/*
+	*/double f;/*/*/f = 3.4;
+	a = f + 2;
+//	a = f + 3;
+
+	foreach(var x in array){
+		System.Console.WriteLine(a);
+	}
+	System.Console.WriteLine(f);
+
+	int lalala;
+	lalala = //900;
+90;
+	System.Console.WriteLine/*(0);
+	System.Console.WriteLine*/(/*0);
+	System.Console.WriteLine(*/lalala);
+	System.Console.WriteLine(muerte);
+	muerte = 1212;
+	System.Console.WriteLine(muerte);
+}
+}

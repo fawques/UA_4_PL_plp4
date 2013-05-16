@@ -1,0 +1,33 @@
+class A{
+	private int x,y;
+	private bool ok;
+
+	public A(){
+		x = 0;
+		y = 0;
+		ok = False;
+	}
+
+	public A(double xx, double yy){
+		x = xx;
+		y = yy;
+		ok = xx > yy;
+	}
+
+}
+
+
+class B{
+public int l;
+public static void Main()
+{
+	int aux;
+	aux = 0;
+	A objeto1,objeto2;
+	objeto1 = new A(3.0,5.0);
+	objeto2 = new A(8.0,5.0);
+	//l = 2;
+	System.Console.WriteLine(aux);
+	//System.Console.WriteLine(l);
+}
+}

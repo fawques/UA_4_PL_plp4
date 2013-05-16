@@ -1,0 +1,18 @@
+class B{
+public int f(double a,double b,double c){
+	System.Console.WriteLine(a);
+	System.Console.WriteLine(b);
+	System.Console.WriteLine(c);
+	return 0;
+}
+}
+
+class Z{
+public static void Main()
+{
+	B obj;
+	obj = new B();
+	obj.f(1.0,2.0,3.5);
+}
+}
+

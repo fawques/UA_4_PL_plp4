@@ -1,0 +1,22 @@
+class Single{
+public static void Main()
+{
+
+	bool booleanos[,,,];
+	booleanos=new bool[1,2,3,4];
+	
+	int enteros[,];
+enteros=new int[1];
+	
+	double reales[];
+	reales = new double[4];
+	
+	enteros[0,0] = 1;
+	reales[0] = 1;
+	reales[1] = 2;
+	reales[2] = 3;
+	reales[3] = 4;
+	
+	reales[2] = reales[1] * enteros[3,2] * reales[3] * (-reales[2]) * (enteros[1,2] / 4) - reales] * enteros[1,2] * boolean[1,2] * h; 
+}
+}

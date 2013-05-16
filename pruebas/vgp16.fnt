@@ -1,0 +1,25 @@
+class A{
+	public A obj2;
+	public int x,y;
+
+	public A(double a){
+		obj2 = new A();
+	}
+
+	public int noexistoasi(double a){
+		System.Console.WriteLine(1);
+		bool erroraco;
+		erroraco = True;
+		return erroraco;
+	}
+}
+
+class B{
+	public static void Main(){
+		A obj1;
+		bool erroraco;
+		obj1 = new A(1.0);
+		erroraco = obj1.noexistoasi(1.0);
+		System.Console.WriteLine(0);
+	}
+}

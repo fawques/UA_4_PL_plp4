@@ -1,0 +1,10 @@
+class Single{
+public static void Main()
+{
+
+	bool enteros[,,];
+	int entero;
+	entero = enteros[2,3,4,4];
+
+}
+}

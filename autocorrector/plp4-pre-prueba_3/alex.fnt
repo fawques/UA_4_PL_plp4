@@ -1,0 +1,118 @@
+class Single{
+public static void Main()
+{
+  int v[,,,];
+  int i,x;
+  bool cond;
+  cond = True;
+  v = new int[5,4,6,4];
+  v[1,2,3,2] = 3;
+  i=v[1,2,3,2];
+
+  x=32;
+  
+  System.Console.WriteLine(i);
+  System.Console.WriteLine(v[1,2,3,2]);
+  System.Console.WriteLine(i==v[1,2,3,2] & cond);
+  System.Console.WriteLine(x);
+
+  if(32==x)
+  {
+    System.Console.WriteLine(3200);
+    if(cond)
+    {
+      System.Console.WriteLine(cond);
+    }else
+    {
+      System.Console.WriteLine(cond);
+    }
+  }else
+  {
+    if(30==x)
+    {
+      System.Console.WriteLine(3000);
+    }else
+    {
+      System.Console.WriteLine(1111);
+    }
+  }
+
+  {
+    int i,j; i=0; 
+    while(i<4)
+    {
+      System.Console.WriteLine(i);
+        j=0;
+        while(j<4)
+        {
+          System.Console.WriteLine(j);
+          j=j+1;
+        }
+
+      i=i+1;
+    }
+  }
+  System.Console.WriteLine(cond);
+  System.Console.WriteLine(cond);
+
+  int vec[,];
+  vec = new int[2,2];
+
+  int it,jt; it=0;
+  while(it<2)
+  {
+      jt=0;
+      while(jt<2)
+      {
+        vec[it,jt] = it+jt;
+        jt=jt+1;
+      }
+
+    it=it+1;
+  }
+
+  it=0;
+  while(it<2)
+  {
+      jt=0;
+      while(jt<2)
+      {
+        System.Console.WriteLine(vec[it,jt]);
+        jt=jt+1;
+      }
+
+    it=it+1;
+  }
+  System.Console.WriteLine(cond);
+  int pb; pb=0;
+  while(pb<6)
+  {
+    pb=pb+1;
+    if(pb==3)
+      continue;
+    System.Console.WriteLine(pb);
+  }
+  System.Console.WriteLine(cond);
+  System.Console.WriteLine(cond);
+  int pc; pc=0;
+  while(pc<6)
+  {
+    pc=pc+1;
+    if(pc==3)
+      break;
+    System.Console.WriteLine(pc);
+  }
+  System.Console.WriteLine(cond);
+  for(int itfor=3 to 1 step -1)
+  {
+    System.Console.WriteLine(itfor);
+  }
+  System.Console.WriteLine(cond);
+  System.Console.WriteLine(cond);
+  System.Console.WriteLine(cond);
+  System.Console.WriteLine(cond);
+  System.Console.WriteLine(cond);
+  System.Console.WriteLine(cond);
+}
+}
+

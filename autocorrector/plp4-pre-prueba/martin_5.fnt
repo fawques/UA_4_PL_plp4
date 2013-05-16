@@ -1,0 +1,15 @@
+class A{
+	private int i;
+	public static void Main(){
+	}
+	public int foo(){
+	}
+}
+class B{
+	private int i;
+	public NotB(){
+		System.Console.WriteLine(5);
+	}
+	public int bar(){
+	}
+}

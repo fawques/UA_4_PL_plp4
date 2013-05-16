@@ -1,0 +1,29 @@
+class Single{
+public static void Main()
+{
+
+	int i;
+	
+	i = (-1);
+	if(4+3<3*3)
+	{
+		while(i < 0)
+		{
+		bool f;
+		f = True;
+			if(f)
+			{
+				f = False;
+				if(!f)
+				{
+					System.Console.WriteLine(f);
+				}
+			}
+			
+		i = 100;
+		}
+	}
+	
+
+}
+}

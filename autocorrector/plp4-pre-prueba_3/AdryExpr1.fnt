@@ -1,0 +1,8 @@
+class Single{
+    public static void Main()
+    {
+        int expr;
+        //Tiene que dar el error en el asterisco(6,21)
+        expr = True * (1 + False);
+    }
+}

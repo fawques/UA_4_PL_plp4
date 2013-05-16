@@ -1,0 +1,53 @@
+class Single{
+public static void Main()
+{
+  bool b; b=False;
+  
+     for (int i=1 to 10 step 1) 
+     {{{
+        b=!b;
+        if (b) {{{ continue; }}}	
+	System.Console.WriteLine(i);
+     }}}
+
+     System.Console.WriteLine(True);
+
+   int a[];
+   a = new int[10];
+   for (int i=0 to 9 step 1)
+     a[i]=i+1;
+   foreach(var x in a) 
+   {{{
+        b=!b;
+        if (b) {{{ continue; }}}	
+	System.Console.WriteLine(x);
+   }}}
+     System.Console.WriteLine(True);
+   
+   int i; i=0;
+   while (i<=10)
+   {{{
+        b=!b;
+        i=i+1;
+        if (b) {{{ continue; }}}	
+	System.Console.WriteLine(i);
+   }}}
+     System.Console.WriteLine(True);
+
+   b=False;
+   int v[,];
+   v = new int[5,5];
+   for (int i=0 to 4 step 1) {{{
+     b=!b;
+     if (b) {{{ continue; }}}
+     System.Console.WriteLine(i*1000);
+     for (int j=0 to 9 step 1) {{{
+       if (j>=5) {{{ continue; }}}
+       v[i,j] = j;
+       System.Console.WriteLine(v[i,j]);
+     }}}
+   }}}
+     System.Console.WriteLine(True);
+}
+}
+// Continuara...

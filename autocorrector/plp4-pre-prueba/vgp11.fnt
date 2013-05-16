@@ -1,0 +1,10 @@
+class B{
+public B(){}
+public B(){}
+public static void Main(){
+	System.Console.WriteLine(0);
+}
+public B(){
+	int a;
+}
+}

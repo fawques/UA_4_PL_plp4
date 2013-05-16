@@ -1,0 +1,67 @@
+class Single{
+public static void Main()
+{
+
+	bool booleano;
+	double real;
+	int entero;
+	
+	real = 4;
+	
+	{
+		int entero[];
+		entero = new int[1];
+		
+		entero[0] = 1;
+		
+		System.Console.WriteLine(entero[0]*real);
+		
+		{
+			double real[,];
+			
+			real = new double[1,2];
+			
+			real[0,0] = entero[0];
+		}
+		
+		System.Console.WriteLine(entero[0]*real);
+		
+		{
+			int entero;
+			entero = 3;
+			
+			{
+				int entero[];
+				entero = new int[1];
+				
+				entero[0] = 1;
+				
+				{
+					int entero;
+					entero = 3;
+					
+					{
+						int entero[];
+						entero = new int[1];
+						
+						entero[0] = 1;
+						
+						{
+							int entero;
+							entero = 3;
+							
+							System.Console.WriteLine(entero*real);
+						}
+						System.Console.WriteLine(entero[0]*real);
+					}
+					System.Console.WriteLine(entero*real);
+				}
+				System.Console.WriteLine(entero[0]*real);
+			}
+			System.Console.WriteLine(entero*real);
+		}
+		System.Console.WriteLine(entero[0]*real);
+	}
+	System.Console.WriteLine(entero*real);
+}
+}

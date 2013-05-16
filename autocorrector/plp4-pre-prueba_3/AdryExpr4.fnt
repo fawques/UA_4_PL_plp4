@@ -1,0 +1,7 @@
+class Single{
+    public static void Main()
+    {
+        bool expr;
+        expr = 1 | (2 * True);
+    }
+}

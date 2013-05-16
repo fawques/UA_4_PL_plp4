@@ -1,0 +1,15 @@
+// tipos 1
+class A {
+	private int i;
+	public int asd(){
+		i = 1;
+	}
+	public static void Main() {
+		A a;
+		a = new A();
+
+		if(a){
+			a.asd();
+		}
+	}
+}

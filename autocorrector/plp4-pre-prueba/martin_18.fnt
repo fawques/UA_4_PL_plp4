@@ -1,0 +1,19 @@
+// function  mal 2
+class A {
+	private int i;
+	public int getI() {
+		return i;
+	}
+	public int setI(double i1, double i2) {
+		getI(1);
+		i = i1;
+	}
+}
+class B {
+	public static void Main() {
+		A a;
+		a = new A();
+		a.setI(1);
+		System.Console.WriteLine(a.getI());
+	}
+}

@@ -1,0 +1,19 @@
+class A{
+	public int x,y;
+	public bool ok;
+}
+
+class B{
+	public int a,b;
+	public double x;
+	public static void Main(){
+		A obj1;
+		B obj2;
+		obj2 = new B();
+		obj2.x = 9;
+		obj1 = new A();
+		obj1.x = obj2.x;
+		System.Console.WriteLine(obj2.x);
+		System.Console.WriteLine(obj1.x);
+	}
+}

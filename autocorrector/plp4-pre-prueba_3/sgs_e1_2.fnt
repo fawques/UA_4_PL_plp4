@@ -1,0 +1,17 @@
+class Single{
+public static void Main()
+{
+
+	int a;
+	int i; 
+	i = 0;
+	for(int i = 0 to 5 step +1)
+	{
+		int j;
+		i = 3;
+	}
+	
+	double i[,];
+
+}
+}

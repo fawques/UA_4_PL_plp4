@@ -1,0 +1,11 @@
+class Single{
+public int a,b;
+private double coca;
+
+public int coca(double m, double c, double d)
+{
+	int a;
+	int b;
+	b = 1;
+}
+}

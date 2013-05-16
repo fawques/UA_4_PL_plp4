@@ -1,0 +1,11 @@
+class Clase1 {
+  public f() {
+
+  }
+}
+
+class Clase2 {
+  public static void Main() {
+
+  }
+}

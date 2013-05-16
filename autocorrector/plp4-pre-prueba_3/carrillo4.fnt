@@ -1,0 +1,46 @@
+class Single{
+public static void Main()
+{
+
+	for(int i=0 to 20 step 2)
+	{
+		int j;
+		j=0;
+		i[3]=12;
+
+		if(i == 12)
+		{
+			break;
+		}		
+
+		if(i == 6)
+		{
+			continue;
+		}
+		j = 3.4*7+89/2>12;
+		int j;
+		while(j<5)
+		{
+			if(j==4)
+			{
+				break;
+			}
+	
+			if(j==2)
+			{
+				j=j+1;
+				continue;
+			}
+			System.Console.WriteLine(i);
+			System.Console.WriteLine(j);
+			j=j+1;
+		}
+
+
+
+		System.Console.WriteLine(True);
+	}
+
+}
+}
+

@@ -1,0 +1,53 @@
+class Single{
+public static void Main()
+{
+
+	bool booleanos[,,,];
+	booleanos=new bool[1,2,3,4];
+	
+	int enteros[,];
+	enteros = new int[1,2];
+	
+	double reales[];
+	reales = new double[4];
+	
+	enteros[0,0] = 1;
+	reales[0] = 1;
+	reales[1] = 2;
+	reales[2] = 3;
+	reales[3] = 4;
+	
+	//System.Console.WriteLine(reales[enteros[0,0]]);
+	
+	for(int i = 0 to 0 step 1)
+	{
+		for(int j = 0 to 1 step 1)
+		{
+			for(int k = 0 to 2 step 1)
+			{
+				for(int l = 0 to 3 step 1)
+				{
+					int div;
+					div = (i+j+k+l) / 2;
+					
+					if(div*2 == (i+j+k+l)) // Es par
+					{
+						booleanos[i,j,k,l] = True;
+						//System.Console.WriteLine(True);
+					}
+					else
+					{
+						booleanos[i,j,k] = False;
+						//System.Console.WriteLine(False);
+					}
+				}
+			}
+		}
+	}
+	
+	foreach(var i in booleanos)
+	{
+		System.Console.WriteLine(i);
+	}
+}
+}

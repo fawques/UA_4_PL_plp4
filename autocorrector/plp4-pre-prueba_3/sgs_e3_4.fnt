@@ -1,0 +1,12 @@
+class Single{
+public static void Main()
+{
+
+	bool j;
+	j = True;
+	
+	int i;
+	i = (-j) * (j+3);
+
+}
+}

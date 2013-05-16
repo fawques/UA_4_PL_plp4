@@ -1,0 +1,24 @@
+class Single{
+public static void Main()
+{
+
+	bool booleanos[,,,];
+	booleanos=new bool[1,2,3,4];
+	
+	int enteros[,];
+	enteros = new int[1,2];
+	
+	double reales[];
+	reales = new double[4];
+	
+	enteros[0,0] = 1;
+	reales[0] = 1;
+	reales[1] = 2;
+	reales[2] = 3;
+	reales[3] = 4;
+	
+	System.Console.WriteLine(reales[enteros[0,0]]);
+	
+	reales = 3.4;
+}
+}

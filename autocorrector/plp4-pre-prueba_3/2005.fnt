@@ -1,0 +1,48 @@
+class Single{
+public static void Main()
+{
+  int M[,]; 
+  int k,m;
+  
+  M=new int[21,21];
+  m=20;k=18;
+  for(int i=1 to m step 1) //for-to 
+   {
+    int k;
+    k=10;
+    for(int j=1 to m step 1) //for-to 
+      M[i,j]=0;
+    M[i,i]=1;
+    M[i,m-i+1]=1;
+    M[i,1]=1;
+    M[i,m]=1;
+   } 
+
+  int m2;
+  bool alto;
+  alto=True;
+  m2 = m/2;
+  for(int i=3 to m2 step 1) //for-to
+  { 
+    for(int j=2 to i-1 step 1) //for-to 
+     {
+      M[m-i+1,m-j+1] = M[i-1,j-1] + M[i-1,j]; 
+      M[m-i+1,j] = M[m-i+1,m-j+1];
+      M[i,m-j+1] = M[m-i+1,j];
+      M[i,j] = M[i,m-j+1];
+     }
+   if (alto)
+    {
+     k=k-18;
+     alto=False;
+    }
+  }
+  for(int i=1 to m step 1) //for-to 
+   {
+    for(int j=1 to m+k step 1) //for-to
+      System.Console.WriteLine(M[i,j]);
+    System.Console.WriteLine(True);
+   } 
+
+}
+}

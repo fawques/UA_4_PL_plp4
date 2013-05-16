@@ -1,0 +1,18 @@
+class Single{
+public int a,b;
+private double coca;
+public static void Main(){
+	int a;
+	a = 1;
+}
+public static void Main(){
+	int a;
+	a = 1;
+}
+public int coca(double m, double c, double d)
+{
+	int a;
+	int b;
+	b = 1;
+}
+}
