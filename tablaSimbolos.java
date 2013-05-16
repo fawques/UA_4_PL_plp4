@@ -35,7 +35,7 @@ public class tablaSimbolos {
         return nombre;
     }
     
-    public void add(String nombre, Tipo tipo, int posicion_max, Visibilidad _vis, TipoSimbolo tipoSimb) throws Error_1{
+    public void add(String nombre, Tipo tipo, int posicion_max, Visibilidad _vis, TipoSimbolo tipoSimb) throws Error_1, Error_20{
         Simbolo item = new Simbolo(nombre,posicion_max, tipo,_vis, tipoSimb);
         if (!contiene(item,item.tipo.dimension)) {
             lista.add(item);
@@ -44,7 +44,7 @@ public class tablaSimbolos {
         }
     }
     
-    public int add(Simbolo item) throws Error_1{
+    public int add(Simbolo item) throws Error_1, Error_20{
         if (!contiene(item,item.tipo.dimension)) {
             lista.add(item);
             return item.posicion_locals;
@@ -125,19 +125,19 @@ public class tablaSimbolos {
         return anterior;
     }
 
-    private boolean contieneTodo(Simbolo item) {
+    private boolean contieneTodo(Simbolo item) throws Error_20{
         if(anterior == null){
            return lista.contains(item); 
         }else{
             if(!lista.contains(item)) {
-                return anterior.contiene(item,-1);
+                return anterior.contiene(item,item.getDimension());
             }else{
                 return true;
             }
         }
     }
     
-    private boolean contiene(Simbolo item, int dimension) {
+    private boolean contiene(Simbolo item, int dimension)throws Error_20 {
       /*  if(dimension == -1)// add
             return lista.contains(item);
 */
@@ -149,7 +149,7 @@ public class tablaSimbolos {
                      && (item.getTipoSimbolo() == TipoSimbolo.metodo || item.getTipoSimbolo() == TipoSimbolo.constructor)){
                         // si coinciden los parametros, true
                     if(item.tipo.dimension == simb.tipo.dimension)
-                        return true;
+                        throw new Error_20(item.getNombreClase(),item.getNombre(),item.getDimension(),0,0);
                 } // el nombre coincide y ninguno es metodo/constructor
                 else if((simb.getTipoSimbolo() != TipoSimbolo.metodo && simb.getTipoSimbolo() != TipoSimbolo.constructor)
                      && (item.getTipoSimbolo() != TipoSimbolo.metodo && item.getTipoSimbolo() != TipoSimbolo.constructor)){

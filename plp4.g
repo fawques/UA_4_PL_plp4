@@ -175,7 +175,9 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 				try{
 					tSClase.add(new Simbolo($ID.text, 0, new Tipo(tipo,null,$args.dimension), Visibilidad.publico, TipoSimbolo.metodo,claseActual));
 				}catch(Error_1 e){
-				//	throw new Error_20(tSClase.getNombre(),$ID.text,$args.dimension,$ID.line,$ID.pos);
+					e.setFilaColumna($ID.line,$ID.pos);
+					throw e;
+				}catch(Error_20 e){
 					e.setFilaColumna($ID.line,$ID.pos);
 					throw e;
 				}
@@ -190,7 +192,9 @@ metodo[boolean constr] returns [String trad,boolean constrDefecto]
 					}catch(Error_1 e){
 						e.setFilaColumna($ID.line,$ID.pos);
 						throw e;
-						//throw new Error_20(claseActual,$ID.text,$args.dimension,$ID.line,$ID.pos);
+					}catch(Error_20 e){
+						e.setFilaColumna($ID.line,$ID.pos);
+						throw e;
 					}
 				}else{
 					$constrDefecto = true;
