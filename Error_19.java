@@ -16,6 +16,10 @@ public class Error_19 extends Exception{
         fila = _fila;
         columna = _columna;
     }
+    public void setFilaColumna(int _fila, int _columna){
+        fila = _fila;
+        columna = _columna;
+    }
     
     @Override
     public String toString(){

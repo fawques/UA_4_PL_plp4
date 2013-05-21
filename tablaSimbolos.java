@@ -81,22 +81,25 @@ public class tablaSimbolos {
         throw new Error_2(nombre, 0, 0);
     }
     
-    public Simbolo getSimbolo(String nombre, int dimension) throws Error_2,Error_21 {
+    public Simbolo getSimbolo(String nombre, int dimension) throws Error_2,Error_21,Error_19 {
         boolean encontrado = false;
+        Simbolo simb = null;
         for (Simbolo simbolo : lista) {
             if (simbolo.nombre.equals(nombre)){
                 if((simbolo.getTipoSimbolo() == TipoSimbolo.metodo || simbolo.getTipoSimbolo() == TipoSimbolo.constructor) && simbolo.tipo.dimension == dimension){
                     return simbolo;
                 }else if((simbolo.getTipoSimbolo() == TipoSimbolo.metodo || simbolo.getTipoSimbolo() == TipoSimbolo.constructor)){
                     encontrado = true;
+                    simb = simbolo;
                 }else{
                     return simbolo;
                 }
                 
             }
         }
-        if(encontrado)
-             throw new Error_21(getNombre(),nombre,dimension,0,0);
+        if(encontrado){
+            throw new Error_21(simb.getNombreClase(),nombre,dimension,0,0);
+         }
         // ha terminado la lista y no lo ha encontrado, llamamos a la lista anterior.
         if (anterior != null) {
             return anterior.getSimbolo(nombre,dimension);
